@@ -50,7 +50,12 @@ export default function StudyMode() {
       window.setTimeout(() => {
         setIsTransitioning(false);
         setCurrentCardIndex((prev) => (prev + 1) % totalQuestions);
-      }, 620);
+      }, 500);
+  };
+
+  const reviewCurrentCard = () => {
+    if (isTransitioning) return;
+    setIsFlipped(false);
   };
 
   return (
@@ -171,23 +176,22 @@ export default function StudyMode() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute inset-0 grid grid-cols-4 gap-3 p-1.5 bg-surface-container-low rounded-xl"
+                className="absolute inset-0 flex items-center justify-center gap-3 p-1.5 rounded-xl"
               >
-                {["Lại", "Khó", "Tốt", "Dễ"].map((label, i) => (
-                  <button
-                    key={label}
-                    onClick={goToNextCard}
-                    disabled={isTransitioning}
-                    className="h-full min-h-[80px] flex flex-col items-center justify-between gap-1.5 p-3 rounded-lg hover:bg-primary-container/20 transition-all active:scale-90 group disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
-                      <span className="text-xs font-bold">{i + 1}</span>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-                      {label}
-                    </span>
-                  </button>
-                ))}
+                <button
+                  onClick={reviewCurrentCard}
+                  disabled={isTransitioning}
+                  className="min-w-[140px] px-6 py-3.5 rounded-full bg-surface-container-high text-on-surface font-headline font-bold text-sm shadow-sm hover:bg-surface-container transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Xem lại
+                </button>
+                <button
+                  onClick={goToNextCard}
+                  disabled={isTransitioning}
+                  className="min-w-[180px] px-8 py-3.5 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Tiếp theo
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
