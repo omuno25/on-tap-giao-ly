@@ -65,7 +65,9 @@ function buildObjectiveOptions(source: RawQuestion, pool: RawQuestion[]) {
   const correctText = normalizeAnswer(source.answer);
   const distractorPool = pool
     .map((item) => normalizeAnswer(item.answer))
-    .filter((value): value is string => Boolean(value && value.trim().length > 0 && value !== correctText));
+    .filter((value): value is string =>
+      Boolean(value && value.trim().length > 0 && value !== correctText),
+    );
 
   const distractors = shuffle(Array.from(new Set(distractorPool))).slice(0, 3);
   while (distractors.length < 3) {
@@ -74,7 +76,10 @@ function buildObjectiveOptions(source: RawQuestion, pool: RawQuestion[]) {
 
   const optionTexts = shuffle([correctText, ...distractors]);
   const optionIds = ["A", "B", "C", "D"];
-  const options = optionTexts.map((text, index) => ({ id: optionIds[index], text }));
+  const options = optionTexts.map((text, index) => ({
+    id: optionIds[index],
+    text,
+  }));
   const correctOption = options.find((option) => option.text === correctText);
 
   return {
@@ -88,7 +93,10 @@ function buildExamQuestions() {
   const objectivePool = source.questions.filter((q) => q.type === "short");
   const essayPool = source.questions.filter((q) => q.type === "essay");
 
-  const objectiveQuestions: ExamQuestion[] = pickQuestions(objectivePool, OBJECTIVE_COUNT).map((q) => {
+  const objectiveQuestions: ExamQuestion[] = pickQuestions(
+    objectivePool,
+    OBJECTIVE_COUNT,
+  ).map((q) => {
     const normalized = buildObjectiveOptions(q, objectivePool);
 
     return {
@@ -100,7 +108,10 @@ function buildExamQuestions() {
     };
   });
 
-  const essayQuestions: ExamQuestion[] = pickQuestions(essayPool, ESSAY_COUNT).map((q) => ({
+  const essayQuestions: ExamQuestion[] = pickQuestions(
+    essayPool,
+    ESSAY_COUNT,
+  ).map((q) => ({
     id: String(q.id),
     title: q.question,
     standardAnswer: normalizeAnswer(q.answer),
@@ -139,17 +150,23 @@ export default function MockTest() {
 
   const currentQuestion = questions?.[currentIndex];
   const totalQuestions = questions?.length ?? 0;
-  const progress = totalQuestions > 0 ? Math.round(((currentIndex + 1) / totalQuestions) * 100) : 0;
+  const progress =
+    totalQuestions > 0
+      ? Math.round(((currentIndex + 1) / totalQuestions) * 100)
+      : 0;
 
   const essayCountInExam = useMemo(
-    () => (questions ? questions.filter((q) => q.examMode === "essay").length : 0),
+    () =>
+      questions ? questions.filter((q) => q.examMode === "essay").length : 0,
     [questions],
   );
 
   if (!questions || !currentQuestion) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center px-6">
-        <p className="text-on-surface-variant text-sm">Đang tạo đề thi thử ngẫu nhiên...</p>
+        <p className="text-on-surface-variant text-sm">
+          Đang tạo đề thi thử ngẫu nhiên...
+        </p>
       </div>
     );
   }
@@ -179,18 +196,27 @@ export default function MockTest() {
     setSubmitted(true);
   };
 
-  const answeredCount = Object.values(answers).filter((value) => value.trim().length > 0).length;
+  const answeredCount = Object.values(answers).filter(
+    (value) => value.trim().length > 0,
+  ).length;
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       <header className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-6 py-3 border-b border-surface-container">
         <div className="flex items-center gap-3">
-          <Link href="/" className="hover:bg-surface-container-low p-1.5 rounded-full transition-colors active:scale-95">
+          <Link
+            href="/"
+            className="hover:bg-surface-container-low p-1.5 rounded-full transition-colors active:scale-95"
+          >
             <X className="w-5 h-5 text-on-surface" />
           </Link>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-primary tracking-widest font-headline uppercase">Giáo Xứ Đức Mẹ Hằng Cứu Giúp</span>
-            <span className="text-base font-semibold font-headline text-on-surface leading-tight">Thi Thử Giáo Lý Hôn Nhân</span>
+            <span className="text-[10px] font-bold text-primary tracking-widest font-headline uppercase">
+              Giáo Xứ Đức Mẹ Hằng Cứu Giúp
+            </span>
+            <span className="text-base font-semibold font-headline text-on-surface leading-tight">
+              Thi Thử Giáo Lý Hôn Nhân
+            </span>
           </div>
         </div>
         <Image
@@ -209,18 +235,27 @@ export default function MockTest() {
             <div className="flex justify-between items-center">
               <span className="font-headline font-bold text-on-surface text-sm">
                 Câu hỏi {currentIndex + 1}
-                <span className="text-outline font-normal"> / {totalQuestions}</span>
+                <span className="text-outline font-normal">
+                  {" "}
+                  / {totalQuestions}
+                </span>
               </span>
-              <span className="text-secondary font-bold text-[11px] bg-secondary-container px-2.5 py-0.5 rounded-full">Tiến độ: {progress}%</span>
+              <span className="text-secondary font-bold text-[11px] bg-secondary-container px-2.5 py-0.5 rounded-full">
+                Tiến độ: {progress}%
+              </span>
             </div>
             <ProgressBar progress={progress} />
           </div>
           <div className="bg-surface-container-low p-5 rounded-2xl flex flex-col items-center justify-center gap-1.5">
             <div className="flex items-center gap-1.5">
               <Timer className="w-5 h-5 text-error fill-current" />
-              <span className="font-headline font-black text-on-surface tabular-nums text-lg">{formatTime(secondsLeft)}</span>
+              <span className="font-headline font-black text-on-surface tabular-nums text-lg">
+                {formatTime(secondsLeft)}
+              </span>
             </div>
-            <span className="text-[9px] font-bold text-outline tracking-wider uppercase">Thời gian còn lại</span>
+            <span className="text-[9px] font-bold text-outline tracking-wider uppercase">
+              Thời gian còn lại
+            </span>
           </div>
         </section>
 
@@ -229,13 +264,23 @@ export default function MockTest() {
           <div className="bg-surface-container-lowest rounded-2xl shadow-sm flex flex-col gap-6 p-6 md:p-7 border border-surface-container">
             <div className="flex flex-col gap-3">
               <span className="inline-block self-start px-3 bg-primary/5 text-primary text-[10px] font-bold tracking-widest rounded-full uppercase py-0.5">
-                {currentQuestion.examMode === "essay" ? "Tự luận" : "Câu hỏi thường"}
+                {currentQuestion.examMode === "essay"
+                  ? "Tự luận"
+                  : "Câu hỏi thường"}
               </span>
-              <h2 className="font-headline font-bold text-on-surface leading-snug text-xl">{currentQuestion.title}</h2>
+              <h2 className="font-headline font-bold text-on-surface leading-snug text-xl">
+                {currentQuestion.title}
+              </h2>
             </div>
             {currentQuestion.image && (
               <div className="w-full aspect-video md:aspect-[24/9] rounded-xl overflow-hidden bg-surface-container-low relative">
-                <Image src={currentQuestion.image} alt="Question Image" fill className="object-cover mix-blend-multiply opacity-80" referrerPolicy="no-referrer" />
+                <Image
+                  src={currentQuestion.image}
+                  alt="Question Image"
+                  fill
+                  className="object-cover mix-blend-multiply opacity-80"
+                  referrerPolicy="no-referrer"
+                />
               </div>
             )}
           </div>
@@ -264,8 +309,12 @@ export default function MockTest() {
                   >
                     {option.id}
                   </span>
-                  <span className={`font-medium leading-relaxed text-sm ${isSelected ? "text-on-primary-container" : ""}`}>{option.text}</span>
-                  {isSelected && <CheckCircle className="absolute right-3.5 w-5 h-5 text-primary fill-current" />}
+                  <span
+                    className={`font-medium leading-relaxed text-sm ${isSelected ? "text-on-primary-container" : ""}`}
+                  >
+                    {option.text}
+                  </span>
+                  {isSelected}
                 </button>
               );
             })}
@@ -275,7 +324,11 @@ export default function MockTest() {
             <textarea
               value={currentAnswer}
               onChange={(e) => setAnswer(e.target.value)}
-              placeholder={currentQuestion.examMode === "essay" ? "Nhập câu trả lời tự luận..." : "Nhập câu trả lời ngắn..."}
+              placeholder={
+                currentQuestion.examMode === "essay"
+                  ? "Nhập câu trả lời tự luận..."
+                  : "Nhập câu trả lời ngắn..."
+              }
               className="w-full min-h-[180px] p-4 bg-surface-container-high focus:bg-surface-container-lowest border-none rounded-lg text-base text-on-surface placeholder-on-surface-variant/40 focus:ring-1 focus:ring-primary/20 transition-all outline-none resize-y"
             />
           </section>
@@ -298,14 +351,19 @@ export default function MockTest() {
               onClick={isTimeUp ? submitNow : goNext}
               className="flex-[2] md:flex-none px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95 text-sm"
             >
-              {isTimeUp ? "Nộp bài" : isLastQuestion ? "Hoàn tất" : "Xác nhận trả lời"}
+              {isTimeUp
+                ? "Nộp bài"
+                : isLastQuestion
+                  ? "Hoàn tất"
+                  : "Xác nhận trả lời"}
             </button>
           </div>
         </section>
 
         {(submitted || isTimeUp) && (
           <section className="bg-secondary-container/20 border border-secondary-container rounded-xl p-4 text-sm text-on-surface">
-            Đã nộp bài. Bạn đã trả lời {answeredCount}/{totalQuestions} câu. Đề gồm {OBJECTIVE_COUNT} câu thường và {essayCountInExam} câu tự luận.
+            Đã nộp bài. Bạn đã trả lời {answeredCount}/{totalQuestions} câu. Đề
+            gồm {OBJECTIVE_COUNT} câu thường và {essayCountInExam} câu tự luận.
           </section>
         )}
       </main>
