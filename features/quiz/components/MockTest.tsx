@@ -4,7 +4,7 @@ import { X, Timer, CheckCircle, Flag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { QUESTION_BANK, type Question } from "@/lib/question-bank";
+import marriageQuestionSetJson from "@/data/marriage-question-set.json";
 import ProgressBar from "@/components/ui/ProgressBar";
 
 const OBJECTIVE_COUNT = 10;
@@ -12,7 +12,23 @@ const ESSAY_COUNT = 3;
 const EXAM_DURATION_SECONDS = 25 * 60;
 
 type ExamMode = "objective" | "essay";
-type ExamQuestion = Question & { examMode: ExamMode };
+type RawQuestion = {
+  id: number;
+  type: "short" | "essay";
+  question: string;
+  answer: string | string[];
+};
+
+type ExamOption = { id: string; text: string };
+type ExamQuestion = {
+  id: string;
+  title: string;
+  standardAnswer: string;
+  examMode: ExamMode;
+  options?: ExamOption[];
+  correctOptionId?: string;
+  image?: string;
+};
 
 function shuffle<T>(items: T[]) {
   const result = [...items];
@@ -37,17 +53,18 @@ function pickQuestions<T>(pool: T[], count: number) {
   return picked;
 }
 
-function buildObjectiveOptions(source: Question, pool: Question[]) {
-  if (source.options && source.options.length >= 2) {
-    return {
-      options: source.options,
-      correctOptionId: source.correctOptionId ?? source.options[0]?.id,
-    };
+function normalizeAnswer(answer: string | string[]) {
+  if (Array.isArray(answer)) {
+    return answer.join("; ");
   }
 
-  const correctText = source.standardAnswer ?? "Chưa có đáp án";
+  return answer;
+}
+
+function buildObjectiveOptions(source: RawQuestion, pool: RawQuestion[]) {
+  const correctText = normalizeAnswer(source.answer);
   const distractorPool = pool
-    .map((item) => item.standardAnswer)
+    .map((item) => normalizeAnswer(item.answer))
     .filter((value): value is string => Boolean(value && value.trim().length > 0 && value !== correctText));
 
   const distractors = shuffle(Array.from(new Set(distractorPool))).slice(0, 3);
@@ -67,21 +84,26 @@ function buildObjectiveOptions(source: Question, pool: Question[]) {
 }
 
 function buildExamQuestions() {
-  const objectivePool = QUESTION_BANK.filter((q) => q.type !== "essay");
-  const essayPool = QUESTION_BANK.filter((q) => q.type === "essay");
+  const source = marriageQuestionSetJson as { questions: RawQuestion[] };
+  const objectivePool = source.questions.filter((q) => q.type === "short");
+  const essayPool = source.questions.filter((q) => q.type === "essay");
 
-  const objectiveQuestions = pickQuestions(objectivePool, OBJECTIVE_COUNT).map((q) => {
+  const objectiveQuestions: ExamQuestion[] = pickQuestions(objectivePool, OBJECTIVE_COUNT).map((q) => {
     const normalized = buildObjectiveOptions(q, objectivePool);
 
     return {
-      ...q,
+      id: String(q.id),
+      title: q.question,
+      standardAnswer: normalizeAnswer(q.answer),
       ...normalized,
       examMode: "objective" as const,
     };
   });
 
-  const essayQuestions = pickQuestions(essayPool, ESSAY_COUNT).map((q) => ({
-    ...q,
+  const essayQuestions: ExamQuestion[] = pickQuestions(essayPool, ESSAY_COUNT).map((q) => ({
+    id: String(q.id),
+    title: q.question,
+    standardAnswer: normalizeAnswer(q.answer),
     examMode: "essay" as const,
   }));
 
