@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Timer, CheckCircle, Flag } from "lucide-react";
+import { X, Timer, Flag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -28,6 +28,13 @@ type ExamQuestion = {
   options?: ExamOption[];
   correctOptionId?: string;
   image?: string;
+};
+
+type ScoreSummary = {
+  objective: { total: number; correct: number };
+  essay: { total: number; correct: number };
+  total: number;
+  correct: number;
 };
 
 function shuffle<T>(items: T[]) {
@@ -127,6 +134,39 @@ function formatTime(totalSeconds: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function calculateScore(
+  questions: ExamQuestion[],
+  answers: Record<string, string>,
+): ScoreSummary {
+  const objectiveQuestions = questions.filter(
+    (q) => q.examMode === "objective",
+  );
+  const essayQuestions = questions.filter((q) => q.examMode === "essay");
+
+  const objectiveCorrect = objectiveQuestions.reduce((count, q) => {
+    const picked = answers[q.id];
+    if (!picked) return count;
+    return picked === q.correctOptionId ? count + 1 : count;
+  }, 0);
+
+  const essayCorrect = essayQuestions.reduce((count, q) => {
+    const input = (answers[q.id] ?? "").trim();
+    const expected = (q.standardAnswer ?? "").trim();
+    // Essay scoring is strict exact match, including punctuation and accents.
+    return input === expected ? count + 1 : count;
+  }, 0);
+
+  const total = questions.length;
+  const correct = objectiveCorrect + essayCorrect;
+
+  return {
+    objective: { total: objectiveQuestions.length, correct: objectiveCorrect },
+    essay: { total: essayQuestions.length, correct: essayCorrect },
+    total,
+    correct,
+  };
+}
+
 export default function MockTest() {
   const [questions, setQuestions] = useState<ExamQuestion[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -146,6 +186,12 @@ export default function MockTest() {
     }, 1000);
 
     return () => clearInterval(timerId);
+  }, [secondsLeft, submitted]);
+
+  useEffect(() => {
+    if (secondsLeft === 0 && !submitted) {
+      setSubmitted(true);
+    }
   }, [secondsLeft, submitted]);
 
   const currentQuestion = questions?.[currentIndex];
@@ -199,6 +245,7 @@ export default function MockTest() {
   const answeredCount = Object.values(answers).filter(
     (value) => value.trim().length > 0,
   ).length;
+  const score = calculateScore(questions, answers);
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -296,7 +343,7 @@ export default function MockTest() {
                   onClick={() => setAnswer(option.id)}
                   className={`group relative flex items-center gap-4 transition-all duration-300 rounded-xl text-left active:scale-95 overflow-hidden p-3.5 border ${
                     isSelected
-                      ? "bg-primary-container border-primary ring-2 ring-primary ring-offset-2 ring-offset-surface"
+                      ? "bg-primary-container/40  border-primary/60 ring-primary/45 ring-offset-2 ring-offset-surface"
                       : "bg-surface-container-high border-transparent hover:bg-primary-container/40"
                   }`}
                 >
@@ -310,11 +357,10 @@ export default function MockTest() {
                     {option.id}
                   </span>
                   <span
-                    className={`font-medium leading-relaxed text-sm ${isSelected ? "text-on-primary-container" : ""}`}
+                    className={`font-medium leading-relaxed text-sm ${isSelected ? "text-on-surface" : ""}`}
                   >
                     {option.text}
                   </span>
-                  {isSelected}
                 </button>
               );
             })}
@@ -362,8 +408,19 @@ export default function MockTest() {
 
         {(submitted || isTimeUp) && (
           <section className="bg-secondary-container/20 border border-secondary-container rounded-xl p-4 text-sm text-on-surface">
-            Đã nộp bài. Bạn đã trả lời {answeredCount}/{totalQuestions} câu. Đề
-            gồm {OBJECTIVE_COUNT} câu thường và {essayCountInExam} câu tự luận.
+            <p className="font-bold">
+              Kết quả: {score.correct}/{score.total} điểm
+            </p>
+            <p className="mt-1">
+              Trắc nghiệm: {score.objective.correct}/{score.objective.total}
+            </p>
+            <p>
+              Tự luận (so khớp tuyệt đối): {score.essay.correct}/
+              {score.essay.total}
+            </p>
+            <p className="mt-1 text-on-surface-variant">
+              Bạn đã trả lời {answeredCount}/{totalQuestions} câu.
+            </p>
           </section>
         )}
       </main>
