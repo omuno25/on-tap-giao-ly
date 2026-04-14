@@ -23,12 +23,12 @@
       "id": 3,
       "type": "short",
       "question": "Bí tích hôn nhân do ai thiết lập?",
-      "answer": "Chúa Giêsu Kitô"
+      "answer": "Do Chúa Giê-su"
     },
     {
       "id": 4,
       "type": "short",
-      "question": "Theo luật có bao nhiêu ngăn trở hôn nhân?",
+      "question": "Theo luật thì bao nhiêu ngăn trở?",
       "answer": "12 ngăn trở"
     },
     {
@@ -36,10 +36,10 @@
       "type": "short",
       "question": "Có mấy điều kiện để cử hành bí tích hôn phối?",
       "answer": [
-        "Đã rửa tội",
+        "1 nam 1 nữ đã rửa tội",
         "Tự do kết hôn",
-        "Bày tỏ sự ưng thuận",
-        "Cử hành theo thể thức Hội Thánh"
+        "Bày tỏ sự ưng thuận kết hôn",
+        "Cử hành Theo thể thức Hội Thánh"
       ]
     },
     {
@@ -64,24 +64,24 @@
       "id": 9,
       "type": "short",
       "question": "Tại sao kinh nguyện trong đời sống hôn nhân lại cần thiết?",
-      "answer": "Giúp sống tốt đời sống Kitô hữu và giáo dục con cái"
+      "answer": "Giúp ta sống tốt đời sống Kitô hữu và giúp chúng ta biết giáo dục con cái"
     },
     {
       "id": 10,
       "type": "short",
-      "question": "Sự khiết tịnh trong đời sống hôn nhân là gì?",
-      "answer": "Biết làm chủ giới tính và sống đúng mức độ trong đời sống vợ chồng"
+      "question": "Sự khiết định trong đời sống hôn nhân là gì?",
+      "answer": "Biết làm chủ giới tính nhờ đó vợ chồng ăn ở với nhau có tiết độ"
     },
     {
       "id": 11,
       "type": "short",
-      "question": "Quan hệ tình dục trước hôn nhân có phải là tội không?",
-      "answer": "Xúc phạm phẩm giá hôn nhân (tội trọng)"
+      "question": "Đôi bạn quan hệ tình dục trước hôn nhân chưa phải vợ chồng thì phạm tội gì?",
+      "answer": "Xúc phạm đến phẩm giá hôn nhân ( phạm tội trọng và ko được hiệp thông với các bí tích)"
     },
     {
       "id": 12,
       "type": "short",
-      "question": "Đặt dụng cụ tử cung (vòng tránh thai) còn gọi là gì?",
+      "question": "Đặt dụng cụ tử cung hay gọi là vòng tránh thai đó còn gọi là gì?",
       "answer": "Phá thai sớm"
     },
     {
@@ -99,7 +99,7 @@
     {
       "id": 15,
       "type": "short",
-      "question": "Người bị ràng buộc bởi hôn nhân trước có được phép kết hôn không?",
+      "question": "Một người bị ràng buộc bởi hôn nhân trước thì có được xin phép chuẩn hay phép tha hay không?",
       "answer": "Không"
     },
     {
@@ -124,7 +124,7 @@
       "id": 19,
       "type": "short",
       "question": "Ông nội của cô gái và bố của chàng trai là anh em ruột, vậy có tiến tới hôn nhân được không?",
-      "answer": "Được (cần xét sơ đồ họ hàng)"
+      "answer": "Được (vẽ sơ đồ, lấy tổng người – đi 1 >= 5 > ok dc )"
     },
     {
       "id": 20,
@@ -137,9 +137,9 @@
       "type": "short",
       "question": "Những yếu tố để quyết định đúng đắn về điều hòa sinh sản là gì?",
       "answer": [
-        "Lương tâm ngay thẳng",
+        "Lương tâm ngay thẳng chấn chỉnh",
         "Tinh thần trách nhiệm cao",
-        "Tuân thủ giáo huấn Hội Thánh"
+        "Tuân thủ giáo huấn của hội thánh về điều hòa sinh sản"
       ]
     },
     {
@@ -147,15 +147,15 @@
       "type": "short",
       "question": "Việc sinh sản con cái có ý nghĩa như thế nào trong đời sống hôn nhân?",
       "answer": [
-        "Cộng tác với Thiên Chúa trong việc tạo dựng",
-        "Con cái là hoa quả tình yêu",
-        "Góp phần phát triển xã hội và Hội Thánh"
+        "Vinh dự cộng tác với Thiên Chúa trong việc tạo dựng",
+        "Con cái là hoa quả tốt đẹp trong tình yêu của vk ck",
+        "Góp phần tăng thêm cộng đoàn nhân loại và phát triển hội thánh ( ý kiểu tăng dân số)"
       ]
     },
     {
       "id": 23,
       "type": "essay",
-      "question": "Để đạt kết quả tốt trong việc giáo dục con cái, cha mẹ cần làm gì? (6 điều)",
+      "question": "Để đạt kết quả tốt trong việc giáo dục con cái , cha mẹ cần phải làm gì? (5điều cần)",
       "answer": [
         "Đồng tâm nhất trí",
         "Nêu gương",
@@ -193,47 +193,48 @@
       "type": "short",
       "question": "Để tình yêu được triển nở thì vợ chồng phải làm gì?",
       "answer": [
-        "Tôn trọng lẫn nhau",
-        "Hy sinh cho nhau",
-        "Đối thoại, chia sẻ",
-        "Dành thời gian cho nhau",
-        "Nói lời yêu thương",
-        "Làm tròn bổn phận",
-        "Cầu nguyện"
+        "Một là tôn trọng lẫn nhau",
+        "Hai là hy sinh cho nhau",
+        "Ba là đối thoại, chia sẻ tâm tình với nhau",
+        "Bốn là dành thời gian cho nhau",
+        "Năm là nói với nhau những lời âu yếm",
+        "Sáu là làm tròn bổn phận vợ chồng",
+        "Bảy là cầu nguyện với nhau và cho nhau"
       ]
     },
     {
       "id": 28,
       "type": "short",
       "question": "Các bí tích giúp ích gì trong đời sống hôn nhân gia đình?",
-      "answer": "Thánh hóa tình yêu, ban ơn nâng đỡ, giúp sống trách nhiệm với nhau và con cái"
+      "answer": "Các bí tích , đặc biệt là bí tích hôn phối, thánh thể, hòa giải giúp: Thánh hóa tình yêu vk ck, ban nhiều ơn sủng, giúp chu toàn trách nhiệm vs nhau và với con cái"
     },
     {
       "id": 29,
       "type": "essay",
       "question": "Để thực hiện dấu chỉ tình yêu sau khi cử hành bí tích hôn phối, đôi bạn sẽ nói với nhau điều gì?",
-      "answer": "Em... xin em nhận chiếc nhẫn này làm dấu chỉ tình yêu và lòng chung thuỷ của anh. Nhân danh cha, và Con, và Thánh Thần."
+      "answer": "Em ... xin em nhận chiếc nhẫn này làm dấu chỉ tình yêu và lòng chung thuỷ của anh. Nhân danh cha, và Con và Thánh Thần"
     },
     {
       "id": 30,
       "type": "short",
       "question": "Những tội nào xúc phạm đến phẩm giá hôn nhân?",
-      "answer": "Ngoại tình, ly dị, đa phu, đa thê, loạn luân, đồng tính luyến ái, sống chung như vợ chồng"
+      "answer": "Ngoại tình, ly dị, đa phu, đa thê, loạn luân, đồng tính luyến ái, sống chung như vk ck"
     },
     {
       "id": 31,
       "type": "essay",
       "question": "Trong khi cử hành bí tích hôn phối, đôi bạn cam kết với nhau điều gì?",
-      "answer": "Anh là ... nhận em ... làm vợ của anh, và anh hứa giữ lòng chung thuỷ với em, khi thịnh vượng cũng như lúc gian nan, khi mạnh khoẻ cũng như lúc đau yếu, để yêu thương và tôn trọng em mọi ngày suốt đời anh."
+      "answer": "Anh là ... nhận em ...làm vợ của anh, và hứa giữ lòng chung thuỷ với em, khi thịnh vượng cũng như lúc gian nan, khi mạnh khoẻ cũng như lúc đau yếu, để yêu thương và tôn trọng em mọi ngày suốt đời em."
     },
     {
       "id": 32,
       "type": "essay",
       "question": "Theo bạn, hôn nhân nghĩa là gì? việc hôn nhân nhằm mục đích gì?",
       "answer": [
-        "Là giao ước giữa một nam và một nữ",
-        "Mục đích: yêu thương, giúp đỡ nhau",
-        "Sinh sản và giáo dục con cái"
+        "Hôn nhân là giao ước ký kết giữa một người nam và một người nữ, với đầy đủ tự do ưng thuận, ý thức trách nhiệm, để trở thành vợ chồng",
+        "Có hai mục đích:",
+        "Một là yêu thương và giúp đỡ lẫn nhau",
+        "Hai là cộng tác với thiên chúa trong việc sinh sản và giáo dục con cái"
       ]
     },
     {
@@ -245,20 +246,20 @@
     {
       "id": 34,
       "type": "short",
-      "question": "Tại sao tôn giáo có vai trò quan trọng trong đời sống hôn nhân?",
-      "answer": "Vì ảnh hưởng đến suy nghĩ và cách giáo dục con cái"
+      "question": "Tại sao tôn giáo có vai trò quan trọng trong đời sống hôn nhân và gia đình ?",
+      "answer": "Vì tôn giáo có ảnh hưởng đến lối suy nghĩ và cách giáo dục con cái"
     },
     {
       "id": 35,
       "type": "short",
       "question": "Đâu là nghi thức chính yếu của việc kết hôn Công giáo?",
-      "answer": "Trao lời ưng thuận trước linh mục và cộng đoàn"
+      "answer": "Là việc đôi bạn tự do trao lời ưng thuận (lời cam kết hôn nhân) trước mặt linh mục và cộng đoàn."
     },
     {
       "id": 36,
       "type": "short",
       "question": "Ai đã lập nên hôn nhân?",
-      "answer": "Thiên Chúa"
+      "answer": "Chính Thiên Chúa đã thiết lập hôn nhân."
     }
   ]
 }
