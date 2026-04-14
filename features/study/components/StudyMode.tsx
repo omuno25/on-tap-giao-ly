@@ -181,14 +181,14 @@ export default function StudyMode() {
                 <button
                   onClick={reviewCurrentCard}
                   disabled={isTransitioning}
-                  className="min-w-[140px] px-6 py-3.5 rounded-full bg-surface-container-high text-on-surface font-headline font-bold text-sm shadow-sm hover:bg-surface-container transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-[170px] h-[50px] rounded-full bg-surface-container-high text-on-surface font-headline font-bold text-sm shadow-sm hover:bg-surface-container transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   Xem lại
                 </button>
                 <button
                   onClick={goToNextCard}
                   disabled={isTransitioning}
-                  className="min-w-[180px] px-8 py-3.5 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-[170px] h-[50px] rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   Tiếp theo
                 </button>
