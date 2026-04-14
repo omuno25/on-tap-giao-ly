@@ -91,16 +91,29 @@ export default function StudyMode() {
         <div
           className="w-full max-w-xl aspect-[4/3] md:aspect-[5/3.5] relative perspective-1000 cursor-pointer"
           onClick={() => setIsFlipped(!isFlipped)}
+          style={{ perspective: "1200px", WebkitPerspective: "1200px" }}
         >
           <motion.div
-            className="w-full h-full relative transition-all duration-500 will-change-transform"
-            style={{ transformStyle: "preserve-3d" }}
+            className="w-full h-full relative will-change-transform"
+            style={{
+              transformStyle: "preserve-3d",
+              WebkitTransformStyle: "preserve-3d",
+              transform: "translateZ(0)",
+              WebkitTransform: "translateZ(0)",
+            }}
             animate={{ rotateY: isFlipped ? 180 : 0 }}
+            initial={false}
+            transition={{ duration: 0.45, ease: "easeInOut" }}
           >
             {/* Front */}
             <div
               className="absolute inset-0 w-full h-full bg-surface-container-lowest rounded-[1.25rem] shadow-lg border border-outline-variant/10 flex flex-col overflow-hidden"
-              style={{ backfaceVisibility: "hidden" }}
+              style={{
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+                transform: "rotateY(0deg) translateZ(0)",
+                WebkitTransform: "rotateY(0deg) translateZ(0)",
+              }}
             >
               <div className="h-1 w-full bg-tertiary-container" />
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
@@ -118,7 +131,9 @@ export default function StudyMode() {
               className="absolute inset-0 w-full h-full bg-surface-container-lowest rounded-[1.25rem] shadow-lg border border-outline-variant/10 flex flex-col overflow-hidden"
               style={{
                 backfaceVisibility: "hidden",
-                transform: "rotateY(180deg)",
+                WebkitBackfaceVisibility: "hidden",
+                transform: "rotateY(180deg) translateZ(0)",
+                WebkitTransform: "rotateY(180deg) translateZ(0)",
               }}
             >
               <div className="h-1 w-full bg-primary-container" />
