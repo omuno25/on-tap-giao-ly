@@ -421,6 +421,14 @@ export default function MockTest() {
             <p className="mt-1 text-on-surface-variant">
               Bạn đã trả lời {answeredCount}/{totalQuestions} câu.
             </p>
+            <div className="mt-3">
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-on-primary font-headline font-bold text-sm hover:opacity-90 transition-all active:scale-95"
+              >
+                Trở về
+              </Link>
+            </div>
           </section>
         )}
       </main>

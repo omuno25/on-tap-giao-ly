@@ -12,11 +12,55 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import ProgressCircle from "@/components/ui/ProgressCircle";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { QUESTION_BANK } from "@/lib/question-bank";
+import {
+  clearStudyCardIndex,
+  STUDY_CARD_INDEX_KEY,
+} from "@/lib/study-progress";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
+  const router = useRouter();
   const totalQuestions = QUESTION_BANK.length;
+  const [currentCardPosition, setCurrentCardPosition] = useState(0);
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem(STUDY_CARD_INDEX_KEY);
+    if (raw === null) {
+      setCurrentCardPosition(0);
+      return;
+    }
+
+    const savedIndex = Number(raw);
+    if (
+      !Number.isInteger(savedIndex) ||
+      savedIndex < 0 ||
+      totalQuestions <= 0
+    ) {
+      setCurrentCardPosition(0);
+      return;
+    }
+
+    setCurrentCardPosition(Math.min(savedIndex + 1, totalQuestions));
+  }, [totalQuestions]);
+
+  const progressPercent = useMemo(() => {
+    if (totalQuestions <= 0) return 0;
+    return Math.round((currentCardPosition / totalQuestions) * 100);
+  }, [currentCardPosition, totalQuestions]);
+
+  const handleResetStudyProgress = () => {
+    const shouldReset = window.confirm(
+      "Bạn có muốn reset lại quá trình học không?",
+    );
+    if (!shouldReset) return;
+
+    clearStudyCardIndex();
+    setCurrentCardPosition(0);
+    router.push("/study");
+  };
 
   return (
     <div className="min-h-screen bg-surface">
@@ -65,13 +109,18 @@ export default function Dashboard() {
 
           {/* Daily Goal */}
           <div className="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 shadow-sm">
-            <ProgressCircle progress={0} size={56} strokeWidth={6} label="0%" />
+            <ProgressCircle
+              progress={progressPercent}
+              size={56}
+              strokeWidth={6}
+              label={`${progressPercent}%`}
+            />
             <div>
               <p className="font-headline text-xs font-semibold text-on-surface">
                 Mục tiêu ngày
               </p>
               <p className="text-[11px] text-on-surface-variant">
-                0/{totalQuestions} câu đã hoàn thành
+                {currentCardPosition}/{totalQuestions} thẻ
               </p>
             </div>
           </div>
@@ -174,19 +223,32 @@ export default function Dashboard() {
             <div className="w-full md:w-56">
               <div className="flex justify-between text-[10px] font-bold mb-1.5">
                 <span className="text-on-surface-variant uppercase tracking-wider">
-                  0 / {totalQuestions} Thẻ
+                  {currentCardPosition} / {totalQuestions} Thẻ
                 </span>
-                <span className="text-primary">0%</span>
+                <span className="text-primary">{progressPercent}%</span>
               </div>
               <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-primary to-primary-container rounded-full w-0" />
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary-container rounded-full"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
             </div>
-            <Link href="/study">
-              <button className="bg-primary text-on-primary font-headline font-bold px-5 py-2 rounded-lg text-[13px] transition-all hover:opacity-90 active:scale-95">
-                Tiếp tục
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleResetStudyProgress}
+                className="w-[108px] h-9 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline/20 inline-flex items-center justify-center font-headline font-bold text-[13px] transition-all hover:text-primary hover:border-primary/30 active:scale-95"
+                aria-label="Đặt lại học từ đầu"
+                title="Học lại từ đầu"
+              >
+                Đặt lại
               </button>
-            </Link>
+              <Link href="/study">
+                <button className="w-[108px] h-9 rounded-lg bg-primary text-on-primary font-headline font-bold text-[13px] inline-flex items-center justify-center transition-all hover:opacity-90 active:scale-95">
+                  Tiếp tục
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
       </main>

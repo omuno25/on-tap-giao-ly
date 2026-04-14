@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { QUESTION_BANK } from "@/lib/question-bank";
+import { readStudyCardIndex, saveStudyCardIndex } from "@/lib/study-progress";
 
 export default function StudyMode() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isProgressHydrated, setIsProgressHydrated] = useState(false);
   const flashcards = QUESTION_BANK.filter((item) => item.type === "flashcard");
   const flashcard = flashcards[currentCardIndex];
 
@@ -28,6 +30,18 @@ export default function StudyMode() {
     totalQuestions > 0
       ? Math.round((currentQuestionIndex / totalQuestions) * 100)
       : 0;
+
+  useEffect(() => {
+    const savedIndex = readStudyCardIndex();
+    if (totalQuestions <= 0) return;
+    setCurrentCardIndex(Math.min(savedIndex, totalQuestions - 1));
+    setIsProgressHydrated(true);
+  }, [totalQuestions]);
+
+  useEffect(() => {
+    if (!isProgressHydrated) return;
+    saveStudyCardIndex(currentCardIndex);
+  }, [currentCardIndex, isProgressHydrated]);
 
   useEffect(() => {
     return () => {
