@@ -1,0 +1,199 @@
+{
+  "meta": {
+    "title": "Bộ câu hỏi Hôn nhân Công giáo",
+    "note": "Có một số câu tự luận, một số câu có đáp án gợi ý từ tài liệu"
+  },
+  "questions": [
+    {
+      "id": 16,
+      "type": "short",
+      "question": "Cha mẹ đã cộng tác với Thiên Chúa sinh thành và dưỡng dục ta nên người, đồng thời điều răn Chúa có dạy ta điều gì?",
+      "answer": "Thảo kính cha mẹ"
+    },
+    {
+      "id": 17,
+      "type": "short",
+      "question": "Cha mẹ phải giáo dục con cái những gì?",
+      "answer": "Giáo dục nhân bản, giáo dục đức tin"
+    },
+    {
+      "id": 18,
+      "type": "short",
+      "question": "Đôi bạn có họ máu theo hàng dọc 4 cấp có được xin phép chuẩn hay phép tha không?",
+      "answer": "Không được"
+    },
+    {
+      "id": 19,
+      "type": "short",
+      "question": "Ông nội của cô gái và bố của chàng trai là anh em ruột, vậy có tiến tới hôn nhân được không?",
+      "answer": "Được (cần xét sơ đồ họ hàng)"
+    },
+    {
+      "id": 20,
+      "type": "short",
+      "question": "Tại sao gia đình Kitô hữu được gọi là Hội Thánh tại gia?",
+      "answer": "Vì được tham dự vào sự sống và sứ mạng của Hội Thánh"
+    },
+    {
+      "id": 21,
+      "type": "short",
+      "question": "Những yếu tố để quyết định đúng đắn về điều hòa sinh sản là gì?",
+      "answer": [
+        "Lương tâm ngay thẳng",
+        "Tinh thần trách nhiệm cao",
+        "Tuân thủ giáo huấn Hội Thánh"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "short",
+      "question": "Việc sinh sản con cái có ý nghĩa như thế nào trong đời sống hôn nhân?",
+      "answer": [
+        "Cộng tác với Thiên Chúa trong việc tạo dựng",
+        "Con cái là hoa quả tình yêu",
+        "Góp phần phát triển xã hội và Hội Thánh"
+      ]
+    },
+    {
+      "id": 23,
+      "type": "essay",
+      "question": "Để đạt kết quả tốt trong việc giáo dục con cái, cha mẹ cần làm gì? (6 điều)",
+      "answer": [
+        "Đồng tâm nhất trí",
+        "Nêu gương",
+        "Tạo bầu không khí yêu thương",
+        "Tìm hiểu con cái",
+        "Kiên nhẫn",
+        "Cầu nguyện cho con cái"
+      ]
+    },
+    {
+      "id": 24,
+      "type": "short",
+      "question": "Tình yêu vợ chồng có những đặc tính nào?",
+      "answer": [
+        "Kết hợp nên một",
+        "Trao hiến trọn vẹn",
+        "Chung thủy suốt đời",
+        "Đón nhận con cái"
+      ]
+    },
+    {
+      "id": 25,
+      "type": "short",
+      "question": "Luân lý tính dục trong đời sống hôn nhân là gì?",
+      "answer": "Tính cách hợp pháp do chính Thiên Chúa xác lập"
+    },
+    {
+      "id": 26,
+      "type": "short",
+      "question": "Vì sao cha mẹ cần có kế hoạch giáo dục và định hướng cho con cái?",
+      "answer": "Đó là quyền và bổn phận của cha mẹ"
+    },
+    {
+      "id": 27,
+      "type": "essay",
+      "question": "Để tình yêu được triển nở thì vợ chồng phải làm gì?",
+      "answer": [
+        "Tôn trọng lẫn nhau",
+        "Hy sinh cho nhau",
+        "Đối thoại, chia sẻ",
+        "Dành thời gian cho nhau",
+        "Nói lời yêu thương",
+        "Làm tròn bổn phận",
+        "Cầu nguyện"
+      ]
+    },
+    {
+      "id": 28,
+      "type": "short",
+      "question": "Các bí tích giúp ích gì trong đời sống hôn nhân gia đình?",
+      "answer": "Thánh hóa tình yêu, ban ơn nâng đỡ, giúp sống trách nhiệm với nhau và con cái"
+    },
+    {
+      "id": 29,
+      "type": "essay",
+      "question": "Khi cử hành bí tích hôn phối, đôi bạn nói gì với nhau?",
+      "answer": "Lời trao nhẫn và nhân danh Cha, Con và Thánh Thần"
+    },
+    {
+      "id": 30,
+      "type": "short",
+      "question": "Những tội nào xúc phạm đến phẩm giá hôn nhân?",
+      "answer": [
+        "Ngoại tình",
+        "Ly dị",
+        "Đa phu, đa thê",
+        "Đồng tính luyến ái",
+        "Sống chung như vợ chồng"
+      ]
+    },
+    {
+      "id": 31,
+      "type": "essay",
+      "question": "Trong bí tích hôn phối, đôi bạn cam kết điều gì?",
+      "answer": "Yêu thương, chung thủy, tôn trọng và gắn bó suốt đời trong mọi hoàn cảnh"
+    },
+    {
+      "id": 32,
+      "type": "essay",
+      "question": "Theo bạn, hôn nhân nghĩa là gì? Hôn nhân nhằm mục đích gì?",
+      "answer": [
+        "Là giao ước giữa một nam và một nữ",
+        "Mục đích: yêu thương, giúp đỡ nhau",
+        "Sinh sản và giáo dục con cái"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "short",
+      "question": "Khuôn mẫu của tình yêu vợ chồng là gì?",
+      "answer": "Sự kết hợp giữa Đức Kitô và Hội Thánh"
+    },
+    {
+      "id": 34,
+      "type": "short",
+      "question": "Tại sao tôn giáo có vai trò quan trọng trong đời sống hôn nhân?",
+      "answer": "Vì ảnh hưởng đến suy nghĩ và cách giáo dục con cái"
+    },
+    {
+      "id": 35,
+      "type": "short",
+      "question": "Đâu là nghi thức chính yếu của việc kết hôn Công giáo?",
+      "answer": "Trao lời ưng thuận trước linh mục và cộng đoàn"
+    },
+    {
+      "id": 36,
+      "type": "short",
+      "question": "Ai đã lập nên hôn nhân?",
+      "answer": "Thiên Chúa"
+    }
+  ],
+  "essay_summary": [
+    {
+      "question": "Đặc tính hôn nhân Công giáo là gì?",
+      "answer": "Đơn nhất và bất khả phân ly"
+    },
+    {
+      "question": "Mục đích hôn nhân Công giáo là gì?",
+      "answer": "Yêu thương và sinh sản, giáo dục con cái"
+    },
+    {
+      "question": "Bí tích hôn nhân do ai thiết lập?",
+      "answer": "Chúa Giêsu Kitô"
+    },
+    {
+      "question": "Có bao nhiêu ngăn trở hôn nhân?",
+      "answer": "12"
+    },
+    {
+      "question": "Điều kiện cử hành bí tích hôn phối?",
+      "answer": [
+        "Đã rửa tội",
+        "Tự do kết hôn",
+        "Ưng thuận",
+        "Theo thể thức Hội Thánh"
+      ]
+    }
+  ]
+}

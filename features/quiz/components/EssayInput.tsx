@@ -4,12 +4,22 @@ import { ArrowLeft, MoreVertical, Edit3, ChevronLeft, CheckCircle, History } fro
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { MOCK_QUESTIONS } from '@/lib/mock-data';
+import { getQuestionById, QUESTION_BANK } from '@/lib/question-bank';
 import TopAppBar from '@/components/layout/TopAppBar';
 
 export default function EssayInput() {
   const [answer, setAnswer] = useState('');
-  const question = MOCK_QUESTIONS.find(q => q.id === '13')!;
+  const question = getQuestionById('13');
+
+  if (!question) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center px-6">
+        <p className="text-on-surface-variant text-sm">Không tìm thấy câu hỏi tự luận `id=13` trong question bank JSON.</p>
+      </div>
+    );
+  }
+  const totalQuestions = QUESTION_BANK.length;
+  const currentQuestionIndex = QUESTION_BANK.findIndex((item) => item.id === question.id) + 1;
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -33,11 +43,11 @@ export default function EssayInput() {
                 <circle className="text-primary-fixed" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeDasharray="175.84" strokeDashoffset="112" strokeWidth="6" />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-headline text-lg font-bold leading-none">13</span>
-                <span className="text-[8px] uppercase tracking-widest text-on-surface-variant font-bold">trên 36</span>
+                <span className="font-headline text-lg font-bold leading-none">{currentQuestionIndex}</span>
+                <span className="text-[8px] uppercase tracking-widest text-on-surface-variant font-bold">trên {totalQuestions}</span>
               </div>
             </div>
-            <p className="text-on-surface-variant font-medium text-xs">Câu hỏi 13 trên 36</p>
+            <p className="text-on-surface-variant font-medium text-xs">Câu hỏi {currentQuestionIndex} trên {totalQuestions}</p>
           </div>
         </header>
 

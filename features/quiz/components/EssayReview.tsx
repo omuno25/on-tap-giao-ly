@@ -3,12 +3,23 @@
 import { ArrowLeft, MoreVertical, HelpCircle, CheckCircle, Gavel, Lightbulb, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { MOCK_QUESTIONS } from '@/lib/mock-data';
+import { getQuestionById, QUESTION_BANK } from '@/lib/question-bank';
 import TopAppBar from '@/components/layout/TopAppBar';
 import ProgressCircle from '@/components/ui/ProgressCircle';
 
 export default function EssayReview() {
-  const question = MOCK_QUESTIONS.find(q => q.id === '12')!;
+  const question = getQuestionById('12');
+
+  if (!question) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center px-6">
+        <p className="text-on-surface-variant text-sm">Không tìm thấy câu hỏi tự luận `id=12` trong question bank JSON.</p>
+      </div>
+    );
+  }
+  const totalQuestions = QUESTION_BANK.length;
+  const currentQuestionIndex = QUESTION_BANK.findIndex((item) => item.id === question.id) + 1;
+  const progress = totalQuestions > 0 ? Math.round((currentQuestionIndex / totalQuestions) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -18,10 +29,10 @@ export default function EssayReview() {
         {/* Progress & Header */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <span className="text-xs text-primary font-bold tracking-wider uppercase">Câu hỏi 12 trên 20</span>
+            <span className="text-xs text-primary font-bold tracking-wider uppercase">Câu hỏi {currentQuestionIndex} trên {totalQuestions}</span>
             <h2 className="text-2xl font-bold font-headline text-on-surface leading-tight">Xem lại Câu trả lời Tự luận</h2>
           </div>
-          <ProgressCircle progress={60} subLabel="Hoàn thành" />
+          <ProgressCircle progress={progress} subLabel="Hoàn thành" />
         </div>
 
         {/* Content Bento Grid */}
@@ -69,7 +80,7 @@ export default function EssayReview() {
               <div className="p-4 bg-surface-container rounded-lg">
                 <p className="text-xs text-on-surface-variant font-bold mb-1 font-headline">Điều 1056 quy định:</p>
                 <p className="text-sm text-on-surface leading-relaxed font-medium">
-                  &quot;Các đặc tính thiết yếu của hôn nhân là sự <strong className="text-primary">đơn nhất</strong> và tính <strong className="text-primary">bất khả phân ly</strong>; trong hôn nhân Kitô giáo, các đặc tính ấy còn có một sự bền vững đặc biệt nhờ bí tích.&quot;
+                  {question.standardAnswer ?? 'Chưa có đáp án chuẩn cho câu này.'}
                 </p>
               </div>
               <div className="space-y-3">

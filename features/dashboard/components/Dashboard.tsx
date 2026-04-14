@@ -1,12 +1,23 @@
-'use client';
+"use client";
 
-import { Play, HelpCircle, Flame, Church, Plus, Search, Menu } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import ProgressCircle from '@/components/ui/ProgressCircle';
-import { motion } from 'motion/react';
+import {
+  Play,
+  HelpCircle,
+  Flame,
+  Church,
+  Plus,
+  Search,
+  Menu,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import ProgressCircle from "@/components/ui/ProgressCircle";
+import { motion } from "motion/react";
+import { QUESTION_BANK } from "@/lib/question-bank";
 
 export default function Dashboard() {
+  const totalQuestions = QUESTION_BANK.length;
+
   return (
     <div className="min-h-screen bg-surface">
       {/* Top Bar */}
@@ -15,18 +26,20 @@ export default function Dashboard() {
           <button className="p-2 rounded-full hover:bg-surface-container-low transition-colors">
             <Menu className="w-5 h-5 text-on-surface" />
           </button>
-          <h1 className="text-xl font-black tracking-tight text-[#457B9D] font-headline">Cognitive Sanctuary</h1>
+          <h1 className="text-xl font-black tracking-tight text-[#457B9D] font-headline">
+            FlashCard
+          </h1>
         </div>
         <div className="flex items-center gap-3">
           <button className="p-2 rounded-full hover:bg-surface-container-low transition-colors">
             <Search className="w-5 h-5 text-on-surface" />
           </button>
           <div className="w-9 h-9 rounded-full overflow-hidden bg-surface-container-high border-2 border-primary-container">
-            <Image 
-              src="https://picsum.photos/seed/user/100/100" 
-              alt="User Avatar" 
-              width={36} 
-              height={36} 
+            <Image
+              src="https://picsum.photos/seed/user/100/100"
+              alt="User Avatar"
+              width={36}
+              height={36}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -39,19 +52,27 @@ export default function Dashboard() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
           <div className="max-w-2xl">
             <h2 className="font-headline text-3xl md:text-4xl font-bold text-on-surface tracking-tight mb-2">
-              Chào mừng, <span className="text-primary">Người học</span>.
+              Chào mừng, <span className="text-primary">User</span>.
             </h2>
             <p className="text-on-surface-variant text-base leading-relaxed">
-              Không gian học tập của bạn đã sẵn sàng. Bạn có <span className="font-bold text-on-surface">36 câu hỏi</span> cần ôn tập hôm nay.
+              Không gian học tập của bạn đã sẵn sàng. Bạn có{" "}
+              <span className="font-bold text-on-surface">
+                {totalQuestions} câu hỏi
+              </span>{" "}
+              cần ôn tập hôm nay.
             </p>
           </div>
-          
+
           {/* Daily Goal */}
           <div className="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 shadow-sm">
             <ProgressCircle progress={0} size={56} strokeWidth={6} label="0%" />
             <div>
-              <p className="font-headline text-xs font-semibold text-on-surface">Mục tiêu ngày</p>
-              <p className="text-[11px] text-on-surface-variant">0/36 câu đã hoàn thành</p>
+              <p className="font-headline text-xs font-semibold text-on-surface">
+                Mục tiêu ngày
+              </p>
+              <p className="text-[11px] text-on-surface-variant">
+                0/{totalQuestions} câu đã hoàn thành
+              </p>
             </div>
           </div>
         </header>
@@ -68,10 +89,11 @@ export default function Dashboard() {
                 Bắt đầu học Giáo lý Hôn nhân?
               </h3>
               <p className="text-on-primary-container/80 max-w-xs text-sm">
-                Bộ 36 Câu Hỏi Thi Giáo Lý đang chờ bạn khám phá. Hãy bắt đầu ngay bây giờ.
+                Bộ {totalQuestions} câu hỏi thi Giáo lý đang chờ bạn khám phá.
+                Hãy bắt đầu ngay bây giờ.
               </p>
             </div>
-            
+
             <div className="relative z-10 flex flex-wrap gap-3">
               <Link href="/study">
                 <button className="bg-primary text-on-primary font-headline font-bold px-6 py-3 rounded-lg text-sm flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
@@ -89,9 +111,9 @@ export default function Dashboard() {
 
             {/* Decorative BG */}
             <div className="absolute top-0 right-0 w-1/2 h-full hidden md:block">
-              <Image 
-                src="https://picsum.photos/seed/church/800/600" 
-                alt="Church Interior" 
+              <Image
+                src="https://picsum.photos/seed/church/800/600"
+                alt="Church Interior"
                 fill
                 className="object-cover mix-blend-overlay opacity-40"
                 referrerPolicy="no-referrer"
@@ -105,15 +127,24 @@ export default function Dashboard() {
             <div>
               <div className="flex justify-between items-start">
                 <Flame className="w-8 h-8 text-on-tertiary-container fill-current" />
-                <span className="font-headline font-black text-3xl text-on-tertiary-container">0</span>
+                <span className="font-headline font-black text-3xl text-on-tertiary-container">
+                  0
+                </span>
               </div>
-              <p className="font-headline font-bold text-sm text-on-tertiary-container mt-3">Chuỗi ngày học</p>
+              <p className="font-headline font-bold text-sm text-on-tertiary-container mt-3">
+                Chuỗi ngày học
+              </p>
             </div>
             <div className="mt-6">
-              <p className="text-[11px] text-on-tertiary-container/70 mb-2 font-medium">Tiến độ tuần</p>
+              <p className="text-[11px] text-on-tertiary-container/70 mb-2 font-medium">
+                Tiến độ tuần
+              </p>
               <div className="flex items-end gap-1 h-12">
                 {[0, 0, 0, 0, 0, 0, 0].map((_, i) => (
-                  <div key={i} className="w-full bg-on-tertiary-container/10 rounded-t-sm h-[10%]" />
+                  <div
+                    key={i}
+                    className="w-full bg-on-tertiary-container/10 rounded-t-sm h-[10%]"
+                  />
                 ))}
               </div>
             </div>
@@ -121,7 +152,9 @@ export default function Dashboard() {
 
           {/* My Decks Section */}
           <div className="md:col-span-12 mt-4 flex justify-between items-center">
-            <h3 className="font-headline text-xl font-bold text-on-surface">Bộ thẻ của tôi</h3>
+            <h3 className="font-headline text-xl font-bold text-on-surface">
+              Bộ thẻ của tôi
+            </h3>
           </div>
 
           <div className="md:col-span-12 bg-surface-container-lowest rounded-2xl p-5 shadow-sm border-t-[3px] border-primary flex flex-col md:flex-row justify-between items-center gap-5 hover:scale-[1.005] transition-transform">
@@ -130,13 +163,19 @@ export default function Dashboard() {
                 <Church className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h4 className="font-headline text-lg font-bold text-on-surface leading-tight mb-0.5">Bộ 36 Câu Hỏi Thi Giáo Lý</h4>
-                <p className="text-xs text-on-surface-variant">Giáo lý Hôn nhân & Gia đình</p>
+                <h4 className="font-headline text-lg font-bold text-on-surface leading-tight mb-0.5">
+                  Bộ {totalQuestions} Câu Hỏi Thi Giáo Lý
+                </h4>
+                <p className="text-xs text-on-surface-variant">
+                  Giáo lý Hôn nhân & Gia đình
+                </p>
               </div>
             </div>
             <div className="w-full md:w-56">
               <div className="flex justify-between text-[10px] font-bold mb-1.5">
-                <span className="text-on-surface-variant uppercase tracking-wider">0 / 36 Thẻ</span>
+                <span className="text-on-surface-variant uppercase tracking-wider">
+                  0 / {totalQuestions} Thẻ
+                </span>
                 <span className="text-primary">0%</span>
               </div>
               <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
