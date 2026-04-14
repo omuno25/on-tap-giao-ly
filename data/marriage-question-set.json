@@ -5,6 +5,104 @@
   },
   "questions": [
     {
+      "id": 1,
+      "type": "essay",
+      "question": "Đặc tính hôn nhân Công giáo là gì?",
+      "answer": [
+        "Đơn nhất (một vợ một chồng)",
+        "Bất khả phân ly (không được ly dị)"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "short",
+      "question": "Mục đích hôn nhân Công giáo là gì?",
+      "answer": "Yêu thương, nâng đỡ nhau và sinh sản, giáo dục con cái"
+    },
+    {
+      "id": 3,
+      "type": "short",
+      "question": "Bí tích hôn nhân do ai thiết lập?",
+      "answer": "Chúa Giêsu Kitô"
+    },
+    {
+      "id": 4,
+      "type": "short",
+      "question": "Theo luật có bao nhiêu ngăn trở hôn nhân?",
+      "answer": "12 ngăn trở"
+    },
+    {
+      "id": 5,
+      "type": "short",
+      "question": "Có mấy điều kiện để cử hành bí tích hôn phối?",
+      "answer": [
+        "Đã rửa tội",
+        "Tự do kết hôn",
+        "Bày tỏ sự ưng thuận",
+        "Cử hành theo thể thức Hội Thánh"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "short",
+      "question": "Có mấy định luật tâm lý trong đời sống vợ chồng?",
+      "answer": "5 định luật"
+    },
+    {
+      "id": 7,
+      "type": "short",
+      "question": "Ai là người cử hành bí tích hôn phối?",
+      "answer": "Chính đôi bạn (cô dâu - chú rể)"
+    },
+    {
+      "id": 8,
+      "type": "short",
+      "question": "Ai là người được phép chứng hôn?",
+      "answer": ["Giám mục", "Linh mục", "Phó tế"]
+    },
+    {
+      "id": 9,
+      "type": "short",
+      "question": "Tại sao kinh nguyện trong đời sống hôn nhân lại cần thiết?",
+      "answer": "Giúp sống tốt đời sống Kitô hữu và giáo dục con cái"
+    },
+    {
+      "id": 10,
+      "type": "short",
+      "question": "Sự khiết tịnh trong đời sống hôn nhân là gì?",
+      "answer": "Biết làm chủ giới tính và sống đúng mức độ trong đời sống vợ chồng"
+    },
+    {
+      "id": 11,
+      "type": "short",
+      "question": "Quan hệ tình dục trước hôn nhân có phải là tội không?",
+      "answer": "Xúc phạm phẩm giá hôn nhân (tội trọng)"
+    },
+    {
+      "id": 12,
+      "type": "short",
+      "question": "Đặt dụng cụ tử cung (vòng tránh thai) còn gọi là gì?",
+      "answer": "Phá thai sớm"
+    },
+    {
+      "id": 13,
+      "type": "short",
+      "question": "Vì lý do kinh tế hoặc đông con mà tránh thai nhân tạo có tội không?",
+      "answer": "Có (tội trọng)"
+    },
+    {
+      "id": 14,
+      "type": "short",
+      "question": "Một người ép hoặc giới thiệu người khác đi phá thai có tội không?",
+      "answer": "Có (và tuyệt thông tiền kết)"
+    },
+    {
+      "id": 15,
+      "type": "short",
+      "question": "Người bị ràng buộc bởi hôn nhân trước có được phép kết hôn không?",
+      "answer": "Không"
+    },
+    {
       "id": 16,
       "type": "short",
       "question": "Cha mẹ đã cộng tác với Thiên Chúa sinh thành và dưỡng dục ta nên người, đồng thời điều răn Chúa có dạy ta điều gì?",
@@ -92,7 +190,7 @@
     },
     {
       "id": 27,
-      "type": "essay",
+      "type": "short",
       "question": "Để tình yêu được triển nở thì vợ chồng phải làm gì?",
       "answer": [
         "Tôn trọng lẫn nhau",
@@ -113,31 +211,25 @@
     {
       "id": 29,
       "type": "essay",
-      "question": "Khi cử hành bí tích hôn phối, đôi bạn nói gì với nhau?",
-      "answer": "Lời trao nhẫn và nhân danh Cha, Con và Thánh Thần"
+      "question": "Để thực hiện dấu chỉ tình yêu sau khi cử hành bí tích hôn phối, đôi bạn sẽ nói với nhau điều gì?",
+      "answer": "Em... xin em nhận chiếc nhẫn này làm dấu chỉ tình yêu và lòng chung thuỷ của anh. Nhân danh cha, và Con, và Thánh Thần."
     },
     {
       "id": 30,
       "type": "short",
       "question": "Những tội nào xúc phạm đến phẩm giá hôn nhân?",
-      "answer": [
-        "Ngoại tình",
-        "Ly dị",
-        "Đa phu, đa thê",
-        "Đồng tính luyến ái",
-        "Sống chung như vợ chồng"
-      ]
+      "answer": "Ngoại tình, ly dị, đa phu, đa thê, loạn luân, đồng tính luyến ái, sống chung như vợ chồng"
     },
     {
       "id": 31,
       "type": "essay",
-      "question": "Trong bí tích hôn phối, đôi bạn cam kết điều gì?",
-      "answer": "Yêu thương, chung thủy, tôn trọng và gắn bó suốt đời trong mọi hoàn cảnh"
+      "question": "Trong khi cử hành bí tích hôn phối, đôi bạn cam kết với nhau điều gì?",
+      "answer": "Anh là ... nhận em ... làm vợ của anh, và anh hứa giữ lòng chung thuỷ với em, khi thịnh vượng cũng như lúc gian nan, khi mạnh khoẻ cũng như lúc đau yếu, để yêu thương và tôn trọng em mọi ngày suốt đời anh."
     },
     {
       "id": 32,
       "type": "essay",
-      "question": "Theo bạn, hôn nhân nghĩa là gì? Hôn nhân nhằm mục đích gì?",
+      "question": "Theo bạn, hôn nhân nghĩa là gì? việc hôn nhân nhằm mục đích gì?",
       "answer": [
         "Là giao ước giữa một nam và một nữ",
         "Mục đích: yêu thương, giúp đỡ nhau",
@@ -167,33 +259,6 @@
       "type": "short",
       "question": "Ai đã lập nên hôn nhân?",
       "answer": "Thiên Chúa"
-    }
-  ],
-  "essay_summary": [
-    {
-      "question": "Đặc tính hôn nhân Công giáo là gì?",
-      "answer": "Đơn nhất và bất khả phân ly"
-    },
-    {
-      "question": "Mục đích hôn nhân Công giáo là gì?",
-      "answer": "Yêu thương và sinh sản, giáo dục con cái"
-    },
-    {
-      "question": "Bí tích hôn nhân do ai thiết lập?",
-      "answer": "Chúa Giêsu Kitô"
-    },
-    {
-      "question": "Có bao nhiêu ngăn trở hôn nhân?",
-      "answer": "12"
-    },
-    {
-      "question": "Điều kiện cử hành bí tích hôn phối?",
-      "answer": [
-        "Đã rửa tội",
-        "Tự do kết hôn",
-        "Ưng thuận",
-        "Theo thể thức Hội Thánh"
-      ]
     }
   ]
 }
