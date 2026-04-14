@@ -2,13 +2,14 @@
 
 import { X, Church, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { QUESTION_BANK } from "@/lib/question-bank";
 
 export default function StudyMode() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const flashcards = QUESTION_BANK.filter((item) => item.type === "flashcard");
   const flashcard = flashcards[currentCardIndex];
 
@@ -28,9 +29,28 @@ export default function StudyMode() {
       ? Math.round((currentQuestionIndex / totalQuestions) * 100)
       : 0;
 
+  useEffect(() => {
+    return () => {
+      // Cleanup pending timer when leaving page.
+      if ((window as Window & { __studyNextTimer?: number }).__studyNextTimer) {
+        window.clearTimeout(
+          (window as Window & { __studyNextTimer?: number }).__studyNextTimer,
+        );
+      }
+    };
+  }, []);
+
   const goToNextCard = () => {
-    setCurrentCardIndex((prev) => (prev + 1) % totalQuestions);
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
     setIsFlipped(false);
+
+    (window as Window & { __studyNextTimer?: number }).__studyNextTimer =
+      window.setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentCardIndex((prev) => (prev + 1) % totalQuestions);
+      }, 620);
   };
 
   return (
@@ -142,7 +162,8 @@ export default function StudyMode() {
                   <button
                     key={label}
                     onClick={goToNextCard}
-                    className="h-full min-h-[80px] flex flex-col items-center justify-between gap-1.5 p-3 rounded-lg hover:bg-primary-container/20 transition-all active:scale-90 group"
+                    disabled={isTransitioning}
+                    className="h-full min-h-[80px] flex flex-col items-center justify-between gap-1.5 p-3 rounded-lg hover:bg-primary-container/20 transition-all active:scale-90 group disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
                       <span className="text-xs font-bold">{i + 1}</span>
