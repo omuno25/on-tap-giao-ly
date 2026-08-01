@@ -27,6 +27,78 @@
       "title": "Kinh Tin",
       "text": "",
       "audio": "/audio/kinh_tin.mp3"
+    },
+    {
+      "id": "kinh-muoi-dieu-ran",
+      "title": "Kinh Mười Điều Răn",
+      "text": "",
+      "audio": "/audio/kinh_10_dieu_rang.mp3"
+    },
+    {
+      "id": "kinh-an-nan-toi",
+      "title": "Kinh Ăn Năn Tội",
+      "text": "",
+      "audio": "/audio/kinh_an_nan_toi.mp3"
+    },
+    {
+      "id": "kinh-cai-toi-bay-moi",
+      "title": "Kinh Cải Tội Bảy Mối",
+      "text": "",
+      "audio": "/audio/kinh_cai_toi_bay_moi.mp3"
+    },
+    {
+      "id": "kinh-cam-on",
+      "title": "Kinh Cảm Ơn",
+      "text": "",
+      "audio": "/audio/kinh_cam_on.mp3"
+    },
+    {
+      "id": "kinh-cao-minh",
+      "title": "Kinh Cáo Mình",
+      "text": "",
+      "audio": "/audio/kinh_cao_minh.mp3"
+    },
+    {
+      "id": "kinh-cay",
+      "title": "Kinh Cậy",
+      "text": "",
+      "audio": "/audio/kinh_cay.mp3"
+    },
+    {
+      "id": "kinh-duc-chua-thanh-than",
+      "title": "Kinh Đức Chúa Thánh Thần",
+      "text": "",
+      "audio": "/audio/kinh_duc_chua_thanh_than.mp3"
+    },
+    {
+      "id": "kinh-men",
+      "title": "Kinh Mến",
+      "text": "",
+      "audio": "/audio/kinh_men.mp3"
+    },
+    {
+      "id": "kinh-phep-lan-hat-ngam-tat",
+      "title": "Kinh Phép Lần Hạt Ngắm Tắt",
+      "text": "",
+      "audio": "/audio/kinh_phep_lan_hat_ngam_tat.mp3"
+    },
+    {
+      "id": "kinh-tam-moi-phuc-that",
+      "title": "Kinh Tám Mối Phúc Thật",
+      "text": "",
+      "audio": "/audio/kinh_tam_moi_phuc_that.mp3"
+    },
+    {
+      "id": "kinh-tin-kinh",
+      "title": "Kinh Tin Kính",
+      "text": "",
+      "audio": "/audio/kinh_tin_kinh.mp3"
+    },
+    {
+      "id": "kinh-trong-cay",
+      "title": "Kinh Trông Cậy",
+      "text": "",
+      "audio": "/audio/kinh_trong_cay.mp3"
     }
   ]
 }
