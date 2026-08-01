@@ -23,6 +23,8 @@ import {
 } from "@/lib/learning-storage";
 import { STUDY_CARD_INDEX_KEY } from "@/lib/study-progress";
 import { getCatechumenProgressKey } from "@/lib/catechumen-progress";
+import BlogSection from "@/features/blog/components/BlogSection";
+import type { BlogPostSummary } from "@/lib/blog";
 
 type DeckCardProps = {
   eyebrow: string;
@@ -35,7 +37,11 @@ type DeckCardProps = {
   progress?: number;
 };
 
-export default function Dashboard() {
+type DashboardProps = {
+  blogPosts: BlogPostSummary[];
+};
+
+export default function Dashboard({ blogPosts }: DashboardProps) {
   const totalMarriageCards = QUESTION_BANK.length;
   const catechumenSet = CATECHUMEN_SETS[0];
   const [learnerName, setLearnerName] = useState("User");
@@ -138,6 +144,8 @@ export default function Dashboard() {
           <div><p className="font-headline font-bold">Sẵn sàng kiểm tra kiến thức?</p><p className="mt-1 text-sm text-on-surface-variant">Làm đề ngẫu nhiên 13 câu trong 25 phút.</p></div>
           <Link href="/test" className="inline-flex items-center justify-center gap-2 rounded-full bg-on-surface px-6 py-3 text-sm font-bold text-surface">Thi thử ngay <ArrowRight className="size-[var(--icon-sm)]" /></Link>
         </section>
+
+        <BlogSection posts={blogPosts} />
       </main>
     </div>
   );

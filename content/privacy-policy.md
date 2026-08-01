@@ -1,0 +1,1 @@
+Ứng dụng cam kết không thu thập, lưu trữ hoặc chia sẻ thông tin cá nhân của người dùng. Mọi dữ liệu phát sinh trong quá trình sử dụng chỉ được lưu trên thiết bị và không gửi đến máy chủ bên thứ ba. Ứng dụng không theo dõi hành vi, không hiển thị quảng cáo cá nhân hóa và không bán dữ liệu người dùng.
