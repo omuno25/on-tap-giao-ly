@@ -31,10 +31,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6 sm:px-6">
       <Link
-        href="/blog"
+        href="/"
         className="inline-flex items-center gap-2 text-sm font-bold text-primary"
       >
-        <ArrowLeft className="size-[var(--icon-sm)]" /> Tất cả bài viết
+        <ArrowLeft className="size-[var(--icon-sm)]" /> Về trang học tập
       </Link>
 
       <article className="mt-7">
@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         href="/"
         className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3.5 text-sm font-bold text-on-primary"
       >
-        Tiếp tục học
+        Về trang học tập
       </Link>
     </main>
   );

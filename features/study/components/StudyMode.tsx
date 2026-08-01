@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { QUESTION_BANK } from "@/lib/question-bank";
 import { readStudyCardIndex, saveStudyCardIndex } from "@/lib/study-progress";
+import FlipCard from "@/features/study/components/FlipCard";
 
 export default function StudyMode() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -112,63 +113,13 @@ export default function StudyMode() {
 
       <main className="flex-1 flex flex-col items-center justify-center p-6 pt-20 pb-28">
         {/* Flashcard */}
-        <div
-          className="relative h-[var(--study-card-mobile-height)] w-full max-w-xl cursor-pointer perspective-1000 sm:h-auto sm:aspect-[4/3] md:aspect-[5/3.5]"
-          onClick={() => setIsFlipped(!isFlipped)}
-          style={{ perspective: "1200px", WebkitPerspective: "1200px" }}
-        >
-          <motion.div
-            className="w-full h-full relative will-change-transform"
-            style={{
-              transformStyle: "preserve-3d",
-              WebkitTransformStyle: "preserve-3d",
-              transform: "translateZ(0)",
-              WebkitTransform: "translateZ(0)",
-            }}
-            animate={{ rotateY: isFlipped ? 180 : 0 }}
-            initial={false}
-            transition={{ duration: 0.45, ease: "easeInOut" }}
-          >
-            {/* Front */}
-            <div
-              className="absolute inset-0 w-full h-full bg-surface-container-lowest rounded-[1.25rem] shadow-lg border border-outline-variant/10 flex flex-col overflow-hidden"
-              style={{
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden",
-                transform: "rotateY(0deg) translateZ(0)",
-                WebkitTransform: "rotateY(0deg) translateZ(0)",
-              }}
-            >
-              <div className="h-1 w-full bg-tertiary-container" />
-              <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto p-6 text-center sm:p-8">
-                <div className="mb-5 opacity-40">
-                  <Church className="size-[var(--icon-xl)]" />
-                </div>
-                <h1 className="text-2xl md:text-3xl font-headline font-bold tracking-tight text-on-surface max-w-md leading-tight">
-                  {flashcard.title}
-                </h1>
-              </div>
-            </div>
-
-            {/* Back */}
-            <div
-              className="absolute inset-0 w-full h-full bg-surface-container-lowest rounded-[1.25rem] shadow-lg border border-outline-variant/10 flex flex-col overflow-hidden"
-              style={{
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden",
-                transform: "rotateY(180deg) translateZ(0)",
-                WebkitTransform: "rotateY(180deg) translateZ(0)",
-              }}
-            >
-              <div className="h-1 w-full bg-primary-container" />
-              <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto p-6 text-center sm:p-8">
-                <p className="text-lg md:text-xl text-on-surface leading-relaxed max-w-sm mx-auto font-medium">
-                  {flashcard.standardAnswer ?? "Chưa có đáp án cho thẻ này."}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        <FlipCard
+          question={flashcard.title}
+          answer={flashcard.standardAnswer ?? "Chưa có đáp án cho thẻ này."}
+          flipped={isFlipped}
+          onFlip={() => setIsFlipped((value) => !value)}
+          icon={Church}
+        />
 
         {/* Action Area */}
         <div className="mt-10 w-full max-w-xl relative min-h-[92px]">

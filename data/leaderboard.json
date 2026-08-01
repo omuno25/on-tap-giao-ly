@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "title": "Bảng xếp hạng người học",
+    "description": "Cùng duy trì thói quen học tập mỗi ngày.",
+    "note": "Dữ liệu minh họa. Ứng dụng chưa có máy chủ để đồng bộ thành tích giữa nhiều người dùng."
+  },
+  "learners": [
+    {
+      "id": "learner-01",
+      "name": "Người học 01",
+      "points": 1280,
+      "cardsLearned": 86,
+      "streak": 12
+    },
+    {
+      "id": "learner-02",
+      "name": "Người học 02",
+      "points": 1060,
+      "cardsLearned": 74,
+      "streak": 9
+    },
+    {
+      "id": "learner-03",
+      "name": "Người học 03",
+      "points": 940,
+      "cardsLearned": 68,
+      "streak": 7
+    },
+    {
+      "id": "learner-04",
+      "name": "Người học 04",
+      "points": 720,
+      "cardsLearned": 53,
+      "streak": 5
+    },
+    {
+      "id": "learner-05",
+      "name": "Người học 05",
+      "points": 560,
+      "cardsLearned": 41,
+      "streak": 3
+    }
+  ]
+}

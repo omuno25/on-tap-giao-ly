@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BarChart3, BookOpen, Trophy } from "lucide-react";
 import { QUESTION_BANK } from "@/lib/question-bank";
-import { STUDY_CARD_INDEX_KEY } from "@/lib/study-progress";
+import { readStudyPosition } from "@/lib/study-progress";
 import { ExamResult, readExamResults } from "@/lib/learning-storage";
 
 export default function StatsPage() {
@@ -13,13 +13,7 @@ export default function StatsPage() {
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
-      const rawIndex = window.localStorage.getItem(STUDY_CARD_INDEX_KEY);
-      const parsedIndex = Number(rawIndex);
-      setStudyPosition(
-        rawIndex !== null && Number.isInteger(parsedIndex) && parsedIndex >= 0
-          ? Math.min(parsedIndex + 1, QUESTION_BANK.length)
-          : 0,
-      );
+      setStudyPosition(readStudyPosition(QUESTION_BANK.length));
       setResults(readExamResults());
     });
     return () => cancelAnimationFrame(frameId);

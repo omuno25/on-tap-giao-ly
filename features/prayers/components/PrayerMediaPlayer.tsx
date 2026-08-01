@@ -11,6 +11,7 @@ import {
   Volume2,
 } from "lucide-react";
 import type { Prayer } from "@/lib/prayers";
+import { markPrayerCompleted } from "@/lib/prayer-progress";
 
 type PrayerMediaPlayerProps = {
   prayers: Prayer[];
@@ -107,7 +108,10 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
-          onEnded={() => moveTrack(1)}
+          onEnded={() => {
+            markPrayerCompleted(activePrayer.id);
+            moveTrack(1);
+          }}
         />
       </section>
 

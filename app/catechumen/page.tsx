@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
-import { CATECHUMEN_SETS } from "@/lib/catechumen";
+import { CATECHUMEN_META, CATECHUMEN_SETS } from "@/lib/catechumen";
 
 export default function CatechumenPage() {
+  const totalCards = CATECHUMEN_SETS.reduce(
+    (total, set) => total + set.cards.length,
+    0,
+  );
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl bg-surface px-4 pb-28 pt-8 sm:px-5 sm:pt-10">
-      <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-tertiary">Bài 29–40</span>
-      <h1 className="mt-3 font-headline text-3xl font-bold">Giáo lý Dự tòng</h1>
-      <p className="mt-2 text-on-surface-variant">Một set gồm 39 câu hỏi–đáp án từ Bài 29 đến Bài 40.</p>
+      <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-tertiary">Bài 15–40</span>
+      <h1 className="mt-3 font-headline text-3xl font-bold">{CATECHUMEN_META.title}</h1>
+      <p className="mt-2 text-on-surface-variant">{CATECHUMEN_SETS.length} bộ gồm {totalCards} câu hỏi–đáp án từ Bài 15 đến Bài 40.</p>
       <section className="mt-8 grid gap-4">
         {CATECHUMEN_SETS.map((set) => (
           <Link key={set.slug} href={`/catechumen/${set.slug}`} className="flex cursor-pointer flex-col rounded-2xl border border-surface-container bg-surface-container-lowest p-5 transition-all hover:-translate-y-0.5 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">

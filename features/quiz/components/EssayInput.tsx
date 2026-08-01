@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Edit3, ChevronLeft, CheckCircle, History } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getQuestionById, QUESTION_BANK } from '@/lib/question-bank';
-import TopAppBar from '@/components/layout/TopAppBar';
-import { readEssayAnswer, saveEssayAnswer } from '@/lib/learning-storage';
+import { Edit3, ChevronLeft, CheckCircle, History } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getQuestionById, QUESTION_BANK } from "@/lib/question-bank";
+import TopAppBar from "@/components/layout/TopAppBar";
+import { readEssayAnswer, saveEssayAnswer } from "@/lib/learning-storage";
 
 export default function EssayInput() {
-  const [answer, setAnswer] = useState('');
+  const [answer, setAnswer] = useState("");
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
-  const question = getQuestionById('13');
+  const question = getQuestionById("13");
   const router = useRouter();
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
-      setAnswer(readEssayAnswer('13'));
+      setAnswer(readEssayAnswer("13"));
       setIsDraftHydrated(true);
     });
     return () => cancelAnimationFrame(frameId);
@@ -24,18 +24,21 @@ export default function EssayInput() {
 
   useEffect(() => {
     if (!isDraftHydrated) return;
-    saveEssayAnswer('13', answer);
+    saveEssayAnswer("13", answer);
   }, [answer, isDraftHydrated]);
 
   if (!question) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center px-6">
-        <p className="text-on-surface-variant text-sm">Không tìm thấy câu hỏi tự luận `id=13` trong question bank JSON.</p>
+        <p className="text-on-surface-variant text-sm">
+          Không tìm thấy câu hỏi tự luận `id=13` trong question bank JSON.
+        </p>
       </div>
     );
   }
   const totalQuestions = QUESTION_BANK.length;
-  const currentQuestionIndex = QUESTION_BANK.findIndex((item) => item.id === question.id) + 1;
+  const currentQuestionIndex =
+    QUESTION_BANK.findIndex((item) => item.id === question.id) + 1;
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -55,15 +58,39 @@ export default function EssayInput() {
           <div className="flex flex-col items-center md:items-end gap-1.5">
             <div className="relative w-16 h-16">
               <svg className="w-full h-full transform -rotate-90">
-                <circle className="text-surface-container-highest" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="6" />
-                <circle className="text-primary-fixed" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeDasharray="175.84" strokeDashoffset="112" strokeWidth="6" />
+                <circle
+                  className="text-surface-container-highest"
+                  cx="32"
+                  cy="32"
+                  fill="transparent"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                />
+                <circle
+                  className="text-primary-fixed"
+                  cx="32"
+                  cy="32"
+                  fill="transparent"
+                  r="28"
+                  stroke="currentColor"
+                  strokeDasharray="175.84"
+                  strokeDashoffset="112"
+                  strokeWidth="6"
+                />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-headline text-lg font-bold leading-none">{currentQuestionIndex}</span>
-                <span className="text-[8px] uppercase tracking-widest text-on-surface-variant font-bold">trên {totalQuestions}</span>
+                <span className="font-headline text-lg font-bold leading-none">
+                  {currentQuestionIndex}
+                </span>
+                <span className="text-[8px] uppercase tracking-widest text-on-surface-variant font-bold">
+                  trên {totalQuestions}
+                </span>
               </div>
             </div>
-            <p className="text-on-surface-variant font-medium text-xs">Câu hỏi {currentQuestionIndex} trên {totalQuestions}</p>
+            <p className="text-on-surface-variant font-medium text-xs">
+              Câu hỏi {currentQuestionIndex} trên {totalQuestions}
+            </p>
           </div>
         </header>
 
@@ -74,13 +101,17 @@ export default function EssayInput() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Edit3 className="size-[var(--icon-md)] text-tertiary" />
-                  <h3 className="font-headline text-lg font-semibold text-on-surface">Câu trả lời của bạn</h3>
+                  <h3 className="font-headline text-lg font-semibold text-on-surface">
+                    Câu trả lời của bạn
+                  </h3>
                 </div>
-                <span className="text-on-surface-variant text-[11px] font-medium">Gợi ý tối thiểu 150 từ</span>
+                <span className="text-on-surface-variant text-[11px] font-medium">
+                  Gợi ý tối thiểu 150 từ
+                </span>
               </div>
-              
+
               <div className="relative">
-                <textarea 
+                <textarea
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   className="w-full min-h-[300px] p-5 bg-surface-container-high focus:bg-surface-container-lowest border-none rounded-lg text-base text-on-surface placeholder-on-surface-variant/40 focus:ring-1 focus:ring-primary/20 transition-all outline-none resize-none"
@@ -88,17 +119,27 @@ export default function EssayInput() {
                 />
                 <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2 py-0.5 bg-surface/60 backdrop-blur-sm rounded-full border border-outline-variant/10">
                   <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                  <span className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">Tự động lưu</span>
+                  <span className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    Tự động lưu
+                  </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                <button type="button" onClick={() => router.back()} className="w-full sm:w-auto px-6 py-3 flex items-center justify-center gap-2 bg-surface-container-high text-on-surface text-sm font-semibold rounded-lg hover:bg-primary-container/20 transition-all active:scale-95 group">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="w-full sm:w-auto px-6 py-3 flex items-center justify-center gap-2 bg-surface-container-high text-on-surface text-sm font-semibold rounded-lg hover:bg-primary-container/20 transition-all active:scale-95 group"
+                >
                   <ChevronLeft className="size-[var(--icon-sm)] transition-transform group-hover:-translate-x-1" />
                   Quay lại
                 </button>
-                <Link href="/essay/review" className={`w-full sm:w-auto ${answer.trim() ? '' : 'pointer-events-none opacity-50'}`} aria-disabled={!answer.trim()}>
+                <Link
+                  href="/essay/review"
+                  className={`w-full sm:w-auto ${answer.trim() ? "" : "pointer-events-none opacity-50"}`}
+                  aria-disabled={!answer.trim()}
+                >
                   <span className="w-full px-8 py-3 flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold rounded-lg shadow-md hover:shadow-primary/20 transition-all active:scale-95">
                     Xác nhận câu trả lời
                     <CheckCircle className="size-[var(--icon-sm)] fill-current" />
@@ -116,9 +157,12 @@ export default function EssayInput() {
               <History className="size-[var(--icon-md)] text-secondary" />
             </div>
             <div>
-              <h4 className="font-headline font-semibold text-sm text-on-surface">Tham chiếu Giáo lý</h4>
+              <h4 className="font-headline font-semibold text-sm text-on-surface">
+                Tham chiếu Giáo lý
+              </h4>
               <p className="text-[13px] text-on-surface-variant mt-0.5 leading-relaxed">
-                Xem Sách Giáo lý Hội thánh Công giáo (GLHTCG) 1601-1666 để biết giáo lý chi tiết về Bí tích Hôn nhân.
+                Xem Sách Giáo lý Hội thánh Công giáo (GLHTCG) 1601-1666 để biết
+                giáo lý chi tiết về Bí tích Hôn nhân.
               </p>
             </div>
           </div>

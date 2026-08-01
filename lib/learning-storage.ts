@@ -1,3 +1,12 @@
+import {
+  STORAGE_KEYS,
+  hasStorageValue,
+  readStorageJson,
+  readStorageValue,
+  writeStorageJson,
+  writeStorageValue,
+} from "@/lib/app-storage";
+
 export type ExamResult = {
   correct: number;
   total: number;
@@ -15,53 +24,36 @@ export type LearnerProfile = {
 export const MAX_PROFILE_NAME_LENGTH = 20;
 export const MAX_GREETING_NAME_LENGTH = 16;
 
-const EXAM_RESULTS_KEY = "learning.exam_results";
-const PROFILE_KEY = "learning.profile";
-const APP_RATING_KEY = "learning.app_rating";
 export const PROFILE_UPDATED_EVENT = "learning:profile-updated";
 
-function readJson<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeJson<T>(key: string, value: T) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, JSON.stringify(value));
-}
-
 export function readEssayAnswer(questionId: string) {
-  if (typeof window === "undefined") return "";
-  return window.localStorage.getItem(`learning.essay.${questionId}`) ?? "";
+  return readStorageValue(STORAGE_KEYS.essayAnswer(questionId)) ?? "";
 }
 
 export function saveEssayAnswer(questionId: string, answer: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(`learning.essay.${questionId}`, answer);
+  writeStorageValue(STORAGE_KEYS.essayAnswer(questionId), answer);
 }
 
 export function readExamResults() {
-  return readJson<ExamResult[]>(EXAM_RESULTS_KEY, []);
+  return readStorageJson<ExamResult[]>(STORAGE_KEYS.examResults, []);
 }
 
 export function saveExamResult(result: ExamResult) {
-  writeJson(EXAM_RESULTS_KEY, [result, ...readExamResults()].slice(0, 20));
+  writeStorageJson(STORAGE_KEYS.examResults, [
+    result,
+    ...readExamResults(),
+  ].slice(0, 20));
 }
 
 export function readLearnerProfile() {
-  const profile = readJson<LearnerProfile>(PROFILE_KEY, { name: "User" });
+  const profile = readStorageJson<LearnerProfile>(STORAGE_KEYS.profile, {
+    name: "User",
+  });
   return { name: normalizeProfileName(profile.name) };
 }
 
 export function hasLearnerProfile() {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(PROFILE_KEY) !== null;
+  return hasStorageValue(STORAGE_KEYS.profile);
 }
 
 export function createGuestName() {
@@ -74,7 +66,9 @@ export function createGuestName() {
 }
 
 export function saveLearnerProfile(profile: LearnerProfile) {
-  writeJson(PROFILE_KEY, { name: normalizeProfileName(profile.name) });
+  writeStorageJson(STORAGE_KEYS.profile, {
+    name: normalizeProfileName(profile.name),
+  });
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(PROFILE_UPDATED_EVENT));
   }
@@ -98,16 +92,4 @@ export function getGreetingName(name: string) {
   return normalized.length > MAX_GREETING_NAME_LENGTH
     ? `${normalized.slice(0, MAX_GREETING_NAME_LENGTH - 1)}…`
     : normalized;
-}
-
-export function readAppRating() {
-  if (typeof window === "undefined") return 0;
-  const rating = Number(window.localStorage.getItem(APP_RATING_KEY));
-  return Number.isInteger(rating) && rating >= 1 && rating <= 5 ? rating : 0;
-}
-
-export function saveAppRating(rating: number) {
-  if (typeof window === "undefined") return;
-  const normalized = Math.min(5, Math.max(1, Math.round(rating)));
-  window.localStorage.setItem(APP_RATING_KEY, String(normalized));
 }

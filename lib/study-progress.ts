@@ -1,19 +1,23 @@
-export const STUDY_CARD_INDEX_KEY = "study.current_card_index";
+import {
+  STORAGE_KEYS,
+  readStorageIndex,
+  removeStorageValue,
+  writeStorageIndex,
+} from "@/lib/app-storage";
 
 export function readStudyCardIndex() {
-  if (typeof window === "undefined") return 0;
+  return readStorageIndex(STORAGE_KEYS.studyCardIndex) ?? 0;
+}
 
-  const raw = window.localStorage.getItem(STUDY_CARD_INDEX_KEY);
-  const parsed = Number(raw);
-  return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
+export function readStudyPosition(total: number) {
+  const index = readStorageIndex(STORAGE_KEYS.studyCardIndex);
+  return index === null ? 0 : Math.min(index + 1, total);
 }
 
 export function saveStudyCardIndex(index: number) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STUDY_CARD_INDEX_KEY, String(index));
+  writeStorageIndex(STORAGE_KEYS.studyCardIndex, index);
 }
 
 export function clearStudyCardIndex() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(STUDY_CARD_INDEX_KEY);
+  removeStorageValue(STORAGE_KEYS.studyCardIndex);
 }

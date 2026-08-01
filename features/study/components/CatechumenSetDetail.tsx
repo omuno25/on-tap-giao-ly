@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, ChevronRight, Layers3, RotateCcw } from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronRight, ClipboardCheck, Layers3, RotateCcw } from "lucide-react";
 import type { CatechumenSet } from "@/lib/catechumen";
 import {
   clearCatechumenProgress,
@@ -80,6 +80,10 @@ export default function CatechumenSetDetail({ set }: { set: CatechumenSet }) {
         <Link href={`/catechumen/${set.slug}/study`} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-on-primary transition active:scale-[0.98]">
           {position > 0 ? "Tiếp tục học" : "Bắt đầu học"}
           <ChevronRight className="size-[var(--icon-sm)]" />
+        </Link>
+        <Link href={`/catechumen/${set.slug}/test`} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary px-6 py-3.5 font-bold text-primary transition-colors hover:bg-primary/5 active:scale-[0.98]">
+          <ClipboardCheck className="size-[var(--icon-sm)]" />
+          Kiểm tra 10 câu
         </Link>
         {position > 0 && (
           <button type="button" onClick={reset} className="mt-2 flex w-full items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-on-surface-variant hover:text-primary">

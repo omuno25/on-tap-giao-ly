@@ -1,18 +1,24 @@
-export function getCatechumenProgressKey(slug: string) {
-  return `catechumen.${slug}.current_card_index`;
+import {
+  STORAGE_KEYS,
+  readStorageIndex,
+  removeStorageValue,
+  writeStorageIndex,
+} from "@/lib/app-storage";
+
+export function readCatechumenCardIndex(slug: string, total: number) {
+  const index = readStorageIndex(STORAGE_KEYS.catechumenCardIndex(slug));
+  return index === null ? 0 : Math.min(index, Math.max(0, total - 1));
 }
 
 export function readCatechumenPosition(slug: string, total: number) {
-  if (typeof window === "undefined") return 0;
-  const raw = window.localStorage.getItem(getCatechumenProgressKey(slug));
-  if (raw === null) return 0;
-  const index = Number(raw);
-  return Number.isInteger(index) && index >= 0
-    ? Math.min(index + 1, total)
-    : 0;
+  const index = readStorageIndex(STORAGE_KEYS.catechumenCardIndex(slug));
+  return index === null ? 0 : Math.min(index + 1, total);
+}
+
+export function saveCatechumenCardIndex(slug: string, index: number) {
+  writeStorageIndex(STORAGE_KEYS.catechumenCardIndex(slug), index);
 }
 
 export function clearCatechumenProgress(slug: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(getCatechumenProgressKey(slug));
+  removeStorageValue(STORAGE_KEYS.catechumenCardIndex(slug));
 }
