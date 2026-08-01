@@ -1,0 +1,96 @@
+/*
+ * FlashCard design tokens
+ * Chỉnh file này để thay đổi giao diện toàn ứng dụng.
+ * Các token trong @theme tạo ra utility Tailwind, ví dụ:
+ * --color-primary -> bg-primary, text-primary, border-primary
+ * --radius-card   -> rounded-card
+ * --shadow-app    -> shadow-app
+ */
+
+@theme {
+  /* Brand */
+  --color-primary: #0060ad;
+  --color-primary-container: #68abff;
+  --color-on-primary: #f8f8ff;
+  --color-on-primary-container: #002b52;
+  --color-brand-mark: #457b9d;
+
+  /* Dashboard hero */
+  --color-hero: #0b4f85;
+  --color-hero-accent: #68abff;
+  --color-on-hero: #ffffff;
+  --color-on-hero-muted: #dbeafe;
+
+  /* Success / learning progress */
+  --color-secondary: #306b3c;
+  --color-secondary-container: #b1f2b7;
+  --color-progress-end: #a4e4aa;
+  --color-on-secondary: #e9ffe6;
+  --color-on-secondary-container: #215d30;
+
+  /* Highlight / catechumen */
+  --color-tertiary: #775b06;
+  --color-tertiary-container: #f9d377;
+  --color-on-tertiary: #fff8f0;
+  --color-on-tertiary-container: #5f4800;
+
+  /* Neutral surfaces */
+  --color-surface: #faf9f6;
+  --color-surface-dim: #f0efec;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f4f4f0;
+  --color-surface-container: #eeeeea;
+  --color-surface-container-high: #e7e9e4;
+  --color-surface-container-highest: #e1e3de;
+
+  /* Content and borders */
+  --color-on-surface: #303330;
+  --color-on-surface-variant: #5d605c;
+  --color-outline: #797b78;
+  --color-outline-variant: #b0b3ae;
+
+  /* Feedback */
+  --color-error: #a83836;
+  --color-error-container: #fa746f;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #410002;
+
+  /* Typography */
+  --font-headline: "Lexend", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+
+  /* Radius */
+  --radius-control: 0.75rem;
+  --radius-panel: 1rem;
+  --radius-card: 1.5rem;
+  --radius-feature: 1.75rem;
+
+  /* Elevation */
+  --shadow-soft: 0 8px 24px rgb(48 51 48 / 0.06);
+  --shadow-editorial: 0 20px 40px rgb(48 51 48 / 0.06);
+  --shadow-app: 0 0 40px rgb(48 51 48 / 0.08);
+  --shadow-bottom-nav: 0 -6px 24px rgb(48 51 48 / 0.08);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1.2);
+  --default-transition-duration: 180ms;
+  --default-transition-timing-function: var(--ease-standard);
+}
+
+:root {
+  /* Mobile app shell */
+  --app-min-width: 320px;
+  --app-max-width: 480px;
+
+  /* Component dimensions */
+  --bottom-nav-height: 4.5rem;
+  --study-card-mobile-height: 26rem;
+  --card-perspective: 1000px;
+
+  /* Icon scale */
+  --icon-sm: 1rem;
+  --icon-md: 1.25rem;
+  --icon-lg: 1.5rem;
+  --icon-xl: 2rem;
+}

@@ -14,16 +14,6 @@ export default function StudyMode() {
   const [isProgressHydrated, setIsProgressHydrated] = useState(false);
   const flashcards = QUESTION_BANK.filter((item) => item.type === "flashcard");
   const flashcard = flashcards[currentCardIndex];
-
-  if (!flashcard) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center px-6">
-        <p className="text-on-surface-variant text-sm">
-          Chưa có flashcard trong question bank JSON.
-        </p>
-      </div>
-    );
-  }
   const totalQuestions = flashcards.length;
   const currentQuestionIndex = currentCardIndex + 1;
   const progress =
@@ -32,10 +22,15 @@ export default function StudyMode() {
       : 0;
 
   useEffect(() => {
-    const savedIndex = readStudyCardIndex();
     if (totalQuestions <= 0) return;
-    setCurrentCardIndex(Math.min(savedIndex, totalQuestions - 1));
-    setIsProgressHydrated(true);
+
+    const frameId = window.requestAnimationFrame(() => {
+      const savedIndex = readStudyCardIndex();
+      setCurrentCardIndex(Math.min(savedIndex, totalQuestions - 1));
+      setIsProgressHydrated(true);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [totalQuestions]);
 
   useEffect(() => {
@@ -53,6 +48,16 @@ export default function StudyMode() {
       }
     };
   }, []);
+
+  if (!flashcard) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center px-6">
+        <p className="text-on-surface-variant text-sm">
+          Chưa có flashcard trong question bank JSON.
+        </p>
+      </div>
+    );
+  }
 
   const goToNextCard = () => {
     if (isTransitioning) return;
@@ -75,28 +80,28 @@ export default function StudyMode() {
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-6 py-3 border-b border-surface-container">
-        <div className="flex items-center gap-3">
+      <header className="fixed inset-x-0 top-0 z-50 mx-auto flex w-full max-w-[var(--app-max-width)] items-center justify-between gap-2 border-b border-surface-container bg-surface/80 px-3 py-3 backdrop-blur-md sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link
             href="/"
             className="hover:bg-surface-container-low p-2 rounded-full transition-colors active:scale-95"
           >
-            <X className="w-5 h-5 text-on-surface" />
+            <X className="size-[var(--icon-md)] text-on-surface" />
           </Link>
-          <div className="flex flex-col">
+          <div className="flex min-w-0 flex-col">
             <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant leading-none mb-0.5">
               Phiên học
             </span>
-            <span className="font-headline font-bold text-primary text-sm leading-tight">
+            <span className="truncate font-headline text-xs font-bold leading-tight text-primary sm:text-sm">
               Giáo lý Hôn nhân - Bộ {totalQuestions} câu
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <span className="text-xs font-medium text-on-surface-variant">
             {currentQuestionIndex}/{totalQuestions} thẻ
           </span>
-          <div className="w-24 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+          <div className="hidden h-1.5 w-20 overflow-hidden rounded-full bg-surface-container-highest sm:block sm:w-24">
             <div
               className="h-full bg-gradient-to-r from-secondary to-secondary-container rounded-full"
               style={{ width: `${progress}%` }}
@@ -108,7 +113,7 @@ export default function StudyMode() {
       <main className="flex-1 flex flex-col items-center justify-center p-6 pt-20 pb-28">
         {/* Flashcard */}
         <div
-          className="w-full max-w-xl aspect-[4/3] md:aspect-[5/3.5] relative perspective-1000 cursor-pointer"
+          className="relative h-[var(--study-card-mobile-height)] w-full max-w-xl cursor-pointer perspective-1000 sm:h-auto sm:aspect-[4/3] md:aspect-[5/3.5]"
           onClick={() => setIsFlipped(!isFlipped)}
           style={{ perspective: "1200px", WebkitPerspective: "1200px" }}
         >
@@ -135,9 +140,9 @@ export default function StudyMode() {
               }}
             >
               <div className="h-1 w-full bg-tertiary-container" />
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+              <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto p-6 text-center sm:p-8">
                 <div className="mb-5 opacity-40">
-                  <Church className="w-10 h-10" />
+                  <Church className="size-[var(--icon-xl)]" />
                 </div>
                 <h1 className="text-2xl md:text-3xl font-headline font-bold tracking-tight text-on-surface max-w-md leading-tight">
                   {flashcard.title}
@@ -156,7 +161,7 @@ export default function StudyMode() {
               }}
             >
               <div className="h-1 w-full bg-primary-container" />
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+              <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto p-6 text-center sm:p-8">
                 <p className="text-lg md:text-xl text-on-surface leading-relaxed max-w-sm mx-auto font-medium">
                   {flashcard.standardAnswer ?? "Chưa có đáp án cho thẻ này."}
                 </p>
@@ -180,7 +185,7 @@ export default function StudyMode() {
                   onClick={() => setIsFlipped(true)}
                   className="bg-gradient-to-br from-primary to-primary-container text-on-primary px-10 py-3.5 rounded-full font-headline font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2.5"
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className="size-[var(--icon-sm)]" />
                   Lật thẻ
                 </button>
               </motion.div>
@@ -190,19 +195,19 @@ export default function StudyMode() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute inset-0 flex items-center justify-center gap-3 p-1.5 rounded-xl"
+                className="absolute inset-0 flex items-center justify-center gap-2 rounded-xl p-1.5 sm:gap-3"
               >
                 <button
                   onClick={reviewCurrentCard}
                   disabled={isTransitioning}
-                  className="w-[170px] h-[50px] rounded-full bg-surface-container-high text-on-surface font-headline font-bold text-sm shadow-sm hover:bg-surface-container transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="h-[50px] min-w-0 flex-1 rounded-full bg-surface-container-high text-on-surface font-headline text-sm font-bold shadow-sm transition-all hover:bg-surface-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:max-w-[170px]"
                 >
                   Xem lại
                 </button>
                 <button
                   onClick={goToNextCard}
                   disabled={isTransitioning}
-                  className="w-[170px] h-[50px] rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="h-[50px] min-w-0 flex-1 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline text-sm font-bold shadow-md transition-all hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:max-w-[170px]"
                 >
                   Tiếp theo
                 </button>
@@ -233,7 +238,7 @@ export default function StudyMode() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-surface-container-low/50 backdrop-blur-sm p-3 rounded-lg flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-md bg-secondary-container flex items-center justify-center">
-              <Timer className="w-4 h-4 text-on-secondary-container" />
+              <Timer className="size-[var(--icon-sm)] text-on-secondary-container" />
             </div>
             <div>
               <p className="text-[9px] uppercase font-bold text-on-surface-variant/60 tracking-tight leading-none mb-0.5">
@@ -244,7 +249,7 @@ export default function StudyMode() {
           </div>
           <div className="bg-surface-container-low/50 backdrop-blur-sm p-3 rounded-lg flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-md bg-primary-container flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-on-primary-container" />
+              <TrendingUp className="size-[var(--icon-sm)] text-on-primary-container" />
             </div>
             <div>
               <p className="text-[9px] uppercase font-bold text-on-surface-variant/60 tracking-tight leading-none mb-0.5">
@@ -255,7 +260,7 @@ export default function StudyMode() {
           </div>
           <div className="bg-surface-container-low/50 backdrop-blur-sm p-3 rounded-lg flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-md bg-tertiary-container flex items-center justify-center">
-              <Award className="w-4 h-4 text-on-tertiary-container" />
+              <Award className="size-[var(--icon-sm)] text-on-tertiary-container" />
             </div>
             <div>
               <p className="text-[9px] uppercase font-bold text-on-surface-variant/60 tracking-tight leading-none mb-0.5">

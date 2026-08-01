@@ -3,21 +3,20 @@
 import { X, Timer, Flag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
-import marriageQuestionSetJson from "@/data/marriage-question-set.json";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
+import { saveExamResult } from "@/lib/learning-storage";
+import {
+  MARRIAGE_QUESTION_SET,
+  type MarriageSourceQuestion,
+} from "@/lib/question-bank";
 
 const OBJECTIVE_COUNT = 10;
 const ESSAY_COUNT = 3;
 const EXAM_DURATION_SECONDS = 25 * 60;
 
 type ExamMode = "objective" | "essay";
-type RawQuestion = {
-  id: number;
-  type: "short" | "essay";
-  question: string;
-  answer: string | string[];
-};
+type RawQuestion = MarriageSourceQuestion;
 
 type ExamOption = { id: string; text: string };
 type ExamQuestion = {
@@ -96,9 +95,12 @@ function buildObjectiveOptions(source: RawQuestion, pool: RawQuestion[]) {
 }
 
 function buildExamQuestions() {
-  const source = marriageQuestionSetJson as { questions: RawQuestion[] };
-  const objectivePool = source.questions.filter((q) => q.type === "short");
-  const essayPool = source.questions.filter((q) => q.type === "essay");
+  const objectivePool = MARRIAGE_QUESTION_SET.questions.filter(
+    (q) => q.type === "short",
+  );
+  const essayPool = MARRIAGE_QUESTION_SET.questions.filter(
+    (q) => q.type === "essay",
+  );
 
   const objectiveQuestions: ExamQuestion[] = pickQuestions(
     objectivePool,
@@ -172,11 +174,33 @@ export default function MockTest() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(EXAM_DURATION_SECONDS);
-  const [submitted, setSubmitted] = useState(false);
+  const [manuallySubmitted, setManuallySubmitted] = useState(false);
+  const resultSaved = useRef(false);
 
   useEffect(() => {
-    setQuestions(buildExamQuestions());
+    const frameId = window.requestAnimationFrame(() => {
+      setQuestions(buildExamQuestions());
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, []);
+
+  const submitted = manuallySubmitted || secondsLeft === 0;
+
+  useEffect(() => {
+    if (!submitted || !questions || resultSaved.current) return;
+    const score = calculateScore(questions, answers);
+    saveExamResult({
+      correct: score.correct,
+      total: score.total,
+      objectiveCorrect: score.objective.correct,
+      objectiveTotal: score.objective.total,
+      essayCorrect: score.essay.correct,
+      essayTotal: score.essay.total,
+      completedAt: new Date().toISOString(),
+    });
+    resultSaved.current = true;
+  }, [answers, questions, submitted]);
 
   useEffect(() => {
     if (submitted || secondsLeft <= 0) return;
@@ -186,12 +210,6 @@ export default function MockTest() {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [secondsLeft, submitted]);
-
-  useEffect(() => {
-    if (secondsLeft === 0 && !submitted) {
-      setSubmitted(true);
-    }
   }, [secondsLeft, submitted]);
 
   const currentQuestion = questions?.[currentIndex];
@@ -222,12 +240,13 @@ export default function MockTest() {
   const isTimeUp = secondsLeft === 0;
 
   const setAnswer = (value: string) => {
+    if (submitted) return;
     setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
   };
 
   const goNext = () => {
     if (isLastQuestion) {
-      setSubmitted(true);
+      setManuallySubmitted(true);
       return;
     }
 
@@ -239,7 +258,7 @@ export default function MockTest() {
   };
 
   const submitNow = () => {
-    setSubmitted(true);
+    setManuallySubmitted(true);
   };
 
   const answeredCount = Object.values(answers).filter(
@@ -249,19 +268,19 @@ export default function MockTest() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
-      <header className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-6 py-3 border-b border-surface-container">
-        <div className="flex items-center gap-3">
+      <header className="fixed inset-x-0 top-0 z-50 mx-auto flex w-full max-w-[var(--app-max-width)] items-center justify-between gap-2 border-b border-surface-container bg-surface/80 px-3 py-3 backdrop-blur-md sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link
             href="/"
             className="hover:bg-surface-container-low p-1.5 rounded-full transition-colors active:scale-95"
           >
-            <X className="w-5 h-5 text-on-surface" />
+            <X className="size-[var(--icon-md)] text-on-surface" />
           </Link>
-          <div className="flex flex-col">
+          <div className="flex min-w-0 flex-col">
             <span className="text-[10px] font-bold text-primary tracking-widest font-headline uppercase">
               Giáo Xứ Đức Mẹ Hằng Cứu Giúp
             </span>
-            <span className="text-base font-semibold font-headline text-on-surface leading-tight">
+            <span className="truncate font-headline text-sm font-semibold leading-tight text-on-surface sm:text-base">
               Thi Thử Giáo Lý Hôn Nhân
             </span>
           </div>
@@ -271,14 +290,14 @@ export default function MockTest() {
           alt="User Avatar"
           width={32}
           height={32}
-          className="w-8 h-8 rounded-full bg-surface-container-high border-2 border-surface"
+          className="hidden h-8 w-8 shrink-0 rounded-full border-2 border-surface bg-surface-container-high min-[360px]:block"
           referrerPolicy="no-referrer"
         />
       </header>
 
-      <main className="flex-1 pt-20 pb-28 px-6 max-w-4xl mx-auto flex flex-col gap-6 w-full">
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2 bg-surface-container-low p-5 rounded-2xl flex flex-col justify-between gap-3">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 pb-28 pt-20 sm:px-6">
+        <section className="grid grid-cols-1 gap-4">
+          <div className="bg-surface-container-low p-5 rounded-2xl flex flex-col justify-between gap-3">
             <div className="flex justify-between items-center">
               <span className="font-headline font-bold text-on-surface text-sm">
                 Câu hỏi {currentIndex + 1}
@@ -295,7 +314,7 @@ export default function MockTest() {
           </div>
           <div className="bg-surface-container-low p-5 rounded-2xl flex flex-col items-center justify-center gap-1.5">
             <div className="flex items-center gap-1.5">
-              <Timer className="w-5 h-5 text-error fill-current" />
+              <Timer className="size-[var(--icon-md)] fill-current text-error" />
               <span className="font-headline font-black text-on-surface tabular-nums text-lg">
                 {formatTime(secondsLeft)}
               </span>
@@ -334,13 +353,14 @@ export default function MockTest() {
         </article>
 
         {currentQuestion.examMode === "objective" ? (
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <section className="grid grid-cols-1 gap-3.5">
             {currentQuestion.options?.map((option) => {
               const isSelected = currentAnswer === option.id;
               return (
                 <button
                   key={option.id}
                   onClick={() => setAnswer(option.id)}
+                  disabled={submitted}
                   className={`group relative flex items-center gap-4 transition-all duration-300 rounded-xl text-left active:scale-95 overflow-hidden p-3.5 border ${
                     isSelected
                       ? "bg-primary-container/40  border-primary/60 ring-primary/45 ring-offset-2 ring-offset-surface"
@@ -370,6 +390,7 @@ export default function MockTest() {
             <textarea
               value={currentAnswer}
               onChange={(e) => setAnswer(e.target.value)}
+              disabled={submitted}
               placeholder={
                 currentQuestion.examMode === "essay"
                   ? "Nhập câu trả lời tự luận..."
@@ -380,22 +401,23 @@ export default function MockTest() {
           </section>
         )}
 
-        <section className="flex flex-col md:flex-row items-center justify-between gap-6 mt-2">
-          <button className="order-2 md:order-1 flex items-center gap-1.5 text-on-surface/60 hover:text-on-surface font-bold text-[11px] uppercase tracking-widest transition-colors active:scale-95">
-            <Flag className="w-4 h-4" />
+        <section className="mt-2 flex flex-col items-center justify-between gap-6">
+          <button className="order-2 flex items-center gap-1.5 text-on-surface/60 hover:text-on-surface font-bold text-[11px] uppercase tracking-widest transition-colors active:scale-95">
+            <Flag className="size-[var(--icon-sm)]" />
             Báo lỗi câu hỏi
           </button>
-          <div className="order-1 md:order-2 flex gap-3 w-full md:w-auto">
+          <div className="order-1 flex w-full gap-3">
             <button
               onClick={goPrevious}
-              disabled={currentIndex === 0}
-              className="flex-1 md:flex-none px-8 py-3 bg-surface-container-highest text-on-surface font-bold rounded-full hover:bg-surface-dim transition-all active:scale-95 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={submitted || currentIndex === 0}
+              className="flex-1 px-4 py-3 bg-surface-container-highest text-on-surface font-bold rounded-full hover:bg-surface-dim transition-all active:scale-95 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Quay lại
             </button>
             <button
               onClick={isTimeUp ? submitNow : goNext}
-              className="flex-[2] md:flex-none px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95 text-sm"
+              disabled={submitted}
+              className="flex-[2] px-4 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95 text-sm"
             >
               {isTimeUp
                 ? "Nộp bài"

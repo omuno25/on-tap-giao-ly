@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Lexend, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import BottomNavBar from "@/components/layout/BottomNavBar";
+import NameSetupModal from "@/components/onboarding/NameSetupModal";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -29,9 +30,12 @@ export default function RootLayout({
       className={`${lexend.variable} ${plusJakartaSans.variable}`}
       suppressHydrationWarning
     >
-      <body className="bg-surface text-on-surface">
-        {children}
+      <body className="bg-surface-container text-on-surface">
+        <div className="mx-auto min-h-screen w-full max-w-[var(--app-max-width)] overflow-x-hidden bg-surface shadow-app">
+          {children}
+        </div>
         <BottomNavBar />
+        <NameSetupModal />
       </body>
     </html>
   );

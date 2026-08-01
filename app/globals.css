@@ -1,44 +1,18 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
-@theme {
-  --color-primary: #0060ad;
-  --color-primary-container: #68abff;
-  --color-on-primary: #f8f8ff;
-  --color-on-primary-container: #002b52;
-  
-  --color-secondary: #306b3c;
-  --color-secondary-container: #b1f2b7;
-  --color-on-secondary: #e9ffe6;
-  --color-on-secondary-container: #215d30;
-  
-  --color-tertiary: #775b06;
-  --color-tertiary-container: #f9d377;
-  --color-on-tertiary: #fff8f0;
-  --color-on-tertiary-container: #5f4800;
-  
-  --color-surface: #faf9f6;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f4f4f0;
-  --color-surface-container: #eeeeea;
-  --color-surface-container-high: #e7e9e4;
-  --color-surface-container-highest: #e1e3de;
-  
-  --color-on-surface: #303330;
-  --color-on-surface-variant: #5d605c;
-  --color-outline: #797b78;
-  --color-outline-variant: #b0b3ae;
-  
-  --color-error: #a83836;
-  --color-error-container: #fa746f;
-  
-  --font-headline: "Lexend", sans-serif;
-  --font-body: "Plus Jakarta Sans", sans-serif;
-}
+@import "./design-tokens.css";
 
 @layer base {
   body {
     @apply bg-surface text-on-surface font-body antialiased;
+    min-width: var(--app-min-width);
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+
+  html {
+    max-width: 100vw;
+    overflow-x: clip;
   }
 }
 
@@ -47,9 +21,9 @@
 }
 
 .editorial-shadow {
-  box-shadow: 0 20px 40px rgba(48, 51, 48, 0.06);
+  box-shadow: var(--shadow-editorial);
 }
 
 .perspective-1000 {
-  perspective: 1000px;
+  perspective: var(--card-perspective);
 }

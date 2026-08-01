@@ -1,262 +1,175 @@
 "use client";
 
-import {
-  Play,
-  HelpCircle,
-  Flame,
-  Church,
-  Plus,
-  Search,
-  Menu,
-} from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import ProgressCircle from "@/components/ui/ProgressCircle";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "motion/react";
-import { QUESTION_BANK } from "@/lib/question-bank";
 import {
-  clearStudyCardIndex,
-  STUDY_CARD_INDEX_KEY,
-} from "@/lib/study-progress";
-import { useRouter } from "next/navigation";
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  ChevronRight,
+  Church,
+  Flame,
+  Play,
+  ScrollText,
+  Sparkles,
+  User,
+} from "lucide-react";
+import { QUESTION_BANK } from "@/lib/question-bank";
+import { CATECHUMEN_SETS } from "@/lib/catechumen";
+import {
+  PROFILE_UPDATED_EVENT,
+  getGreetingName,
+  readLearnerProfile,
+} from "@/lib/learning-storage";
+import { STUDY_CARD_INDEX_KEY } from "@/lib/study-progress";
+import { getCatechumenProgressKey } from "@/lib/catechumen-progress";
+
+type DeckCardProps = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  count: string;
+  href?: string;
+  icon: typeof Church;
+  tone: "blue" | "amber" | "green";
+  progress?: number;
+};
 
 export default function Dashboard() {
-  const router = useRouter();
-  const totalQuestions = QUESTION_BANK.length;
-  const [currentCardPosition, setCurrentCardPosition] = useState(0);
+  const totalMarriageCards = QUESTION_BANK.length;
+  const catechumenSet = CATECHUMEN_SETS[0];
+  const [learnerName, setLearnerName] = useState("User");
+  const [marriagePosition, setMarriagePosition] = useState(0);
+  const [catechumenPosition, setCatechumenPosition] = useState(0);
 
   useEffect(() => {
-    const raw = window.localStorage.getItem(STUDY_CARD_INDEX_KEY);
-    if (raw === null) {
-      setCurrentCardPosition(0);
-      return;
-    }
+    const syncProfile = () => setLearnerName(readLearnerProfile().name);
+    const frameId = requestAnimationFrame(() => {
+      syncProfile();
+      setMarriagePosition(
+        readPosition(STUDY_CARD_INDEX_KEY, totalMarriageCards),
+      );
+      if (catechumenSet) {
+        setCatechumenPosition(
+          readPosition(
+            getCatechumenProgressKey(catechumenSet.slug),
+            catechumenSet.cards.length,
+          ),
+        );
+      }
+    });
+    window.addEventListener(PROFILE_UPDATED_EVENT, syncProfile);
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener(PROFILE_UPDATED_EVENT, syncProfile);
+    };
+  }, [catechumenSet, totalMarriageCards]);
 
-    const savedIndex = Number(raw);
-    if (
-      !Number.isInteger(savedIndex) ||
-      savedIndex < 0 ||
-      totalQuestions <= 0
-    ) {
-      setCurrentCardPosition(0);
-      return;
-    }
-
-    setCurrentCardPosition(Math.min(savedIndex + 1, totalQuestions));
-  }, [totalQuestions]);
-
-  const progressPercent = useMemo(() => {
-    if (totalQuestions <= 0) return 0;
-    return Math.round((currentCardPosition / totalQuestions) * 100);
-  }, [currentCardPosition, totalQuestions]);
-
-  const handleResetStudyProgress = () => {
-    const shouldReset = window.confirm(
-      "Bạn có muốn reset lại quá trình học không?",
-    );
-    if (!shouldReset) return;
-
-    clearStudyCardIndex();
-    setCurrentCardPosition(0);
-    router.push("/study");
-  };
+  const marriageProgress = useMemo(
+    () => percent(marriagePosition, totalMarriageCards),
+    [marriagePosition, totalMarriageCards],
+  );
+  const catechumenProgress = useMemo(
+    () => percent(catechumenPosition, catechumenSet?.cards.length ?? 0),
+    [catechumenPosition, catechumenSet],
+  );
+  const greetingName = getGreetingName(learnerName);
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Top Bar */}
-      <nav className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-5 py-3 border-b border-surface-container">
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full hover:bg-surface-container-low transition-colors">
-            <Menu className="w-5 h-5 text-on-surface" />
-          </button>
-          <h1 className="text-xl font-black tracking-tight text-[#457B9D] font-headline">
-            FlashCard
-          </h1>
+    <div className="min-h-screen bg-surface pb-28">
+      <header className="sticky top-0 z-40 border-b border-surface-container/80 bg-surface/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5" aria-label="Trang chủ FlashCard">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-on-primary shadow-sm">
+              <Sparkles className="size-[var(--icon-md)]" />
+            </span>
+            <span className="font-headline text-lg font-black tracking-tight text-on-surface">FlashCard</span>
+          </Link>
+          <Link href="/settings" className="flex items-center gap-2 rounded-full bg-surface-container-low px-2 py-1.5 pr-3 text-sm font-bold transition-colors hover:bg-surface-container" aria-label="Mở cài đặt">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-container/40 text-primary"><User className="size-[var(--icon-sm)]" /></span>
+            <span className="max-w-24 truncate">{learnerName}</span>
+          </Link>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full hover:bg-surface-container-low transition-colors">
-            <Search className="w-5 h-5 text-on-surface" />
-          </button>
-          <div className="w-9 h-9 rounded-full overflow-hidden bg-surface-container-high border-2 border-primary-container">
-            <Image
-              src="https://picsum.photos/seed/user/100/100"
-              alt="User Avatar"
-              width={36}
-              height={36}
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </div>
-      </nav>
+      </header>
 
-      <main className="pt-20 pb-28 px-5 max-w-7xl mx-auto">
-        {/* Hero Section */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
-          <div className="max-w-2xl">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold text-on-surface tracking-tight mb-2">
-              Chào mừng, <span className="text-primary">User</span>.
-            </h2>
-            <p className="text-on-surface-variant text-base leading-relaxed">
-              Không gian học tập của bạn đã sẵn sàng. Bạn có{" "}
-              <span className="font-bold text-on-surface">
-                {totalQuestions} câu hỏi
-              </span>{" "}
-              cần ôn tập hôm nay.
-            </p>
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-9">
+        <section className="overflow-hidden rounded-feature bg-hero text-on-hero shadow-lg shadow-primary/10">
+          <div className="relative p-5 sm:p-8">
+            <div className="absolute -right-12 -top-20 h-52 w-52 rounded-full bg-hero-accent/25 blur-2xl" />
+            <div className="relative">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-on-hero-muted">Học mỗi ngày một chút</p>
+              <h1 className="mt-3 max-w-2xl font-headline text-2xl font-bold leading-tight sm:text-4xl">
+                Chào <span className="break-words">{greetingName}</span>, hôm nay mình học tiếp nhé.
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-on-hero-muted sm:text-base">
+                Nội dung được chia thành từng bộ rõ ràng, tiến độ tự lưu trên thiết bị này.
+              </p>
+            </div>
+            <Link href="/study" className="relative mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-on-hero px-6 py-3.5 font-headline text-sm font-bold text-hero shadow-sm transition-transform active:scale-[0.98]">
+              <Play className="size-[var(--icon-sm)] fill-current" />
+              {marriagePosition > 0 ? "Tiếp tục học" : "Bắt đầu học"}
+            </Link>
           </div>
+        </section>
 
-          {/* Daily Goal */}
-          <div className="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 shadow-sm">
-            <ProgressCircle
-              progress={progressPercent}
-              size={56}
-              strokeWidth={6}
-              label={`${progressPercent}%`}
-            />
+        <section className="mt-5 grid grid-cols-3 gap-2.5 sm:gap-4">
+          <Summary icon={BookOpen} value={String(totalMarriageCards + (catechumenSet?.cards.length ?? 0))} label="Thẻ đang có" />
+          <Summary icon={Flame} value="0" label="Ngày liên tiếp" />
+          <Summary icon={BarChart3} value={`${marriageProgress}%`} label="Hôn nhân" href="/stats" />
+        </section>
+
+        <section className="mt-9">
+          <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="font-headline text-xs font-semibold text-on-surface">
-                Mục tiêu ngày
-              </p>
-              <p className="text-[11px] text-on-surface-variant">
-                {currentCardPosition}/{totalQuestions} thẻ
-              </p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Thư viện</p>
+              <h2 className="mt-1 font-headline text-2xl font-bold">Chọn bộ để học</h2>
             </div>
-          </div>
-        </header>
-
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-          {/* Quick Start Card */}
-          <div className="md:col-span-8 relative overflow-hidden bg-primary-container/20 rounded-[1.5rem] p-6 flex flex-col justify-between min-h-[280px] group">
-            <div className="relative z-10">
-              <span className="bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 inline-block">
-                Khuyên dùng
-              </span>
-              <h3 className="font-headline text-2xl font-extrabold text-on-primary-container max-w-sm mb-3 leading-tight">
-                Bắt đầu học Giáo lý Hôn nhân?
-              </h3>
-              <p className="text-on-primary-container/80 max-w-xs text-sm">
-                Bộ {totalQuestions} câu hỏi thi Giáo lý đang chờ bạn khám phá.
-                Hãy bắt đầu ngay bây giờ.
-              </p>
-            </div>
-
-            <div className="relative z-10 flex flex-wrap gap-3">
-              <Link href="/study">
-                <button className="bg-primary text-on-primary font-headline font-bold px-6 py-3 rounded-lg text-sm flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
-                  <Play className="w-4 h-4 fill-current" />
-                  Bắt đầu học
-                </button>
-              </Link>
-              <Link href="/test">
-                <button className="bg-surface-container-highest text-on-surface-variant font-headline font-bold px-6 py-3 rounded-lg text-sm flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95 border border-outline/20">
-                  <HelpCircle className="w-4 h-4" />
-                  Thi thử ngẫu nhiên
-                </button>
-              </Link>
-            </div>
-
-            {/* Decorative BG */}
-            <div className="absolute top-0 right-0 w-1/2 h-full hidden md:block">
-              <Image
-                src="https://picsum.photos/seed/church/800/600"
-                alt="Church Interior"
-                fill
-                className="object-cover mix-blend-overlay opacity-40"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-primary-container/20"></div>
-            </div>
+            <Link href="/stats" className="hidden items-center gap-1 text-sm font-bold text-primary sm:flex">Xem thống kê <ChevronRight className="size-[var(--icon-sm)]" /></Link>
           </div>
 
-          {/* Stats Card */}
-          <div className="md:col-span-4 bg-tertiary-container rounded-[1.5rem] p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start">
-                <Flame className="w-8 h-8 text-on-tertiary-container fill-current" />
-                <span className="font-headline font-black text-3xl text-on-tertiary-container">
-                  0
-                </span>
-              </div>
-              <p className="font-headline font-bold text-sm text-on-tertiary-container mt-3">
-                Chuỗi ngày học
-              </p>
-            </div>
-            <div className="mt-6">
-              <p className="text-[11px] text-on-tertiary-container/70 mb-2 font-medium">
-                Tiến độ tuần
-              </p>
-              <div className="flex items-end gap-1 h-12">
-                {[0, 0, 0, 0, 0, 0, 0].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-full bg-on-tertiary-container/10 rounded-t-sm h-[10%]"
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="mt-5 grid gap-4">
+            <DeckCard eyebrow="Đang học" title="Giáo lý Hôn nhân" description="Ôn tập kiến thức Hôn nhân và Gia đình Công giáo." count={`${totalMarriageCards} thẻ`} href="/study" icon={Church} tone="blue" progress={marriageProgress} />
+            <DeckCard eyebrow="Bài 29–40" title="Giáo lý Dự tòng" description="Năm Phụng vụ, cầu nguyện, các Bí tích và đời sau." count={`${catechumenSet?.cards.length ?? 0} thẻ`} href={catechumenSet ? `/catechumen/${catechumenSet.slug}` : "/catechumen"} icon={BookOpen} tone="amber" progress={catechumenProgress} />
+            <DeckCard eyebrow="Sắp thêm nội dung" title="18 Kinh cần thuộc" description="Một vị trí riêng đã sẵn sàng cho bộ kinh đọc và học thuộc." count="18 bài kinh" href="/prayers" icon={ScrollText} tone="green" />
           </div>
+        </section>
 
-          {/* My Decks Section */}
-          <div className="md:col-span-12 mt-4 flex justify-between items-center">
-            <h3 className="font-headline text-xl font-bold text-on-surface">
-              Bộ thẻ của tôi
-            </h3>
-          </div>
-
-          <div className="md:col-span-12 bg-surface-container-lowest rounded-2xl p-5 shadow-sm border-t-[3px] border-primary flex flex-col md:flex-row justify-between items-center gap-5 hover:scale-[1.005] transition-transform">
-            <div className="flex items-start gap-4 w-full md:w-auto">
-              <div className="bg-surface-container-low p-2.5 rounded-xl shrink-0">
-                <Church className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h4 className="font-headline text-lg font-bold text-on-surface leading-tight mb-0.5">
-                  Bộ {totalQuestions} Câu Hỏi Thi Giáo Lý
-                </h4>
-                <p className="text-xs text-on-surface-variant">
-                  Giáo lý Hôn nhân & Gia đình
-                </p>
-              </div>
-            </div>
-            <div className="w-full md:w-56">
-              <div className="flex justify-between text-[10px] font-bold mb-1.5">
-                <span className="text-on-surface-variant uppercase tracking-wider">
-                  {currentCardPosition} / {totalQuestions} Thẻ
-                </span>
-                <span className="text-primary">{progressPercent}%</span>
-              </div>
-              <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-primary to-primary-container rounded-full"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleResetStudyProgress}
-                className="w-[108px] h-9 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline/20 inline-flex items-center justify-center font-headline font-bold text-[13px] transition-all hover:text-primary hover:border-primary/30 active:scale-95"
-                aria-label="Đặt lại học từ đầu"
-                title="Học lại từ đầu"
-              >
-                Đặt lại
-              </button>
-              <Link href="/study">
-                <button className="w-[108px] h-9 rounded-lg bg-primary text-on-primary font-headline font-bold text-[13px] inline-flex items-center justify-center transition-all hover:opacity-90 active:scale-95">
-                  Tiếp tục
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <section className="mt-9 grid gap-4 rounded-2xl border border-surface-container bg-surface-container-lowest p-4 sm:p-5">
+          <div><p className="font-headline font-bold">Sẵn sàng kiểm tra kiến thức?</p><p className="mt-1 text-sm text-on-surface-variant">Làm đề ngẫu nhiên 13 câu trong 25 phút.</p></div>
+          <Link href="/test" className="inline-flex items-center justify-center gap-2 rounded-full bg-on-surface px-6 py-3 text-sm font-bold text-surface">Thi thử ngay <ArrowRight className="size-[var(--icon-sm)]" /></Link>
+        </section>
       </main>
-
-      {/* FAB */}
-      <button className="fixed bottom-24 right-6 bg-primary text-on-primary w-12 h-12 rounded-xl shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40">
-        <Plus className="w-6 h-6" />
-      </button>
     </div>
+  );
+}
+
+function readPosition(key: string, total: number) {
+  const raw = localStorage.getItem(key);
+  if (raw === null) return 0;
+  const index = Number(raw);
+  return Number.isInteger(index) && index >= 0 ? Math.min(index + 1, total) : 0;
+}
+
+function percent(position: number, total: number) {
+  return total > 0 ? Math.round((position / total) * 100) : 0;
+}
+
+function Summary({ icon: Icon, value, label, href }: { icon: typeof BookOpen; value: string; label: string; href?: string }) {
+  const content = <><Icon className="size-[var(--icon-md)] text-primary" /><strong className="mt-2 font-headline text-lg sm:text-2xl">{value}</strong><span className="mt-0.5 text-[10px] leading-tight text-on-surface-variant sm:text-xs">{label}</span></>;
+  const className = "flex min-w-0 flex-col rounded-2xl bg-surface-container-low p-3 sm:p-5";
+  return href ? <Link href={href} className={className}>{content}</Link> : <div className={className}>{content}</div>;
+}
+
+function DeckCard({ eyebrow, title, description, count, href, icon: Icon, tone, progress }: DeckCardProps) {
+  const tones = { blue: "bg-primary/10 text-primary", amber: "bg-tertiary-container/35 text-tertiary", green: "bg-secondary-container/35 text-secondary" };
+  return (
+    <article className="group flex min-h-64 flex-col rounded-3xl border border-surface-container bg-surface-container-lowest p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+      <div className="flex items-start justify-between gap-4"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tones[tone]}`}><Icon className="size-[var(--icon-lg)]" /></span><span className="rounded-full bg-surface-container-low px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{eyebrow}</span></div>
+      <h3 className="mt-5 font-headline text-xl font-bold">{title}</h3>
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-on-surface-variant">{description}</p>
+      {progress !== undefined && <div className="mt-5"><div className="flex justify-between text-xs font-bold"><span>{count}</span><span className="text-primary">{progress}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container-high"><div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${progress}%` }} /></div></div>}
+      {progress === undefined && <p className="mt-5 text-xs font-bold text-on-surface-variant">{count}</p>}
+      {href && <Link href={href} className="mt-5 flex items-center justify-between rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold transition-colors group-hover:bg-primary group-hover:text-on-primary"><span>{progress === undefined ? "Xem bộ thẻ" : progress > 0 ? "Học tiếp" : "Bắt đầu"}</span><ChevronRight className="size-[var(--icon-sm)]" /></Link>}
+    </article>
   );
 }

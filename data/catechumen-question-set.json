@@ -1,0 +1,249 @@
+{
+  "meta": {
+    "title": "Giáo lý Dự tòng",
+    "note": "Bài 29–40"
+  },
+  "sets": [
+    {
+      "slug": "bai-29-40",
+      "title": "Giáo lý Dự tòng · Bài 29–40",
+      "description": "Năm Phụng vụ, cầu nguyện, các Bí tích và đời sau.",
+      "cards": [
+        {
+          "id": "dt-29-1",
+          "lesson": 29,
+          "question": "Năm Phụng vụ là gì?",
+          "answer": "Năm Phụng vụ là thời gian một năm, bắt đầu từ Chúa nhật I Mùa vọng, trong đó Hội Thánh mừng các biến cố trọng đại cuộc đời Chúa Giêsu, Đức Mẹ và các thánh."
+        },
+        {
+          "id": "dt-29-2",
+          "lesson": 29,
+          "question": "Năm Phụng vụ có mục đích nào?",
+          "answer": "Năm Phụng vụ giúp người tín hữu hiểu và sống các mầu nhiệm trong đạo cách thiết thực hơn."
+        },
+        {
+          "id": "dt-30-1",
+          "lesson": 30,
+          "question": "Cầu nguyện là gì?",
+          "answer": "Cầu nguyện là nâng tâm hồn lên cùng Chúa, để thờ lạy, cảm tạ, xin Ngài tha thứ mọi tội lỗi và ban cho ta các ơn lành hồn xác."
+        },
+        {
+          "id": "dt-30-2",
+          "lesson": 30,
+          "question": "Tại sao ta phải cầu nguyện?",
+          "answer": "Ta phải cầu nguyện vì Chúa Giêsu đã truyền dạy; hơn nữa, đời sống thiêng liêng cần được nuôi dưỡng và phát triển bằng sự cầu nguyện."
+        },
+        {
+          "id": "dt-30-3",
+          "lesson": 30,
+          "question": "Vì sao việc cầu nguyện chung trong gia đình là quan trọng?",
+          "answer": "Việc cầu nguyện trong gia đình là quan trọng, vì nó giúp ta kết hiệp với Chúa và với nhau, tạo cho gia đình một bầu khí yêu thương và thánh thiện, giúp chuẩn bị việc cử hành phụng vụ ở nhà thờ và kéo dài phụng vụ ấy ngay trong gia đình."
+        },
+        {
+          "id": "dt-31-1",
+          "lesson": 31,
+          "question": "Bí tích Rửa tội có cần thiết không?",
+          "answer": "Bí tích Rửa tội rất cần thiết, như lời Chúa phán: \"Không ai có thể vào Nước Thiên Chúa nếu không sinh ra bởi nước và Thần Khí\" (Ga 3,5)."
+        },
+        {
+          "id": "dt-31-2",
+          "lesson": 31,
+          "question": "Bí tích Rửa tội ban cho ta những ơn nào?",
+          "answer": "Bí tích Rửa tội tha tội tổ tông và tội riêng, làm cho ta trở nên con Chúa và con Hội Thánh."
+        },
+        {
+          "id": "dt-31-3",
+          "lesson": 31,
+          "question": "Người lãnh nhận Bí tích Rửa tội thề hứa những gì?",
+          "answer": "Họ thề hứa từ bỏ ma quỷ và tin theo Chúa Kitô."
+        },
+        {
+          "id": "dt-32-1",
+          "lesson": 32,
+          "question": "Bí tích Thêm Sức là gì?",
+          "answer": "Là bí tích Chúa Giêsu đã lập để ta lãnh nhận dồi dào ơn Chúa Thánh Thần."
+        },
+        {
+          "id": "dt-32-2",
+          "lesson": 32,
+          "question": "Bí tích Thêm Sức ban cho ta những ơn nào?",
+          "answer": "Bí tích Thêm Sức giúp tăng trưởng các ơn đã lãnh nhận trong bí tích Rửa Tội; trưởng thành trong đời sống làm con Chúa; kết hợp mật thiết hơn với Chúa Kitô và gắn bó với đời sống bí tích Giáo hội; mạnh dạn làm chứng và xây dựng Nước Chúa."
+        },
+        {
+          "id": "dt-33-1",
+          "lesson": 33,
+          "question": "Ơn Chúa là gì?",
+          "answer": "Ơn Chúa là sự sống và sức mạnh mà Chúa ban để ta sống hạnh phúc đời này và đời sau."
+        },
+        {
+          "id": "dt-33-2",
+          "lesson": 33,
+          "question": "Bí tích là gì?",
+          "answer": "Bí tích là dấu chỉ bên ngoài Chúa dùng để diễn tả và thông ban ơn bên trong cho loài người."
+        },
+        {
+          "id": "dt-33-3",
+          "lesson": 33,
+          "question": "Có mấy bí tích?",
+          "answer": "Có bảy bí tích: Rửa Tội, Thêm Sức, Giải Tội, Thánh Thể, Xức Dầu Bệnh Nhân, Truyền Chức Thánh và Hôn Phối."
+        },
+        {
+          "id": "dt-34-1",
+          "lesson": 34,
+          "question": "Bí tích Thánh Thể là gì?",
+          "answer": "Là bí tích Chúa Giêsu đã lập để biến bánh rượu nên Mình Máu Người làm lương thực nuôi sống ta phần hồn."
+        },
+        {
+          "id": "dt-34-2",
+          "lesson": 34,
+          "question": "Chúa Giêsu ngự trong bí tích Thánh Thể thế nào?",
+          "answer": "Chúa Giêsu ngự thật trong bí tích Thánh Thể, nghĩa là trong mỗi hình Bánh, hình Rượu dù nhỏ bé cũng có toàn vẹn Chúa Giêsu."
+        },
+        {
+          "id": "dt-34-3",
+          "lesson": 34,
+          "question": "Bí tích Thánh Thể ban cho ta những ơn gì?",
+          "answer": "Bí tích Thánh Thể giúp tăng triển sự hiệp thông với Chúa và với nhau, và là một bảo chứng chắc chắn cho sự sống đời đời."
+        },
+        {
+          "id": "dt-35-1",
+          "lesson": 35,
+          "question": "Thánh lễ là gì?",
+          "answer": "Thánh lễ là Hy Tế Chúa Giêsu, nhờ tay linh mục hợp cùng toàn thể dân Chúa, dâng mình cho Chúa Cha như xưa chính Người đã dâng mình trên thánh giá."
+        },
+        {
+          "id": "dt-35-2",
+          "lesson": 35,
+          "question": "Thánh lễ có mấy phần?",
+          "answer": "Thánh lễ có hai phần chính: Phụng vụ Lời Chúa và Phụng vụ Thánh Thể."
+        },
+        {
+          "id": "dt-35-3",
+          "lesson": 35,
+          "question": "Ta phải tham dự Thánh lễ thế nào?",
+          "answer": "Phải hợp lòng hợp ý với chủ tế và cộng đoàn để dâng lễ, tham dự cách ý thức, thành kính và linh động, nhất là dọn lòng hiệp lễ."
+        },
+        {
+          "id": "dt-36-1",
+          "lesson": 36,
+          "question": "Bí tích Giải Tội là gì?",
+          "answer": "Là bí tích Chúa Giêsu đã lập để tha tội ta phạm từ khi lãnh nhận bí tích Rửa Tội về sau, cùng giao hòa ta với Chúa và Hội Thánh."
+        },
+        {
+          "id": "dt-36-2",
+          "lesson": 36,
+          "question": "Chúa Giêsu đã lập bí tích Giải Tội khi nào?",
+          "answer": "Sau khi sống lại, Chúa Giêsu hiện ra, thổi hơi trên các Tông đồ và phán: \"Anh em hãy nhận lấy Thánh Thần. Anh em tha tội cho ai thì người ấy được tha; anh em cầm giữ ai thì người ấy bị cầm giữ.\""
+        },
+        {
+          "id": "dt-36-3",
+          "lesson": 36,
+          "question": "Ai có quyền tha tội?",
+          "answer": "Chỉ có Thiên Chúa mới có quyền tha tội, nhưng Người đã trao quyền ấy cho các Tông đồ và các Đấng kế vị. Vì thế, các Giám mục và linh mục nào được phép mới có quyền ban bí tích Giải Tội."
+        },
+        {
+          "id": "dt-36-4",
+          "lesson": 36,
+          "question": "Ai cần lãnh nhận bí tích Giải Tội?",
+          "answer": "Những tín hữu đã phạm tội trọng thì cần phải lãnh nhận bí tích Giải Tội, nhưng ai chỉ mắc tội nhẹ mà lãnh nhận bí tích này thì được nhiều ích lợi thiêng liêng."
+        },
+        {
+          "id": "dt-36-5",
+          "lesson": 36,
+          "question": "Muốn lãnh nhận bí tích Giải Tội thì phải làm gì?",
+          "answer": "Phải làm 4 việc này: xét mình, ăn năn dốc lòng chừa, xưng tội và đền tội."
+        },
+        {
+          "id": "dt-37-1",
+          "lesson": 37,
+          "question": "Bí tích Xức Dầu Bệnh Nhân là gì?",
+          "answer": "Là bí tích Chúa Giêsu đã lập để ban ơn nâng đỡ bệnh nhân phần hồn phần xác và chuẩn bị bước về đời sau."
+        },
+        {
+          "id": "dt-37-2",
+          "lesson": 37,
+          "question": "Nên lãnh nhận bí tích Xức Dầu Bệnh Nhân khi nào?",
+          "answer": "Xức dầu bệnh nhân không phải chỉ là bí tích dành cho những người hấp hối; vì thế, thời gian thích hợp để lãnh nhận là khi người tín hữu bắt đầu đau nặng hay nguy tử vì bệnh tật hay già yếu."
+        },
+        {
+          "id": "dt-38-1",
+          "lesson": 38,
+          "question": "Bí tích Truyền Chức Thánh là gì?",
+          "answer": "Là bí tích Chúa Giêsu đã lập để thánh hiến những vị mà Chúa muốn trao cho tác vụ thánh trong dân Chúa."
+        },
+        {
+          "id": "dt-38-2",
+          "lesson": 38,
+          "question": "Ai được lãnh bí tích Truyền Chức Thánh?",
+          "answer": "Chỉ những người Thiên Chúa gọi và chọn mới được lãnh nhận chức thánh mà thôi."
+        },
+        {
+          "id": "dt-39-1",
+          "lesson": 39,
+          "question": "Bí tích Hôn Phối là gì?",
+          "answer": "Bí tích Hôn Phối là việc hai Kitô hữu, một nam một nữ, ưng thuận kết ước thành vợ chồng trước mặt Thiên Chúa và Hội Thánh."
+        },
+        {
+          "id": "dt-39-2",
+          "lesson": 39,
+          "question": "Hôn nhân Công giáo có những đặc tính gì?",
+          "answer": "Hôn nhân Công giáo có hai đặc tính: một vợ một chồng và bất khả phân ly."
+        },
+        {
+          "id": "dt-39-3",
+          "lesson": 39,
+          "question": "Đâu là mục đích của hôn nhân Công giáo?",
+          "answer": "Hôn nhân Công giáo có hai mục đích: một là bổ túc cho nhau trong tình yêu vợ chồng và hai là sinh sản và giáo dục con cái."
+        },
+        {
+          "id": "dt-39-4",
+          "lesson": 39,
+          "question": "Điều gì là nghi thức chính yếu của việc kết hôn Công giáo?",
+          "answer": "Nghi thức chính yếu làm nên bí tích Hôn Phối là sự bày tỏ ưng thuận kết hôn của đôi bạn trước sự chứng hôn của Hội Thánh."
+        },
+        {
+          "id": "dt-40-1",
+          "lesson": 40,
+          "question": "Xét theo đức tin Công giáo, chết là gì?",
+          "answer": "Chết là hậu quả của tội lỗi, là ngưỡng cửa bước vào đời sau. Chết còn là điều kiện để người tín hữu tham dự vào cuộc Phục sinh của Chúa Kitô."
+        },
+        {
+          "id": "dt-40-2",
+          "lesson": 40,
+          "question": "Phán xét là gì?",
+          "answer": "Là việc Thiên Chúa luận định tội phúc loài người đã làm khi còn sống ở trần gian, rồi ấn định số phận đời đời cho họ."
+        },
+        {
+          "id": "dt-40-3",
+          "lesson": 40,
+          "question": "Thiên đàng là gì?",
+          "answer": "Thiên đàng là tình trạng được hạnh phúc ở với Chúa mãi mãi."
+        },
+        {
+          "id": "dt-40-4",
+          "lesson": 40,
+          "question": "Hỏa ngục là gì?",
+          "answer": "Hỏa ngục là tình trạng dứt khoát của án phạt mà hình phạt đau đớn nhất là phải xa Chúa đời đời."
+        },
+        {
+          "id": "dt-40-5",
+          "lesson": 40,
+          "question": "Trời mới Đất mới là gì?",
+          "answer": "Là tình trạng trong đó con người được sống với Thiên Chúa là nguồn suối vô tận của bình an và hạnh phúc muôn đời."
+        },
+        {
+          "id": "dt-40-6",
+          "lesson": 40,
+          "question": "Nghĩa vụ hiện tại của người tín hữu là gì?",
+          "answer": "Trong khi chờ đợi Trời mới Đất mới, người tín hữu phải tích cực xây dựng thế giới này mỗi ngày một tốt đẹp hơn về mọi mặt."
+        },
+        {
+          "id": "dt-40-7",
+          "lesson": 40,
+          "question": "Đức Kitô, nền tảng của Trời mới Đất mới, nghĩa là gì?",
+          "answer": "Hiện nay, Đức Kitô đã đem lại hy vọng và sự sống cho những nơi không còn hy vọng và sức sống. Thời cánh chung, Đức Kitô làm cho con người trở nên thụ tạo mới, kiện toàn tình trạng cũ và giao hòa con người với Thiên Chúa và với nhau cách trọn vẹn."
+        }
+      ]
+    }
+  ]
+}

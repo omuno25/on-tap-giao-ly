@@ -1,6 +1,6 @@
 'use client';
 
-import { GraduationCap, BarChart3, User } from 'lucide-react';
+import { GraduationCap, BarChart3, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -11,11 +11,11 @@ export default function BottomNavBar() {
   const navItems = [
     { label: 'Học tập', icon: GraduationCap, href: '/' },
     { label: 'Thống kê', icon: BarChart3, href: '/stats' },
-    { label: 'Hồ sơ', icon: User, href: '/profile' },
+    { label: 'Cài đặt', icon: Settings, href: '/settings' },
   ];
 
   return (
-    <nav className="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-md flex justify-around items-center px-4 py-2 shadow-[0_-4px_15px_rgba(48,51,48,0.04)] rounded-t-xl">
+    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[var(--app-max-width)] items-center justify-around rounded-t-2xl border-t border-surface-container bg-surface/90 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-bottom-nav backdrop-blur-xl">
       {navItems.map((item) => {
         const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
         return (
@@ -27,7 +27,7 @@ export default function BottomNavBar() {
               isActive ? "bg-primary/10 text-primary" : "text-on-surface/60 hover:text-primary"
             )}
           >
-            <item.icon className={cn("w-5 h-5", isActive && "fill-current")} />
+            <item.icon className={cn("size-[var(--icon-md)]", isActive && "fill-current")} />
             <span className="font-headline text-[10px] font-medium mt-0.5">{item.label}</span>
           </Link>
         );

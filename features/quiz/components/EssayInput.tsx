@@ -1,15 +1,31 @@
 'use client';
 
-import { ArrowLeft, MoreVertical, Edit3, ChevronLeft, CheckCircle, History } from 'lucide-react';
+import { Edit3, ChevronLeft, CheckCircle, History } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getQuestionById, QUESTION_BANK } from '@/lib/question-bank';
 import TopAppBar from '@/components/layout/TopAppBar';
+import { readEssayAnswer, saveEssayAnswer } from '@/lib/learning-storage';
 
 export default function EssayInput() {
   const [answer, setAnswer] = useState('');
+  const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const question = getQuestionById('13');
+  const router = useRouter();
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => {
+      setAnswer(readEssayAnswer('13'));
+      setIsDraftHydrated(true);
+    });
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
+  useEffect(() => {
+    if (!isDraftHydrated) return;
+    saveEssayAnswer('13', answer);
+  }, [answer, isDraftHydrated]);
 
   if (!question) {
     return (
@@ -27,7 +43,7 @@ export default function EssayInput() {
 
       <main className="pt-20 pb-28 px-4 md:px-8 max-w-4xl mx-auto w-full">
         {/* Header Status */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
+        <header className="mb-8 flex flex-col justify-between gap-5">
           <div className="space-y-1.5">
             <span className="inline-block px-2.5 py-0.5 bg-tertiary-container text-on-tertiary-container rounded-full text-[11px] font-semibold">
               {question.category}
@@ -57,7 +73,7 @@ export default function EssayInput() {
             <div className="p-5 md:p-8 space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <Edit3 className="w-5 h-5 text-tertiary" />
+                  <Edit3 className="size-[var(--icon-md)] text-tertiary" />
                   <h3 className="font-headline text-lg font-semibold text-on-surface">Câu trả lời của bạn</h3>
                 </div>
                 <span className="text-on-surface-variant text-[11px] font-medium">Gợi ý tối thiểu 150 từ</span>
@@ -72,21 +88,21 @@ export default function EssayInput() {
                 />
                 <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2 py-0.5 bg-surface/60 backdrop-blur-sm rounded-full border border-outline-variant/10">
                   <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                  <span className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">Đã lưu</span>
+                  <span className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">Tự động lưu</span>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                <button className="w-full sm:w-auto px-6 py-3 flex items-center justify-center gap-2 bg-surface-container-high text-on-surface text-sm font-semibold rounded-lg hover:bg-primary-container/20 transition-all active:scale-95 group">
-                  <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                <button type="button" onClick={() => router.back()} className="w-full sm:w-auto px-6 py-3 flex items-center justify-center gap-2 bg-surface-container-high text-on-surface text-sm font-semibold rounded-lg hover:bg-primary-container/20 transition-all active:scale-95 group">
+                  <ChevronLeft className="size-[var(--icon-sm)] transition-transform group-hover:-translate-x-1" />
                   Quay lại
                 </button>
-                <Link href="/essay/review" className="w-full sm:w-auto">
-                  <button className="w-full px-8 py-3 flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold rounded-lg shadow-md hover:shadow-primary/20 transition-all active:scale-95">
+                <Link href="/essay/review" className={`w-full sm:w-auto ${answer.trim() ? '' : 'pointer-events-none opacity-50'}`} aria-disabled={!answer.trim()}>
+                  <span className="w-full px-8 py-3 flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-on-primary text-sm font-bold rounded-lg shadow-md hover:shadow-primary/20 transition-all active:scale-95">
                     Xác nhận câu trả lời
-                    <CheckCircle className="w-4 h-4 fill-current" />
-                  </button>
+                    <CheckCircle className="size-[var(--icon-sm)] fill-current" />
+                  </span>
                 </Link>
               </div>
             </div>
@@ -94,10 +110,10 @@ export default function EssayInput() {
         </section>
 
         {/* Help Section */}
-        <aside className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <aside className="mt-8 grid grid-cols-1 gap-4">
           <div className="p-5 bg-surface-container rounded-xl flex items-start gap-3.5">
             <div className="p-2.5 bg-secondary-container/30 rounded-lg">
-              <History className="w-5 h-5 text-secondary" />
+              <History className="size-[var(--icon-md)] text-secondary" />
             </div>
             <div>
               <h4 className="font-headline font-semibold text-sm text-on-surface">Tham chiếu Giáo lý</h4>

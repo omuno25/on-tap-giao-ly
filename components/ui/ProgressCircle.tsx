@@ -50,8 +50,8 @@ export default function ProgressCircle({
         />
         <defs>
           <linearGradient id="progress-gradient" x1="0%" x2="100%" y1="0%" y2="0%">
-            <stop offset="0%" style={{ stopColor: '#306b3c' }} />
-            <stop offset="100%" style={{ stopColor: '#a4e4aa' }} />
+            <stop offset="0%" style={{ stopColor: 'var(--color-secondary)' }} />
+            <stop offset="100%" style={{ stopColor: 'var(--color-progress-end)' }} />
           </linearGradient>
         </defs>
       </svg>

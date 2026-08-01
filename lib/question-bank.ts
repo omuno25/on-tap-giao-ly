@@ -19,7 +19,7 @@ export interface Question {
   image?: string;
 }
 
-interface ImportedQuestion {
+export interface MarriageSourceQuestion {
   id: number;
   type: 'short' | 'essay';
   question: string;
@@ -31,10 +31,12 @@ interface ImportedQuestionSet {
     title: string;
     note?: string;
   };
-  questions: ImportedQuestion[];
+  questions: MarriageSourceQuestion[];
 }
 
 const importedSet = marriageQuestionSetJson as ImportedQuestionSet;
+
+export const MARRIAGE_QUESTION_SET = importedSet;
 
 function normalizeAnswer(answer: string | string[]) {
   if (Array.isArray(answer)) {
