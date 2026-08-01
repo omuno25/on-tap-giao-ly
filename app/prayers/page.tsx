@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ScrollText } from "lucide-react";
 import { PRAYER_META, PRAYERS } from "@/lib/prayers";
+import PrayerMediaPlayer from "@/features/prayers/components/PrayerMediaPlayer";
 
 export default function PrayersPage() {
   return (
@@ -10,8 +11,9 @@ export default function PrayersPage() {
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-secondary-container/35 text-secondary"><ScrollText className="size-[var(--icon-xl)]" /></span>
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-secondary">Bộ thẻ mới</p>
         <h1 className="mt-2 font-headline text-3xl font-bold">{PRAYER_META.title}</h1>
-        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-on-surface-variant">{PRAYERS.length > 0 ? `${PRAYERS.length} bài kinh đã sẵn sàng.` : "Khung giao diện đã sẵn sàng. Hãy thêm tên, nội dung và audio vào data/prayer-set.json."}</p>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-on-surface-variant">{PRAYERS.length} audio đã sẵn sàng để nghe và học thuộc.</p>
       </section>
+      <PrayerMediaPlayer prayers={PRAYERS} />
     </main>
   );
 }

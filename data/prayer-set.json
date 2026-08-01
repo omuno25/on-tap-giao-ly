@@ -1,7 +1,20 @@
 {
   "meta": {
     "title": "18 Kinh cần thuộc",
-    "note": "Thêm nội dung và đường dẫn audio vào mảng prayers"
+    "note": "Audio các kinh đọc và học thuộc"
   },
-  "prayers": []
+  "prayers": [
+    {
+      "id": "kinh-lay-cha",
+      "title": "Kinh Lạy Cha",
+      "text": "",
+      "audio": "/audio/kinh_lay_cha.mp3"
+    },
+    {
+      "id": "kinh-kinh-mung",
+      "title": "Kinh Kính Mừng",
+      "text": "",
+      "audio": "/audio/kinh_kinh_mung.mp3"
+    }
+  ]
 }
