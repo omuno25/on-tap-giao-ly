@@ -27,7 +27,10 @@ export default function BottomNavBar() {
               isActive ? "bg-primary/10 text-primary" : "text-on-surface/60 hover:text-primary"
             )}
           >
-            <item.icon className={cn("size-[var(--icon-md)]", isActive && "fill-current")} />
+            <item.icon
+              className="size-[var(--icon-md)] fill-none"
+              strokeWidth={isActive ? 2.6 : 2}
+            />
             <span className="font-headline text-[10px] font-medium mt-0.5">{item.label}</span>
           </Link>
         );

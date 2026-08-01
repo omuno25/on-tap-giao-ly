@@ -156,20 +156,29 @@ function percent(position: number, total: number) {
 
 function Summary({ icon: Icon, value, label, href }: { icon: typeof BookOpen; value: string; label: string; href?: string }) {
   const content = <><Icon className="size-[var(--icon-md)] text-primary" /><strong className="mt-2 font-headline text-lg sm:text-2xl">{value}</strong><span className="mt-0.5 text-[10px] leading-tight text-on-surface-variant sm:text-xs">{label}</span></>;
-  const className = "flex min-w-0 flex-col rounded-2xl bg-surface-container-low p-3 sm:p-5";
+  const className = "flex min-w-0 flex-col rounded-2xl bg-surface-container-low p-3 sm:p-5 cursor-pointer transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
   return href ? <Link href={href} className={className}>{content}</Link> : <div className={className}>{content}</div>;
 }
 
 function DeckCard({ eyebrow, title, description, count, href, icon: Icon, tone, progress }: DeckCardProps) {
   const tones = { blue: "bg-primary/10 text-primary", amber: "bg-tertiary-container/35 text-tertiary", green: "bg-secondary-container/35 text-secondary" };
-  return (
-    <article className="group flex min-h-64 flex-col rounded-3xl border border-surface-container bg-surface-container-lowest p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-4"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tones[tone]}`}><Icon className="size-[var(--icon-lg)]" /></span><span className="rounded-full bg-surface-container-low px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{eyebrow}</span></div>
       <h3 className="mt-5 font-headline text-xl font-bold">{title}</h3>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-on-surface-variant">{description}</p>
       {progress !== undefined && <div className="mt-5"><div className="flex justify-between text-xs font-bold"><span>{count}</span><span className="text-primary">{progress}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container-high"><div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${progress}%` }} /></div></div>}
       {progress === undefined && <p className="mt-5 text-xs font-bold text-on-surface-variant">{count}</p>}
-      {href && <Link href={href} className="mt-5 flex items-center justify-between rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold transition-colors group-hover:bg-primary group-hover:text-on-primary"><span>{progress === undefined ? "Xem bộ thẻ" : progress > 0 ? "Học tiếp" : "Bắt đầu"}</span><ChevronRight className="size-[var(--icon-sm)]" /></Link>}
-    </article>
+      <div className="mt-5 flex items-center justify-between rounded-xl bg-surface-container-low px-4 py-3 text-sm font-bold transition-colors group-hover:bg-primary group-hover:text-on-primary"><span>{progress === undefined ? "Xem bộ thẻ" : progress > 0 ? "Học tiếp" : "Bắt đầu"}</span><ChevronRight className="size-[var(--icon-sm)]" /></div>
+    </>
+  );
+  const className = "group flex min-h-64 flex-col rounded-3xl border border-surface-container bg-surface-container-lowest p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:p-6";
+
+  return href ? (
+    <Link href={href} className={`${className} cursor-pointer`}>
+      {content}
+    </Link>
+  ) : (
+    <article className={className}>{content}</article>
   );
 }

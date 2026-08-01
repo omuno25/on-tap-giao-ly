@@ -17,6 +17,7 @@ export const MAX_GREETING_NAME_LENGTH = 16;
 
 const EXAM_RESULTS_KEY = "learning.exam_results";
 const PROFILE_KEY = "learning.profile";
+const APP_RATING_KEY = "learning.app_rating";
 export const PROFILE_UPDATED_EVENT = "learning:profile-updated";
 
 function readJson<T>(key: string, fallback: T): T {
@@ -86,7 +87,8 @@ export function normalizeProfileName(name: string) {
 
 export function sanitizeProfileNameInput(name: string) {
   return name
-    .replace(/[^\p{L}\p{N} ]/gu, "")
+    .normalize("NFC")
+    .replace(/[^\p{L}\p{M}\p{N} ]/gu, "")
     .replace(/\s+/g, " ")
     .slice(0, MAX_PROFILE_NAME_LENGTH);
 }
@@ -96,4 +98,16 @@ export function getGreetingName(name: string) {
   return normalized.length > MAX_GREETING_NAME_LENGTH
     ? `${normalized.slice(0, MAX_GREETING_NAME_LENGTH - 1)}…`
     : normalized;
+}
+
+export function readAppRating() {
+  if (typeof window === "undefined") return 0;
+  const rating = Number(window.localStorage.getItem(APP_RATING_KEY));
+  return Number.isInteger(rating) && rating >= 1 && rating <= 5 ? rating : 0;
+}
+
+export function saveAppRating(rating: number) {
+  if (typeof window === "undefined") return;
+  const normalized = Math.min(5, Math.max(1, Math.round(rating)));
+  window.localStorage.setItem(APP_RATING_KEY, String(normalized));
 }
