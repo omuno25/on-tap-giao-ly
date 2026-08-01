@@ -15,7 +15,7 @@ export default function CatechumenPage() {
       <p className="mt-2 text-on-surface-variant">{CATECHUMEN_SETS.length} bộ gồm {totalCards} câu hỏi–đáp án từ Bài 15 đến Bài 40.</p>
       <section className="mt-8 grid gap-4">
         {CATECHUMEN_SETS.map((set) => (
-          <Link key={set.slug} href={`/catechumen/${set.slug}`} className="flex cursor-pointer flex-col rounded-2xl border border-surface-container bg-surface-container-lowest p-5 transition-all hover:-translate-y-0.5 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+          <Link key={set.slug} href={`/giao-ly-du-tong/${set.slug}`} className="flex cursor-pointer flex-col rounded-2xl border border-surface-container bg-surface-container-lowest p-5 transition-all hover:-translate-y-0.5 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
             <BookOpen className="size-[var(--icon-lg)] text-primary" />
             <h2 className="font-headline font-bold text-lg mt-4">{set.title}</h2>
             <p className="text-sm text-on-surface-variant mt-2 flex-1">{set.description}</p>

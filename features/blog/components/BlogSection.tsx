@@ -17,7 +17,7 @@ export default function BlogSection({ posts }: BlogSectionProps) {
         {posts.map((post) => (
           <Link
             key={post.slug}
-            href={`/blog/${post.slug}`}
+            href={`/trai-nghiem/${post.slug}`}
             className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-surface-container bg-surface-container-lowest p-4 transition-colors hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <span className="min-w-0 flex-1">

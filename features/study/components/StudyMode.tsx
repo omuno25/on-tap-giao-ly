@@ -84,7 +84,7 @@ export default function StudyMode() {
       <header className="fixed inset-x-0 top-0 z-50 mx-auto flex w-full max-w-[var(--app-max-width)] items-center justify-between gap-2 border-b border-surface-container bg-surface/80 px-3 py-3 backdrop-blur-md sm:px-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link
-            href="/"
+            href="/giao-ly-hon-nhan"
             className="hover:bg-surface-container-low p-2 rounded-full transition-colors active:scale-95"
           >
             <X className="size-[var(--icon-md)] text-on-surface" />

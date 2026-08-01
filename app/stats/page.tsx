@@ -19,10 +19,13 @@ export default function StatsPage() {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
-  const best = results.reduce(
-    (value, result) => Math.max(value, result.correct),
-    0,
-  );
+  const bestResult = results.reduce<ExamResult | null>((best, result) => {
+    if (!best) return result;
+
+    const bestRate = best.total > 0 ? best.correct / best.total : 0;
+    const resultRate = result.total > 0 ? result.correct / result.total : 0;
+    return resultRate > bestRate ? result : best;
+  }, null);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl bg-surface px-4 pb-28 pt-8 sm:px-5 sm:pt-10">
@@ -44,7 +47,7 @@ export default function StatsPage() {
         <Stat
           icon={Trophy}
           label="Điểm cao nhất"
-          value={results.length ? `${best}/13` : "—"}
+          value={bestResult ? `${bestResult.correct}/${bestResult.total}` : "—"}
         />
       </section>
       <section className="mt-8 bg-surface-container-lowest border border-surface-container rounded-2xl p-5">

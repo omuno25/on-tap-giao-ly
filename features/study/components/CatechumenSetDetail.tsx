@@ -40,7 +40,7 @@ export default function CatechumenSetDetail({ set }: { set: CatechumenSet }) {
 
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6">
-      <Link href="/catechumen" className="inline-flex items-center gap-2 text-sm font-bold text-primary">
+      <Link href="/giao-ly-du-tong" className="inline-flex items-center gap-2 text-sm font-bold text-primary">
         <ArrowLeft className="size-[var(--icon-sm)]" />
         Các bộ thẻ
       </Link>
@@ -77,11 +77,11 @@ export default function CatechumenSetDetail({ set }: { set: CatechumenSet }) {
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-container-high">
           <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${progress}%` }} />
         </div>
-        <Link href={`/catechumen/${set.slug}/study`} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-on-primary transition active:scale-[0.98]">
+        <Link href={`/giao-ly-du-tong/${set.slug}/study`} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-on-primary transition active:scale-[0.98]">
           {position > 0 ? "Tiếp tục học" : "Bắt đầu học"}
           <ChevronRight className="size-[var(--icon-sm)]" />
         </Link>
-        <Link href={`/catechumen/${set.slug}/test`} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary px-6 py-3.5 font-bold text-primary transition-colors hover:bg-primary/5 active:scale-[0.98]">
+        <Link href={`/giao-ly-du-tong/${set.slug}/test`} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary px-6 py-3.5 font-bold text-primary transition-colors hover:bg-primary/5 active:scale-[0.98]">
           <ClipboardCheck className="size-[var(--icon-sm)]" />
           Kiểm tra 10 câu
         </Link>

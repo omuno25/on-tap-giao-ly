@@ -25,6 +25,8 @@ import { clearAllAppStorage } from "@/lib/app-storage";
 export default function Settings() {
   const [name, setName] = useState("");
   const [saved, setSaved] = useState(false);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const [resetError, setResetError] = useState(false);
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() =>
@@ -42,18 +44,13 @@ export default function Settings() {
   };
 
   const resetData = () => {
-    const confirmed = window.confirm(
-      "Xóa tên, toàn bộ tiến độ học, kết quả kiểm tra và dữ liệu audio trên thiết bị này?",
-    );
-    if (!confirmed) return;
+    const result = clearAllAppStorage();
+    if (!result.success) {
+      setResetError(true);
+      return;
+    }
 
-    const confirmedAgain = window.confirm(
-      "Dữ liệu sau khi xóa không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?",
-    );
-    if (!confirmedAgain) return;
-
-    clearAllAppStorage();
-    window.location.replace("/");
+    window.location.replace(`/?reset=${Date.now()}`);
   };
 
   return (
@@ -150,13 +147,46 @@ export default function Settings() {
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={resetData}
-          className="mt-4 w-full cursor-pointer rounded-full border border-error px-6 py-3 text-sm font-bold text-error transition-colors hover:bg-error hover:text-on-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/30"
-        >
-          Xóa toàn bộ dữ liệu
-        </button>
+        {!confirmingReset ? (
+          <button
+            type="button"
+            onClick={() => {
+              setConfirmingReset(true);
+              setResetError(false);
+            }}
+            className="mt-4 w-full cursor-pointer rounded-full border border-error px-6 py-3 text-sm font-bold text-error transition-colors hover:bg-error hover:text-on-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/30"
+          >
+            Xóa toàn bộ dữ liệu
+          </button>
+        ) : (
+          <div className="mt-4 rounded-2xl bg-error/10 p-4">
+            <p className="text-sm font-bold text-error">Bạn chắc chắn muốn xóa?</p>
+            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+              Thao tác này không thể hoàn tác. Ứng dụng sẽ trở về trạng thái như lần đầu sử dụng.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmingReset(false)}
+                className="cursor-pointer rounded-full bg-surface-container-high px-4 py-3 text-sm font-bold text-on-surface"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={resetData}
+                className="cursor-pointer rounded-full bg-error px-4 py-3 text-sm font-bold text-on-error"
+              >
+                Xác nhận xóa
+              </button>
+            </div>
+          </div>
+        )}
+        {resetError && (
+          <p role="alert" className="mt-3 text-xs font-bold text-error">
+            Không thể xóa dữ liệu. Hãy kiểm tra quyền lưu trữ của trình duyệt rồi thử lại.
+          </p>
+        )}
       </section>
     </main>
   );

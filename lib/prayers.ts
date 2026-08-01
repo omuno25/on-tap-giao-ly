@@ -1,4 +1,4 @@
-import prayerJson from "@/data/prayer-set.json";
+import prayerJson from "@/data/18-kinh-can-thuoc.json";
 
 export type Prayer = {
   id: string;

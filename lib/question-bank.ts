@@ -1,4 +1,4 @@
-import marriageQuestionSetJson from '@/data/marriage-question-set.json';
+import marriageQuestionSetJson from '@/data/giao-ly-hon-nhan-dataset.json';
 
 export type QuestionType = 'essay' | 'multiple-choice' | 'flashcard';
 
@@ -21,9 +21,15 @@ export interface Question {
 
 export interface MarriageSourceQuestion {
   id: number;
-  type: 'short' | 'essay';
+  type: 'short' | 'essay' | 'true-false';
   question: string;
   answer: string | string[];
+}
+
+interface MarriageDatasetQuestion {
+  id: number;
+  question: string;
+  answer: string | string[] | boolean;
 }
 
 interface ImportedQuestionSet {
@@ -31,12 +37,37 @@ interface ImportedQuestionSet {
     title: string;
     note?: string;
   };
-  questions: MarriageSourceQuestion[];
+  questions: MarriageDatasetQuestion[];
+  essays: MarriageDatasetQuestion[];
 }
 
 const importedSet = marriageQuestionSetJson as ImportedQuestionSet;
 
-export const MARRIAGE_QUESTION_SET = importedSet;
+export const MARRIAGE_QUESTION_SET = {
+  meta: importedSet.meta,
+  questions: [
+    ...importedSet.questions.map<MarriageSourceQuestion>((item) => ({
+      ...item,
+      type: typeof item.answer === 'boolean' ? 'true-false' : 'short',
+      answer:
+        typeof item.answer === 'boolean'
+          ? item.answer
+            ? 'Đúng'
+            : 'Sai'
+          : item.answer,
+    })),
+    ...importedSet.essays.map<MarriageSourceQuestion>((item) => ({
+      ...item,
+      type: 'essay',
+      answer:
+        typeof item.answer === 'boolean'
+          ? item.answer
+            ? 'Đúng'
+            : 'Sai'
+          : item.answer,
+    })),
+  ],
+};
 
 function normalizeAnswer(answer: string | string[]) {
   if (Array.isArray(answer)) {
@@ -46,7 +77,7 @@ function normalizeAnswer(answer: string | string[]) {
   return answer;
 }
 
-const importedFlashcards: Question[] = importedSet.questions.map((item) => ({
+const importedFlashcards: Question[] = MARRIAGE_QUESTION_SET.questions.map((item) => ({
     id: String(item.id),
     type: 'flashcard' as const,
     title: item.question,

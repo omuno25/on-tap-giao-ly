@@ -2,10 +2,10 @@
 
 Chỉ chỉnh nội dung học trong thư mục này:
 
-- `marriage-question-set.json`: câu hỏi Giáo lý Hôn nhân.
+- `giao-ly-hon-nhan-dataset.json`: câu hỏi Giáo lý Hôn nhân.
 - `catechumen-question-set.json`: flashcard Giáo lý Dự tòng.
 - `catechumen-15-28.json`: set Giáo lý Dự tòng Bài 15–28.
-- `prayer-set.json`: 18 Kinh cần thuộc và đường dẫn audio.
+- `18-kinh-can-thuoc.json`: 18 Kinh cần thuộc và đường dẫn audio.
 - `leaderboard.json`: dữ liệu minh họa cho bảng xếp hạng người học.
 
 ## Cấu trúc một bài kinh
@@ -25,7 +25,7 @@ Không import JSON trực tiếp từ component. Các adapter trong `lib/questio
 
 ## Bài viết Góc học tập
 
-Mỗi bài viết là một file Markdown trong `content/blog/`. Tên file trở thành đường dẫn bài viết, ví dụ `hoc-flashcard.md` sẽ có URL `/blog/hoc-flashcard`.
+Mỗi bài viết là một file Markdown trong `content/blog/`. Tên file trở thành đường dẫn bài viết, ví dụ `hoc-flashcard.md` sẽ có URL `/trai-nghiem/hoc-flashcard`.
 
 ```md
 ---

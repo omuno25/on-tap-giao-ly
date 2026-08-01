@@ -34,7 +34,7 @@ export default function CatechumenStudy({ set }: { set: CatechumenSet }) {
   return (
     <div className="min-h-screen bg-surface px-5 pt-6 pb-28">
       <header className="mx-auto flex w-full max-w-2xl items-center justify-between gap-2 sm:gap-4">
-        <Link href={`/catechumen/${set.slug}`} className="p-2 rounded-full bg-surface-container-low" aria-label="Quay lại chi tiết bộ thẻ"><ArrowLeft className="size-[var(--icon-md)]" /></Link>
+        <Link href={`/giao-ly-du-tong/${set.slug}`} className="p-2 rounded-full bg-surface-container-low" aria-label="Quay lại chi tiết bộ thẻ"><ArrowLeft className="size-[var(--icon-md)]" /></Link>
         <div className="min-w-0 text-center"><p className="truncate font-headline text-sm font-bold text-primary sm:text-base">{set.title}</p><p className="text-xs text-on-surface-variant">Bài {card.lesson} · Thẻ {index + 1}/{set.cards.length}</p></div>
         <span className="w-9" />
       </header>

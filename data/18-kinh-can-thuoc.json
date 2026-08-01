@@ -15,6 +15,18 @@
       "title": "Kinh Kính Mừng",
       "text": "",
       "audio": "/audio/kinh_kinh_mung.mp3"
+    },
+    {
+      "id": "kinh-sang-danh",
+      "title": "Kinh Sáng Danh",
+      "text": "",
+      "audio": "/audio/kinh_sang_danh.mp3"
+    },
+    {
+      "id": "kinh-tin",
+      "title": "Kinh Tin",
+      "text": "",
+      "audio": "/audio/kinh_tin.mp3"
     }
   ]
 }

@@ -62,9 +62,31 @@ export function writeStorageIndex(key: string, value: number) {
 
 export function clearAllAppStorage() {
   const storage = getStorage();
-  if (!storage) return 0;
+  if (!storage) return { success: false, removed: 0 };
 
-  const keysToRemove = Array.from(
+  try {
+    const keysToRemove = getAppStorageKeys(storage);
+    keysToRemove.forEach((key) => storage.removeItem(key));
+
+    // Một số WebView cập nhật danh sách key chậm khi xóa liên tiếp.
+    // Kiểm tra lại và dùng clear() làm fallback trên origin riêng của app.
+    let remainingKeys = getAppStorageKeys(storage);
+    if (remainingKeys.length > 0) {
+      storage.clear();
+      remainingKeys = getAppStorageKeys(storage);
+    }
+
+    return {
+      success: remainingKeys.length === 0,
+      removed: keysToRemove.length,
+    };
+  } catch {
+    return { success: false, removed: 0 };
+  }
+}
+
+function getAppStorageKeys(storage: Storage) {
+  return Array.from(
     { length: storage.length },
     (_, index) => storage.key(index),
   ).filter(
@@ -72,6 +94,4 @@ export function clearAllAppStorage() {
       key !== null &&
       APP_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix)),
   );
-  keysToRemove.forEach((key) => storage.removeItem(key));
-  return keysToRemove.length;
 }

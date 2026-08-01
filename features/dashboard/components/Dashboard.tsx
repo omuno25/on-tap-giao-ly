@@ -161,13 +161,13 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
             icon={BookOpen}
             value={`${catechumenProgress}%`}
             label="Dự tòng"
-            href="/catechumen"
+            href="/giao-ly-du-tong"
           />
           <Summary
             icon={ScrollText}
             value={`${prayerProgress}%`}
-            label="Kinh"
-            href="/prayers"
+            label="Kinh thánh"
+            href="/kinh-quan-trong"
           />
         </section>
 
@@ -183,7 +183,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
               title="Giáo lý Hôn nhân"
               description="Ôn tập kiến thức Hôn nhân và Gia đình Công giáo."
               count={`${totalMarriageCards} thẻ`}
-              href="/study"
+              href="/giao-ly-hon-nhan"
               icon={Church}
               tone="blue"
               progress={marriageProgress}
@@ -205,7 +205,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
                   title={set.title.replace("Giáo lý Dự tòng · ", "")}
                   description={set.description}
                   count={`${set.cards.length} thẻ`}
-                  href={`/catechumen/${set.slug}`}
+                  href={`/giao-ly-du-tong/${set.slug}`}
                   icon={BookOpen}
                   tone="amber"
                   progress={percent(
@@ -227,7 +227,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
               title="18 Kinh cần thuộc"
               description="Một vị trí riêng đã sẵn sàng cho bộ kinh đọc và học thuộc."
               count="18 bài kinh"
-              href="/prayers"
+              href="/kinh-quan-trong"
               icon={ScrollText}
               tone="green"
             />
@@ -240,7 +240,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
               Sẵn sàng kiểm tra kiến thức?
             </p>
             <p className="mt-1 text-sm text-on-surface-variant">
-              Làm đề ngẫu nhiên 13 câu trong 25 phút.
+              Làm đề ngẫu nhiên 20 câu trong 25 phút.
             </p>
           </div>
           <Link

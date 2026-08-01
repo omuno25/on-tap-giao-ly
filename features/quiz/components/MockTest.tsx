@@ -3,7 +3,7 @@
 import { X, Timer, Flag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { saveExamResult } from "@/lib/learning-storage";
 import {
@@ -11,12 +11,19 @@ import {
   type MarriageSourceQuestion,
 } from "@/lib/question-bank";
 
-const OBJECTIVE_COUNT = 10;
-const ESSAY_COUNT = 3;
+const OBJECTIVE_COUNT = 15;
+const ESSAY_COUNT = 4;
+const TRUE_FALSE_COUNT = 1;
 const EXAM_DURATION_SECONDS = 25 * 60;
 
-type ExamMode = "objective" | "essay";
-type RawQuestion = MarriageSourceQuestion;
+type ExamMode = "objective" | "essay" | "true-false";
+export type MockTestSourceQuestion = {
+  id: string | number;
+  type: MarriageSourceQuestion["type"];
+  question: string;
+  answer: string | string[];
+};
+type RawQuestion = MockTestSourceQuestion;
 
 type ExamOption = { id: string; text: string };
 type ExamQuestion = {
@@ -94,17 +101,25 @@ function buildObjectiveOptions(source: RawQuestion, pool: RawQuestion[]) {
   };
 }
 
-function buildExamQuestions() {
-  const objectivePool = MARRIAGE_QUESTION_SET.questions.filter(
+function buildExamQuestions(
+  sourceQuestions: RawQuestion[],
+  objectiveCount: number,
+  essayCount: number,
+  trueFalseCount: number,
+) {
+  const objectivePool = sourceQuestions.filter(
     (q) => q.type === "short",
   );
-  const essayPool = MARRIAGE_QUESTION_SET.questions.filter(
+  const essayPool = sourceQuestions.filter(
     (q) => q.type === "essay",
+  );
+  const trueFalsePool = sourceQuestions.filter(
+    (q) => q.type === "true-false",
   );
 
   const objectiveQuestions: ExamQuestion[] = pickQuestions(
     objectivePool,
-    OBJECTIVE_COUNT,
+    objectiveCount,
   ).map((q) => {
     const normalized = buildObjectiveOptions(q, objectivePool);
 
@@ -119,7 +134,7 @@ function buildExamQuestions() {
 
   const essayQuestions: ExamQuestion[] = pickQuestions(
     essayPool,
-    ESSAY_COUNT,
+    essayCount,
   ).map((q) => ({
     id: String(q.id),
     title: q.question,
@@ -127,7 +142,31 @@ function buildExamQuestions() {
     examMode: "essay" as const,
   }));
 
-  return shuffle<ExamQuestion>([...objectiveQuestions, ...essayQuestions]);
+  const trueFalseQuestions: ExamQuestion[] = pickQuestions(
+    trueFalsePool,
+    trueFalseCount,
+  ).map((q) => {
+    const correctText = normalizeAnswer(q.answer);
+    const options = [
+      { id: "true", text: "Đúng" },
+      { id: "false", text: "Sai" },
+    ];
+
+    return {
+      id: String(q.id),
+      title: q.question,
+      standardAnswer: correctText,
+      examMode: "true-false" as const,
+      options,
+      correctOptionId: correctText === "Đúng" ? "true" : "false",
+    };
+  });
+
+  return shuffle<ExamQuestion>([
+    ...objectiveQuestions,
+    ...essayQuestions,
+    ...trueFalseQuestions,
+  ]);
 }
 
 function formatTime(totalSeconds: number) {
@@ -141,7 +180,7 @@ function calculateScore(
   answers: Record<string, string>,
 ): ScoreSummary {
   const objectiveQuestions = questions.filter(
-    (q) => q.examMode === "objective",
+    (q) => q.examMode === "objective" || q.examMode === "true-false",
   );
   const essayQuestions = questions.filter((q) => q.examMode === "essay");
 
@@ -169,26 +208,55 @@ function calculateScore(
   };
 }
 
-export default function MockTest() {
+type MockTestProps = {
+  sourceQuestions?: MockTestSourceQuestion[];
+  objectiveCount?: number;
+  essayCount?: number;
+  trueFalseCount?: number;
+  durationSeconds?: number;
+  eyebrow?: string;
+  title?: string;
+  exitHref?: string;
+  saveResult?: boolean;
+};
+
+export default function MockTest({
+  sourceQuestions = MARRIAGE_QUESTION_SET.questions,
+  objectiveCount = OBJECTIVE_COUNT,
+  essayCount = ESSAY_COUNT,
+  trueFalseCount = TRUE_FALSE_COUNT,
+  durationSeconds = EXAM_DURATION_SECONDS,
+  eyebrow = "Giáo Xứ Đức Mẹ Hằng Cứu Giúp",
+  title = "Thi Thử Giáo Lý Hôn Nhân",
+  exitHref = "/",
+  saveResult = true,
+}: MockTestProps) {
   const [questions, setQuestions] = useState<ExamQuestion[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [secondsLeft, setSecondsLeft] = useState(EXAM_DURATION_SECONDS);
+  const [secondsLeft, setSecondsLeft] = useState(durationSeconds);
   const [manuallySubmitted, setManuallySubmitted] = useState(false);
   const resultSaved = useRef(false);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      setQuestions(buildExamQuestions());
+      setQuestions(
+        buildExamQuestions(
+          sourceQuestions,
+          objectiveCount,
+          essayCount,
+          trueFalseCount,
+        ),
+      );
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, []);
+  }, [essayCount, objectiveCount, sourceQuestions, trueFalseCount]);
 
   const submitted = manuallySubmitted || secondsLeft === 0;
 
   useEffect(() => {
-    if (!submitted || !questions || resultSaved.current) return;
+    if (!saveResult || !submitted || !questions || resultSaved.current) return;
     const score = calculateScore(questions, answers);
     saveExamResult({
       correct: score.correct,
@@ -200,7 +268,7 @@ export default function MockTest() {
       completedAt: new Date().toISOString(),
     });
     resultSaved.current = true;
-  }, [answers, questions, submitted]);
+  }, [answers, questions, saveResult, submitted]);
 
   useEffect(() => {
     if (submitted || secondsLeft <= 0) return;
@@ -218,12 +286,6 @@ export default function MockTest() {
     totalQuestions > 0
       ? Math.round(((currentIndex + 1) / totalQuestions) * 100)
       : 0;
-
-  const essayCountInExam = useMemo(
-    () =>
-      questions ? questions.filter((q) => q.examMode === "essay").length : 0,
-    [questions],
-  );
 
   if (!questions || !currentQuestion) {
     return (
@@ -271,17 +333,17 @@ export default function MockTest() {
       <header className="fixed inset-x-0 top-0 z-50 mx-auto flex w-full max-w-[var(--app-max-width)] items-center justify-between gap-2 border-b border-surface-container bg-surface/80 px-3 py-3 backdrop-blur-md sm:px-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link
-            href="/"
+            href={exitHref}
             className="hover:bg-surface-container-low p-1.5 rounded-full transition-colors active:scale-95"
           >
             <X className="size-[var(--icon-md)] text-on-surface" />
           </Link>
           <div className="flex min-w-0 flex-col">
             <span className="text-[10px] font-bold text-primary tracking-widest font-headline uppercase">
-              Giáo Xứ Đức Mẹ Hằng Cứu Giúp
+              {eyebrow}
             </span>
             <span className="truncate font-headline text-sm font-semibold leading-tight text-on-surface sm:text-base">
-              Thi Thử Giáo Lý Hôn Nhân
+              {title}
             </span>
           </div>
         </div>
@@ -332,6 +394,8 @@ export default function MockTest() {
               <span className="inline-block self-start px-3 bg-primary/5 text-primary text-[10px] font-bold tracking-widest rounded-full uppercase py-0.5">
                 {currentQuestion.examMode === "essay"
                   ? "Tự luận"
+                  : currentQuestion.examMode === "true-false"
+                    ? "Đúng hay Sai"
                   : "Câu hỏi thường"}
               </span>
               <h2 className="font-headline font-bold text-on-surface leading-snug text-xl">
@@ -352,7 +416,8 @@ export default function MockTest() {
           </div>
         </article>
 
-        {currentQuestion.examMode === "objective" ? (
+        {currentQuestion.examMode === "objective" ||
+        currentQuestion.examMode === "true-false" ? (
           <section className="grid grid-cols-1 gap-3.5">
             {currentQuestion.options?.map((option) => {
               const isSelected = currentAnswer === option.id;
@@ -436,16 +501,18 @@ export default function MockTest() {
             <p className="mt-1">
               Trắc nghiệm: {score.objective.correct}/{score.objective.total}
             </p>
-            <p>
-              Tự luận (so khớp tuyệt đối): {score.essay.correct}/
-              {score.essay.total}
-            </p>
+            {score.essay.total > 0 && (
+              <p>
+                Tự luận (so khớp tuyệt đối): {score.essay.correct}/
+                {score.essay.total}
+              </p>
+            )}
             <p className="mt-1 text-on-surface-variant">
               Bạn đã trả lời {answeredCount}/{totalQuestions} câu.
             </p>
             <div className="mt-3">
               <Link
-                href="/"
+                href={exitHref}
                 className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-on-primary font-headline font-bold text-sm hover:opacity-90 transition-all active:scale-95"
               >
                 Trở về
