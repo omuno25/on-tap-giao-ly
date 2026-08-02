@@ -7,12 +7,12 @@
   "author": "Omuno contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/omuno25/flashcard-learning.git"
+    "url": "git+https://github.com/omuno25/on-tap-giao-ly.git"
   },
   "bugs": {
-    "url": "https://github.com/omuno25/flashcard-learning/issues"
+    "url": "https://github.com/omuno25/on-tap-giao-ly/issues"
   },
-  "homepage": "https://github.com/omuno25/flashcard-learning#readme",
+  "homepage": "https://github.com/omuno25/on-tap-giao-ly#readme",
   "engines": {
     "node": ">=20.9.0"
   },

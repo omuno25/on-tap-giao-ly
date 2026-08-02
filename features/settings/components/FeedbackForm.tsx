@@ -6,7 +6,7 @@ import SettingsPageHeader from "@/components/settings/SettingsPageHeader";
 
 const FEEDBACK_TYPES = ["Góp ý", "Báo lỗi", "Nội dung"] as const;
 const GITHUB_ISSUE_URL =
-  "https://github.com/omuno25/flashcard-learning/issues/new";
+  "https://github.com/omuno25/on-tap-giao-ly/issues/new";
 
 export default function FeedbackForm() {
   const [type, setType] = useState<(typeof FEEDBACK_TYPES)[number]>("Góp ý");
