@@ -2,6 +2,8 @@
 
 Ứng dụng web hỗ trợ ôn tập giáo lý Công giáo bằng flashcard, câu hỏi trắc nghiệm, bài tự luận ngắn và audio đọc kinh. Tiến độ học được lưu cục bộ trên trình duyệt; ứng dụng hiện không yêu cầu tài khoản và không gửi dữ liệu học tập lên máy chủ.
 
+Sử dụng trực tuyến tại [ontapgiaoly.site](https://ontapgiaoly.site/).
+
 > **Phạm vi sử dụng:** mã nguồn được phát hành theo MIT License. Nội dung giáo lý, dữ liệu, bài viết và audio được chia sẻ nhằm phục vụ học tập, nghiên cứu và sinh hoạt tôn giáo phi thương mại; không được sử dụng các tài nguyên này cho mục đích thương mại nếu chưa có sự cho phép riêng bằng văn bản.
 
 ## Tính năng
