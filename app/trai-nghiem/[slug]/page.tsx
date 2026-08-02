@@ -20,7 +20,7 @@ export async function generateMetadata({
 }: BlogPostPageProps): Promise<Metadata> {
   const post = getBlogPost((await params).slug);
   return post
-    ? { title: `${post.title} | FlashCard`, description: post.excerpt }
+    ? { title: `${post.title} | Ôn tập Giáo lý`, description: post.excerpt }
     : {};
 }
 

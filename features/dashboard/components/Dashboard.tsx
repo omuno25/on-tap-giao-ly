@@ -9,7 +9,6 @@ import {
   Church,
   Play,
   ScrollText,
-  Sparkles,
   User,
 } from "lucide-react";
 import { QUESTION_BANK } from "@/lib/question-bank";
@@ -100,14 +99,15 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <Link
             href="/"
-            className="flex items-center gap-2.5"
-            aria-label="Trang chủ FlashCard"
+            className="flex min-w-0 items-center gap-2.5"
+            aria-label="Trang chủ Ôn tập Giáo lý"
           >
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-on-primary shadow-sm">
-              <Sparkles className="size-[var(--icon-md)]" />
+            <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-[14px] bg-primary text-on-primary shadow-md shadow-primary/20 ring-1 ring-primary/10">
+              <span className="absolute -right-2 -top-2 h-5 w-5 rounded-full bg-white/20" />
+              <Church className="relative size-6" strokeWidth={2.2} />
             </span>
-            <span className="font-headline text-lg font-black tracking-tight text-on-surface">
-              FlashCard
+            <span className="truncate font-headline text-base font-black tracking-tight text-on-surface sm:text-lg">
+              Ôn tập Giáo lý
             </span>
           </Link>
           <Link
