@@ -2,6 +2,8 @@
 
 Ứng dụng web hỗ trợ ôn tập giáo lý Công giáo bằng flashcard, câu hỏi trắc nghiệm, bài tự luận ngắn và audio đọc kinh. Tiến độ học được lưu cục bộ trên trình duyệt; ứng dụng hiện không yêu cầu tài khoản và không gửi dữ liệu học tập lên máy chủ.
 
+> **Phạm vi sử dụng:** mã nguồn được phát hành theo MIT License. Nội dung giáo lý, dữ liệu, bài viết và audio được chia sẻ nhằm phục vụ học tập, nghiên cứu và sinh hoạt tôn giáo phi thương mại; không được sử dụng các tài nguyên này cho mục đích thương mại nếu chưa có sự cho phép riêng bằng văn bản.
+
 ## Tính năng
 
 - Ôn Giáo lý Hôn nhân và Giáo lý Dự tòng theo từng bộ câu hỏi.
@@ -63,8 +65,10 @@ Các tệp MP3 trong `public/audio/` được người duy trì dự án tạo b
 
 ## License
 
-- Mã nguồn: [MIT License](LICENSE).
-- Nội dung gốc, dữ liệu và audio do dự án tạo: [CC BY 4.0](CONTENT_LICENSE.md).
+- Mã nguồn: [MIT License](LICENSE), bao gồm quyền sử dụng thương mại theo các điều kiện của MIT.
+- Nội dung gốc, dữ liệu và audio do dự án tạo: [CC BY-NC 4.0](CONTENT_LICENSE.md).
 - Tài liệu hoặc nội dung từ bên thứ ba, nếu có, vẫn tuân theo quyền và điều khoản của chủ sở hữu tương ứng.
+
+Đây là repository đa license: phần mã nguồn là open source theo MIT; các tài nguyên trong `content/`, `data/` và `public/audio/` không thuộc MIT và bị giới hạn ở mục đích phi thương mại theo CC BY-NC 4.0.
 
 Xem thêm [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md).

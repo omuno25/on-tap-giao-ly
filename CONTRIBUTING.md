@@ -16,4 +16,4 @@ Chỉ gửi dữ liệu, bài viết hoặc audio mà bạn có quyền phân ph
 
 Không gửi API key, dữ liệu cá nhân, bản ghi giọng nói được clone khi chưa có sự đồng ý, hoặc tài liệu không rõ quyền sử dụng.
 
-Bằng việc gửi đóng góp, bạn đồng ý cấp phép mã nguồn theo MIT và nội dung đủ điều kiện theo CC BY 4.0 như mô tả trong repository.
+Bằng việc gửi đóng góp, bạn đồng ý cấp phép mã nguồn theo MIT và nội dung đủ điều kiện theo CC BY-NC 4.0 như mô tả trong repository.
