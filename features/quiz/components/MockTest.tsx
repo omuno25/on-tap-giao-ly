@@ -6,207 +6,21 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { saveExamResult } from "@/lib/learning-storage";
+import { MARRIAGE_QUESTION_SET } from "@/lib/question-bank";
 import {
-  MARRIAGE_QUESTION_SET,
-  type MarriageSourceQuestion,
-} from "@/lib/question-bank";
+  buildExamQuestions,
+  calculateScore,
+  formatExamTime,
+  type ExamQuestion,
+  type MockTestSourceQuestion,
+} from "@/lib/exam";
+
+export type { MockTestSourceQuestion } from "@/lib/exam";
 
 const OBJECTIVE_COUNT = 15;
 const ESSAY_COUNT = 4;
 const TRUE_FALSE_COUNT = 1;
 const EXAM_DURATION_SECONDS = 25 * 60;
-
-type ExamMode = "objective" | "essay" | "true-false";
-export type MockTestSourceQuestion = {
-  id: string | number;
-  type: MarriageSourceQuestion["type"];
-  question: string;
-  answer: string | string[];
-};
-type RawQuestion = MockTestSourceQuestion;
-
-type ExamOption = { id: string; text: string };
-type ExamQuestion = {
-  id: string;
-  title: string;
-  standardAnswer: string;
-  examMode: ExamMode;
-  options?: ExamOption[];
-  correctOptionId?: string;
-  image?: string;
-};
-
-type ScoreSummary = {
-  objective: { total: number; correct: number };
-  essay: { total: number; correct: number };
-  total: number;
-  correct: number;
-};
-
-function shuffle<T>(items: T[]) {
-  const result = [...items];
-
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-
-  return result;
-}
-
-function pickQuestions<T>(pool: T[], count: number) {
-  if (pool.length === 0 || count <= 0) return [];
-  if (pool.length >= count) return shuffle(pool).slice(0, count);
-
-  const picked = [...shuffle(pool)];
-  while (picked.length < count) {
-    picked.push(pool[Math.floor(Math.random() * pool.length)]);
-  }
-
-  return picked;
-}
-
-function normalizeAnswer(answer: string | string[]) {
-  if (Array.isArray(answer)) {
-    return answer.join("; ");
-  }
-
-  return answer;
-}
-
-function buildObjectiveOptions(source: RawQuestion, pool: RawQuestion[]) {
-  const correctText = normalizeAnswer(source.answer);
-  const distractorPool = pool
-    .map((item) => normalizeAnswer(item.answer))
-    .filter((value): value is string =>
-      Boolean(value && value.trim().length > 0 && value !== correctText),
-    );
-
-  const distractors = shuffle(Array.from(new Set(distractorPool))).slice(0, 3);
-  while (distractors.length < 3) {
-    distractors.push("Không có đáp án phù hợp");
-  }
-
-  const optionTexts = shuffle([correctText, ...distractors]);
-  const optionIds = ["A", "B", "C", "D"];
-  const options = optionTexts.map((text, index) => ({
-    id: optionIds[index],
-    text,
-  }));
-  const correctOption = options.find((option) => option.text === correctText);
-
-  return {
-    options,
-    correctOptionId: correctOption?.id ?? "A",
-  };
-}
-
-function buildExamQuestions(
-  sourceQuestions: RawQuestion[],
-  objectiveCount: number,
-  essayCount: number,
-  trueFalseCount: number,
-) {
-  const objectivePool = sourceQuestions.filter(
-    (q) => q.type === "short",
-  );
-  const essayPool = sourceQuestions.filter(
-    (q) => q.type === "essay",
-  );
-  const trueFalsePool = sourceQuestions.filter(
-    (q) => q.type === "true-false",
-  );
-
-  const objectiveQuestions: ExamQuestion[] = pickQuestions(
-    objectivePool,
-    objectiveCount,
-  ).map((q) => {
-    const normalized = buildObjectiveOptions(q, objectivePool);
-
-    return {
-      id: String(q.id),
-      title: q.question,
-      standardAnswer: normalizeAnswer(q.answer),
-      ...normalized,
-      examMode: "objective" as const,
-    };
-  });
-
-  const essayQuestions: ExamQuestion[] = pickQuestions(
-    essayPool,
-    essayCount,
-  ).map((q) => ({
-    id: String(q.id),
-    title: q.question,
-    standardAnswer: normalizeAnswer(q.answer),
-    examMode: "essay" as const,
-  }));
-
-  const trueFalseQuestions: ExamQuestion[] = pickQuestions(
-    trueFalsePool,
-    trueFalseCount,
-  ).map((q) => {
-    const correctText = normalizeAnswer(q.answer);
-    const options = [
-      { id: "true", text: "Đúng" },
-      { id: "false", text: "Sai" },
-    ];
-
-    return {
-      id: String(q.id),
-      title: q.question,
-      standardAnswer: correctText,
-      examMode: "true-false" as const,
-      options,
-      correctOptionId: correctText === "Đúng" ? "true" : "false",
-    };
-  });
-
-  return shuffle<ExamQuestion>([
-    ...objectiveQuestions,
-    ...essayQuestions,
-    ...trueFalseQuestions,
-  ]);
-}
-
-function formatTime(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
-function calculateScore(
-  questions: ExamQuestion[],
-  answers: Record<string, string>,
-): ScoreSummary {
-  const objectiveQuestions = questions.filter(
-    (q) => q.examMode === "objective" || q.examMode === "true-false",
-  );
-  const essayQuestions = questions.filter((q) => q.examMode === "essay");
-
-  const objectiveCorrect = objectiveQuestions.reduce((count, q) => {
-    const picked = answers[q.id];
-    if (!picked) return count;
-    return picked === q.correctOptionId ? count + 1 : count;
-  }, 0);
-
-  const essayCorrect = essayQuestions.reduce((count, q) => {
-    const input = (answers[q.id] ?? "").trim();
-    const expected = (q.standardAnswer ?? "").trim();
-    // Essay scoring is strict exact match, including punctuation and accents.
-    return input === expected ? count + 1 : count;
-  }, 0);
-
-  const total = questions.length;
-  const correct = objectiveCorrect + essayCorrect;
-
-  return {
-    objective: { total: objectiveQuestions.length, correct: objectiveCorrect },
-    essay: { total: essayQuestions.length, correct: essayCorrect },
-    total,
-    correct,
-  };
-}
 
 type MockTestProps = {
   sourceQuestions?: MockTestSourceQuestion[];
@@ -376,7 +190,7 @@ export default function MockTest({
             <div className="flex items-center gap-1.5">
               <Timer className="size-[var(--icon-md)] fill-current text-error" />
               <span className="font-headline font-black text-on-surface tabular-nums text-lg">
-                {formatTime(secondsLeft)}
+                {formatExamTime(secondsLeft)}
               </span>
             </div>
             <span className="text-[9px] font-bold text-outline tracking-wider uppercase">
