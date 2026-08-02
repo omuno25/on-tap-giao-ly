@@ -13,13 +13,13 @@
 ## Yêu cầu
 
 - Node.js `>=20.9.0`
-- pnpm `10.11.0`
+- Bun `1.3.13`
 
 ## Chạy ở máy cá nhân
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm dev
+bun ci
+bun run dev
 ```
 
 Mở [http://localhost:3000](http://localhost:3000).
@@ -29,11 +29,17 @@ Mở [http://localhost:3000](http://localhost:3000).
 ## Kiểm tra trước khi đóng góp
 
 ```bash
-pnpm check
-pnpm audit
+bun run check
+bun audit
 ```
 
-`pnpm check` chạy ESLint, kiểm tra TypeScript và production build.
+`bun run check` chạy ESLint, kiểm tra TypeScript và production build.
+
+## Deploy lên Vercel
+
+Import repository vào Vercel và giữ Framework Preset là **Next.js**. Vercel nhận diện `bun.lock` cùng trường `packageManager` và dùng cấu hình Bun trong `vercel.json`; không cần đặt riêng Install Command, Build Command hoặc Output Directory.
+
+Nếu không muốn chạy Next.js bằng Bun runtime trên Vercel, có thể xóa `vercel.json`; Bun vẫn được dùng làm package manager nhờ `bun.lock`.
 
 ## Cấu trúc chính
 

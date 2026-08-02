@@ -6,9 +6,9 @@ Cảm ơn bạn muốn cải thiện dự án.
 
 1. Tạo issue mô tả lỗi hoặc đề xuất nếu thay đổi có phạm vi lớn.
 2. Fork repository và tạo branch riêng.
-3. Cài dependency bằng `pnpm install --frozen-lockfile`.
+3. Cài dependency bằng `bun ci`.
 4. Thực hiện thay đổi nhỏ, tập trung và có mô tả rõ ràng.
-5. Chạy `pnpm check` và `pnpm audit` trước khi gửi pull request.
+5. Chạy `bun run check` và `bun audit` trước khi gửi pull request.
 
 ## Nội dung và audio
 
