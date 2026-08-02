@@ -21,6 +21,8 @@ Chỉ chỉnh nội dung học trong thư mục này:
 
 Trường `audio` có thể bỏ qua khi chưa có file đọc. File audio nội bộ nên đặt trong `public/audio/` và đường dẫn trong JSON bắt đầu bằng `/audio/`.
 
+Khi thêm hoặc sửa dữ liệu, hãy ghi lại nguồn và chỉ dùng nội dung mà bạn có quyền phân phối theo `CONTENT_LICENSE.md`. Không đặt bản sao MP3 trong thư mục `data/`; ứng dụng phục vụ audio trực tiếp từ `public/audio/`.
+
 Không import JSON trực tiếp từ component. Các adapter trong `lib/question-bank.ts`, `lib/catechumen.ts` và `lib/prayers.ts` chịu trách nhiệm cung cấp dữ liệu có type cho UI.
 
 ## Bài viết Góc học tập

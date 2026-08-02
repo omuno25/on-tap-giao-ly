@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Timer, Flag } from "lucide-react";
+import { X, Timer, Flag, UserRound } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -347,14 +347,12 @@ export default function MockTest({
             </span>
           </div>
         </div>
-        <Image
-          src="https://picsum.photos/seed/user/100/100"
-          alt="User Avatar"
-          width={32}
-          height={32}
-          className="hidden h-8 w-8 shrink-0 rounded-full border-2 border-surface bg-surface-container-high min-[360px]:block"
-          referrerPolicy="no-referrer"
-        />
+        <span
+          aria-label="Người dùng"
+          className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-surface bg-surface-container-high min-[360px]:flex"
+        >
+          <UserRound className="size-4 text-on-surface-variant" />
+        </span>
       </header>
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 pb-28 pt-20 sm:px-6">
