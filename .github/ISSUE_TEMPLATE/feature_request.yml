@@ -1,0 +1,22 @@
+name: Đề xuất tính năng
+description: Đề xuất cải thiện cho ứng dụng
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Vấn đề cần giải quyết
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Giải pháp đề xuất
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Nguồn nội dung
+      description: Bắt buộc nếu đề xuất thêm hoặc sửa nội dung giáo lý.

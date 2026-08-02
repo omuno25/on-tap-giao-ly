@@ -37,6 +37,12 @@ bun audit
 
 `bun run check` chạy ESLint, kiểm tra TypeScript và production build.
 
+## Lưu ý về nội dung
+
+Ứng dụng là tài liệu hỗ trợ ôn tập do cộng đồng duy trì, không phải ấn bản giáo lý chính thức và không thay thế hướng dẫn của giáo phận, giáo xứ hoặc người phụ trách đào tạo. Nội dung liên quan đến sức khỏe, hôn nhân hoặc pháp luật chỉ có mục đích học tập; hãy tham khảo người có chuyên môn trước khi đưa ra quyết định thực tế.
+
+Nguồn gốc và trạng thái quyền của các bộ dữ liệu, bài viết và audio được ghi tại [CONTENT_PROVENANCE.md](CONTENT_PROVENANCE.md).
+
 ## Deploy lên Vercel
 
 Import repository vào Vercel và giữ Framework Preset là **Next.js**. Vercel nhận diện `bun.lock` cùng trường `packageManager` và dùng cấu hình Bun trong `vercel.json`; không cần đặt riêng Install Command, Build Command hoặc Output Directory.
