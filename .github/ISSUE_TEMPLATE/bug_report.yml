@@ -1,0 +1,31 @@
+name: Báo lỗi
+description: Báo một lỗi có thể tái hiện trong ứng dụng
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Mô tả
+      description: Điều gì đã xảy ra và bạn mong đợi điều gì?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Cách tái hiện
+      placeholder: Liệt kê từng bước để gặp lỗi.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Môi trường
+      placeholder: Trình duyệt, hệ điều hành và thiết bị
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Thông tin bổ sung
+      description: Ảnh chụp hoặc log đã loại bỏ dữ liệu nhạy cảm.

@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/omuno25/on-tap-giao-ly/issues"
   },
-  "homepage": "https://github.com/omuno25/on-tap-giao-ly#readme",
+  "homepage": "https://ontapgiaoly.site",
   "engines": {
     "node": ">=20.9.0"
   },
@@ -31,7 +31,8 @@
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "lint": "eslint .",
-    "check": "bun run lint && bun run build"
+    "test": "bun test",
+    "check": "bun run lint && bun run test && bun run build"
   },
   "dependencies": {
     "clsx": "^2.1.1",

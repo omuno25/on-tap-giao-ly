@@ -15,8 +15,13 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FlashCard",
-  description: "An editorial-inspired digital learning environment.",
+  metadataBase: new URL("https://ontapgiaoly.site"),
+  title: "Ôn tập Giáo lý",
+  description:
+    "Ứng dụng ôn tập giáo lý bằng flashcard, bài kiểm tra và audio.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
