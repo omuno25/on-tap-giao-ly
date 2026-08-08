@@ -234,6 +234,8 @@ function useAudioVisualizer(audioRef: RefObject<HTMLAudioElement | null>) {
   }, []);
 
   const prepare = async (audio: HTMLAudioElement) => {
+    if (isIOSDevice()) return;
+
     const visualizer = visualizerRef.current;
     const audioContext =
       visualizer.context ?? (visualizer.context = new AudioContext());
@@ -301,4 +303,13 @@ function useAudioVisualizer(audioRef: RefObject<HTMLAudioElement | null>) {
   };
 
   return { prepare, start, stop, setBar };
+}
+
+function isIOSDevice() {
+  const { platform, userAgent, maxTouchPoints } = navigator;
+
+  return (
+    /iPad|iPhone|iPod/.test(userAgent) ||
+    (platform === "MacIntel" && maxTouchPoints > 1)
+  );
 }
