@@ -50,11 +50,7 @@
     {
       "id": 8,
       "question": "Ai là người được phép chứng hôn?",
-      "answer": [
-        "Giám mục",
-        "Linh mục",
-        "Phó tế"
-      ]
+      "answer": ["Giám mục", "Linh mục", "Phó tế"]
     },
     {
       "id": 9,

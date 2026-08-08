@@ -63,10 +63,16 @@ export default function NameSetupModal() {
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">
           Chào mừng bạn
         </p>
-        <h2 id="name-setup-title" className="mt-2 font-headline text-2xl font-bold">
+        <h2
+          id="name-setup-title"
+          className="mt-2 font-headline text-2xl font-bold"
+        >
           Mình nên gọi bạn là gì?
         </h2>
-        <p id="name-setup-description" className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+        <p
+          id="name-setup-description"
+          className="mt-2 text-sm leading-relaxed text-on-surface-variant"
+        >
           Tên này chỉ được lưu trên thiết bị và có thể đổi lại trong Cài đặt.
         </p>
 
@@ -80,7 +86,9 @@ export default function NameSetupModal() {
             name="name"
             value={name}
             maxLength={MAX_PROFILE_NAME_LENGTH}
-            onChange={(event) => setName(sanitizeProfileNameInput(event.target.value))}
+            onChange={(event) =>
+              setName(sanitizeProfileNameInput(event.target.value))
+            }
             placeholder="Ví dụ: An"
             autoComplete="name"
             className="mt-2 w-full rounded-control border border-outline-variant/50 bg-surface-container-low px-4 py-3.5 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"

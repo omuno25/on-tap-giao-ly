@@ -17,8 +17,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ontapgiaoly.site"),
   title: "Ôn tập Giáo lý",
-  description:
-    "Ứng dụng ôn tập giáo lý bằng flashcard, bài kiểm tra và audio.",
+  description: "Ứng dụng ôn tập giáo lý bằng flashcard, bài kiểm tra và audio.",
   alternates: {
     canonical: "/",
   },

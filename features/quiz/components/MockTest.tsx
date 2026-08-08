@@ -208,7 +208,7 @@ export default function MockTest({
                   ? "Tự luận"
                   : currentQuestion.examMode === "true-false"
                     ? "Đúng hay Sai"
-                  : "Câu hỏi thường"}
+                    : "Câu hỏi thường"}
               </span>
               <h2 className="font-headline font-bold text-on-surface leading-snug text-xl">
                 {currentQuestion.title}

@@ -4,13 +4,13 @@ Tài liệu này ghi nhận nguồn gốc và trạng thái quyền của nhữn
 
 ## Bộ dữ liệu giáo lý
 
-| Phạm vi | Người duy trì | Nguồn | Trạng thái |
-| --- | --- | --- | --- |
-| `data/giao-ly-hon-nhan-dataset.json` | Omuno contributors | Bộ câu hỏi do người duy trì nhập và biên tập cho ứng dụng | Cần tiếp tục đối chiếu với tài liệu giáo lý chính thức trước mỗi lần phát hành |
-| `data/catechumen-question-set.json` | Omuno contributors | Bộ câu hỏi do người duy trì nhập và biên tập cho ứng dụng | Cần tiếp tục đối chiếu với tài liệu giáo lý chính thức trước mỗi lần phát hành |
-| `data/catechumen-15-28.json` | Omuno contributors | Bộ câu hỏi do người duy trì nhập và biên tập cho ứng dụng | Cần tiếp tục đối chiếu với tài liệu giáo lý chính thức trước mỗi lần phát hành |
-| `data/18-kinh-can-thuoc.json` | Omuno contributors | Nội dung kinh được chuẩn hóa cho ứng dụng | Chỉ cấp phép phần biên soạn mà dự án có quyền; văn bản bên thứ ba giữ quyền riêng nếu có |
-| `data/leaderboard.json` | Omuno contributors | Dữ liệu minh họa, không phải dữ liệu người dùng thật | CC BY-NC 4.0 |
+| Phạm vi                              | Người duy trì      | Nguồn                                                     | Trạng thái                                                                               |
+| ------------------------------------ | ------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `data/giao-ly-hon-nhan-dataset.json` | Omuno contributors | Bộ câu hỏi do người duy trì nhập và biên tập cho ứng dụng | Cần tiếp tục đối chiếu với tài liệu giáo lý chính thức trước mỗi lần phát hành           |
+| `data/catechumen-question-set.json`  | Omuno contributors | Bộ câu hỏi do người duy trì nhập và biên tập cho ứng dụng | Cần tiếp tục đối chiếu với tài liệu giáo lý chính thức trước mỗi lần phát hành           |
+| `data/catechumen-15-28.json`         | Omuno contributors | Bộ câu hỏi do người duy trì nhập và biên tập cho ứng dụng | Cần tiếp tục đối chiếu với tài liệu giáo lý chính thức trước mỗi lần phát hành           |
+| `data/18-kinh-can-thuoc.json`        | Omuno contributors | Nội dung kinh được chuẩn hóa cho ứng dụng                 | Chỉ cấp phép phần biên soạn mà dự án có quyền; văn bản bên thứ ba giữ quyền riêng nếu có |
+| `data/leaderboard.json`              | Omuno contributors | Dữ liệu minh họa, không phải dữ liệu người dùng thật      | CC BY-NC 4.0                                                                             |
 
 ## Bài viết
 

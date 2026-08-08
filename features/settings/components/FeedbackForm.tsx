@@ -5,8 +5,7 @@ import { ExternalLink, MessageSquarePlus, Star } from "lucide-react";
 import SettingsPageHeader from "@/components/settings/SettingsPageHeader";
 
 const FEEDBACK_TYPES = ["Góp ý", "Báo lỗi", "Nội dung"] as const;
-const GITHUB_ISSUE_URL =
-  "https://github.com/omuno25/on-tap-giao-ly/issues/new";
+const GITHUB_ISSUE_URL = "https://github.com/omuno25/on-tap-giao-ly/issues/new";
 
 export default function FeedbackForm() {
   const [type, setType] = useState<(typeof FEEDBACK_TYPES)[number]>("Góp ý");
@@ -65,7 +64,11 @@ export default function FeedbackForm() {
 
         <fieldset className="mt-5">
           <legend className="text-sm font-bold">Mức độ hài lòng</legend>
-          <div className="mt-2 flex gap-1" role="group" aria-label="Chọn từ 1 đến 5 sao">
+          <div
+            className="mt-2 flex gap-1"
+            role="group"
+            aria-label="Chọn từ 1 đến 5 sao"
+          >
             {[1, 2, 3, 4, 5].map((value) => (
               <button
                 key={value}
@@ -82,7 +85,9 @@ export default function FeedbackForm() {
             ))}
           </div>
           <p className="mt-1 text-xs text-on-surface-variant">
-            {rating > 0 ? `Bạn đã chọn ${rating}/5 sao.` : "Chưa chọn mức đánh giá."}
+            {rating > 0
+              ? `Bạn đã chọn ${rating}/5 sao.`
+              : "Chưa chọn mức đánh giá."}
           </p>
         </fieldset>
 

@@ -111,7 +111,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
             </span>
           </Link>
           <Link
-            href="/settings"
+            href="/cai-dat"
             className="flex items-center gap-2 rounded-full bg-surface-container-low px-2 py-1.5 pr-3 text-sm font-bold transition-colors hover:bg-surface-container"
             aria-label="Mở cài đặt"
           >
@@ -141,7 +141,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
               </p>
             </div>
             <Link
-              href="/study"
+              href="/hoc"
               className="relative mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-on-hero px-6 py-3.5 font-headline text-sm font-bold text-hero shadow-sm transition-transform active:scale-[0.98]"
             >
               <Play className="size-[var(--icon-sm)] fill-current" />
@@ -155,7 +155,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
             icon={Church}
             value={`${marriageProgress}%`}
             label="Hôn nhân"
-            href="/stats"
+            href="/thong-ke"
           />
           <Summary
             icon={BookOpen}
@@ -244,7 +244,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
             </p>
           </div>
           <Link
-            href="/test"
+            href="/thi-thu"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-on-surface px-6 py-3 text-sm font-bold text-surface"
           >
             Thi thử ngay <ArrowRight className="size-[var(--icon-sm)]" />

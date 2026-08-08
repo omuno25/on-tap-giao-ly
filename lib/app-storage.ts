@@ -86,9 +86,8 @@ export function clearAllAppStorage() {
 }
 
 function getAppStorageKeys(storage: Storage) {
-  return Array.from(
-    { length: storage.length },
-    (_, index) => storage.key(index),
+  return Array.from({ length: storage.length }, (_, index) =>
+    storage.key(index),
   ).filter(
     (key): key is string =>
       key !== null &&

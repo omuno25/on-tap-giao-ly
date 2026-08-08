@@ -19,7 +19,9 @@ export default function EssayReview() {
   const [answer, setAnswer] = useState("");
 
   useEffect(() => {
-    const frameId = requestAnimationFrame(() => setAnswer(readEssayAnswer("13")));
+    const frameId = requestAnimationFrame(() =>
+      setAnswer(readEssayAnswer("13")),
+    );
     return () => cancelAnimationFrame(frameId);
   }, []);
 
@@ -125,7 +127,10 @@ export default function EssayReview() {
 
         {/* Action Section */}
         <div className="mt-10 flex justify-center">
-          <Link href="/test" className="group flex items-center gap-3 bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-4 rounded-full font-headline font-bold text-base shadow-lg hover:shadow-primary-container/20 transition-all duration-300 active:scale-95">
+          <Link
+            href="/thi-thu"
+            className="group flex items-center gap-3 bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-4 rounded-full font-headline font-bold text-base shadow-lg hover:shadow-primary-container/20 transition-all duration-300 active:scale-95"
+          >
             Câu tiếp theo
             <ArrowRight className="size-[var(--icon-md)] transition-transform group-hover:translate-x-1" />
           </Link>

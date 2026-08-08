@@ -6,7 +6,11 @@ export function generateStaticParams() {
   return CATECHUMEN_SETS.map((set) => ({ set: set.slug }));
 }
 
-export default async function CatechumenStudyPage({ params }: { params: Promise<{ set: string }> }) {
+export default async function CatechumenStudyPage({
+  params,
+}: {
+  params: Promise<{ set: string }>;
+}) {
   const { set: slug } = await params;
   const catechumenSet = getCatechumenSet(slug);
   if (!catechumenSet) notFound();

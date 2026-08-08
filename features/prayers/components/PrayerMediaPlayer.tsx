@@ -66,8 +66,12 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           </span>
         </div>
 
-        <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em] text-surface/60">Kinh cần thuộc</p>
-        <h2 className="mt-2 font-headline text-2xl font-bold">{activePrayer.title}</h2>
+        <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em] text-surface/60">
+          Kinh cần thuộc
+        </p>
+        <h2 className="mt-2 font-headline text-2xl font-bold">
+          {activePrayer.title}
+        </h2>
 
         <div className="mt-7">
           <input
@@ -87,13 +91,32 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
         </div>
 
         <div className="mt-4 flex items-center justify-center gap-6">
-          <button type="button" onClick={() => moveTrack(-1)} className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10" aria-label="Bài trước">
+          <button
+            type="button"
+            onClick={() => moveTrack(-1)}
+            className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10"
+            aria-label="Bài trước"
+          >
             <SkipBack className="size-[var(--icon-md)] fill-current" />
           </button>
-          <button type="button" onClick={togglePlayback} className="grid h-16 w-16 cursor-pointer place-items-center rounded-full bg-surface text-on-surface shadow-soft transition-transform active:scale-95" aria-label={isPlaying ? "Tạm dừng" : "Phát audio"}>
-            {isPlaying ? <Pause className="size-[var(--icon-lg)] fill-current" /> : <Play className="ml-1 size-[var(--icon-lg)] fill-current" />}
+          <button
+            type="button"
+            onClick={togglePlayback}
+            className="grid h-16 w-16 cursor-pointer place-items-center rounded-full bg-surface text-on-surface shadow-soft transition-transform active:scale-95"
+            aria-label={isPlaying ? "Tạm dừng" : "Phát audio"}
+          >
+            {isPlaying ? (
+              <Pause className="size-[var(--icon-lg)] fill-current" />
+            ) : (
+              <Play className="ml-1 size-[var(--icon-lg)] fill-current" />
+            )}
           </button>
-          <button type="button" onClick={() => moveTrack(1)} className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10" aria-label="Bài tiếp theo">
+          <button
+            type="button"
+            onClick={() => moveTrack(1)}
+            className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10"
+            aria-label="Bài tiếp theo"
+          >
             <SkipForward className="size-[var(--icon-md)] fill-current" />
           </button>
         </div>
@@ -104,8 +127,12 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           src={activePrayer.audio}
           preload="metadata"
           autoPlay={isPlaying}
-          onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
-          onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+          onLoadedMetadata={(event) =>
+            setDuration(event.currentTarget.duration)
+          }
+          onTimeUpdate={(event) =>
+            setCurrentTime(event.currentTarget.currentTime)
+          }
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => {
@@ -118,7 +145,12 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
       <section className="mt-7" aria-labelledby="prayer-playlist-title">
         <div className="flex items-center gap-2">
           <ListMusic className="size-[var(--icon-md)] text-primary" />
-          <h2 id="prayer-playlist-title" className="font-headline text-xl font-bold">Danh sách audio</h2>
+          <h2
+            id="prayer-playlist-title"
+            className="font-headline text-xl font-bold"
+          >
+            Danh sách audio
+          </h2>
         </div>
         <div className="mt-4 grid gap-3">
           {prayers.map((prayer, index) => {
@@ -130,14 +162,28 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
                 onClick={() => selectTrack(index)}
                 className={`flex w-full cursor-pointer items-center gap-4 rounded-2xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive ? "border-primary bg-primary/5" : "border-surface-container bg-surface-container-lowest hover:bg-surface-container-low"}`}
               >
-                <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${isActive ? "bg-primary text-on-primary" : "bg-surface-container-low text-primary"}`}>
-                  {isActive && isPlaying ? <Volume2 className="size-[var(--icon-md)]" /> : <Play className="size-[var(--icon-sm)] fill-current" />}
+                <span
+                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${isActive ? "bg-primary text-on-primary" : "bg-surface-container-low text-primary"}`}
+                >
+                  {isActive && isPlaying ? (
+                    <Volume2 className="size-[var(--icon-md)]" />
+                  ) : (
+                    <Play className="size-[var(--icon-sm)] fill-current" />
+                  )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Audio {index + 1}</span>
-                  <span className="mt-1 block truncate font-headline font-bold">{prayer.title}</span>
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                    Audio {index + 1}
+                  </span>
+                  <span className="mt-1 block truncate font-headline font-bold">
+                    {prayer.title}
+                  </span>
                 </span>
-                {isActive && <span className="text-xs font-bold text-primary">Đang chọn</span>}
+                {isActive && (
+                  <span className="text-xs font-bold text-primary">
+                    Đang chọn
+                  </span>
+                )}
               </button>
             );
           })}

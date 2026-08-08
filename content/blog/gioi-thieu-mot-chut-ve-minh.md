@@ -7,21 +7,25 @@ featured: false
 order: 0
 ---
 
-Chào bạn, mình là người xây dựng **Ôn tập Giáo lý** — một ứng dụng nhỏ giúp việc học Giáo lý và các kinh cần thuộc trở nên đơn giản, rõ ràng hơn trên điện thoại.
+Hi, xin chào mọi người! ✌️
 
-## Vì sao mình làm ứng dụng này?
+Mình làm ứng dụng này đơn giản là để phục vụ cho việc học của bản thân. Trước đây, mình thường dùng Quizlet để học và tạo thẻ ghi nhớ, nhưng để sử dụng đầy đủ các tính năng thì phải mua gói 😒, còn làm quiz cũng bị giới hạn số lần kiểm tra.
 
-Mình bắt đầu dự án từ một nhu cầu rất thực tế: nội dung cần học khá nhiều, nhưng nếu được chia thành từng thẻ ngắn thì sẽ dễ xem lại và ghi nhớ hơn. Mình muốn tạo ra một nơi có thể mở lên học ngay, không cần đăng ký tài khoản và không bị phân tâm bởi những chức năng không cần thiết.
+Sẵn thời điểm này có nhiều công cụ AI hỗ trợ, mình ngồi vibe code một ứng dụng flashcard để lúc rảnh có thể ôn lại kiến thức khi cần. Đây cũng là nơi mình chia sẻ những trải nghiệm trong hành trình làm tân tòng của mình.
 
-Ôn tập Giáo lý hiện tập trung vào:
+Hiện tại, ứng dụng tập trung vào:
 
-- Giáo lý Hôn nhân.
-- Giáo lý Dự tòng.
+- Trắc nghiệm Giáo lý Hôn nhân.
+- Trắc nghiệm Giáo lý Dự tòng.
 - Các kinh cần thuộc kèm audio.
 - Bài kiểm tra và thống kê tiến độ học.
 
-## Một dự án mở
+Mục đích ban đầu chỉ là có một chỗ để lưu trữ tài liệu, làm flashcard và ôn tập online cho tiện, khỏi phải tìm lại tài liệu mỗi khi cần học. Sau một thời gian sử dụng, mình thấy ứng dụng cũng khá ổn nên quyết định chia sẻ với mọi người luôn. Biết đâu nó cũng sẽ giúp ích cho những anh chị và các bạn đang học Giáo lý Dự tòng hoặc Giáo lý Hôn nhân giống như mình.
 
-Đây vẫn là một dự án đang được hoàn thiện từng ngày. Nội dung và tính năng sẽ tiếp tục được bổ sung dựa trên nhu cầu sử dụng thực tế.
+Mình không dám nói nội dung trong ứng dụng là đầy đủ hay chính xác 100%, vì tất cả đều được mình tổng hợp từ sách giáo lý và những đề cương mình đã học. Nếu có chỗ nào sai sót hoặc cần bổ sung, mọi người cứ góp ý cho mình nhé. Mình sẽ cố gắng cập nhật để ứng dụng ngày càng tốt hơn.
 
-Mình dự định mở mã nguồn để mọi người có thể xem, đóng góp và cùng cải thiện ứng dụng. Hy vọng Ôn tập Giáo lý sẽ giúp bạn học đều đặn hơn, dù mỗi ngày chỉ dành ra một chút thời gian.
+Cảm ơn mọi người đã ghé qua. Chúc mọi người học thật tốt! 😊
+
+## Hành trình làm tân tòng của mình
+
+Mình sẽ chia sẻ thêm những câu chuyện và trải nghiệm trong hành trình làm tân tòng tại đây. Hy vọng những chia sẻ nhỏ này sẽ hữu ích cho những ai cũng đang trên hành trình giống mình.

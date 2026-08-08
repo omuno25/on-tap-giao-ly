@@ -55,7 +55,7 @@ export default function StatsPage() {
         {results.length === 0 ? (
           <p className="mt-4 text-sm text-on-surface-variant">
             Chưa có kết quả.{" "}
-            <Link className="text-primary font-bold" href="/test">
+            <Link className="text-primary font-bold" href="/thi-thu">
               Làm bài thi thử
             </Link>
           </p>

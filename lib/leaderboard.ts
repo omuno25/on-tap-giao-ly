@@ -9,4 +9,5 @@ export type LeaderboardLearner = {
 };
 
 export const LEADERBOARD_META = leaderboardData.meta;
-export const LEADERBOARD = leaderboardData.learners satisfies LeaderboardLearner[];
+export const LEADERBOARD =
+  leaderboardData.learners satisfies LeaderboardLearner[];
