@@ -1,5 +1,5 @@
 /**
- * Registry duy nhất cho toàn bộ dữ liệu FlashCard lưu trên trình duyệt.
+ * Registry duy nhất cho toàn bộ dữ liệu Ôn tập Giáo lý lưu trên trình duyệt.
  * Giữ nguyên tên key cũ để không làm mất tiến độ của người dùng hiện tại.
  */
 export const STORAGE_KEYS = {
@@ -86,9 +86,8 @@ export function clearAllAppStorage() {
 }
 
 function getAppStorageKeys(storage: Storage) {
-  return Array.from(
-    { length: storage.length },
-    (_, index) => storage.key(index),
+  return Array.from({ length: storage.length }, (_, index) =>
+    storage.key(index),
   ).filter(
     (key): key is string =>
       key !== null &&

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { motion } from 'motion/react';
+import { motion } from "motion/react";
 
 interface ProgressBarProps {
   progress: number; // 0 to 100
@@ -9,7 +9,9 @@ interface ProgressBarProps {
 
 export default function ProgressBar({ progress, className }: ProgressBarProps) {
   return (
-    <div className={`w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden ${className}`}>
+    <div
+      className={`w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden ${className}`}
+    >
       <motion.div
         className="h-full bg-gradient-to-r from-primary to-primary-container rounded-full"
         initial={{ width: 0 }}

@@ -12,12 +12,16 @@ function expectUnique(values: string[]) {
 describe("learning content", () => {
   test("bộ câu hỏi hôn nhân có ID duy nhất và nội dung hợp lệ", () => {
     expect(MARRIAGE_QUESTION_SET.questions.length).toBeGreaterThan(0);
-    expectUnique(MARRIAGE_QUESTION_SET.questions.map((item) => String(item.id)));
+    expectUnique(
+      MARRIAGE_QUESTION_SET.questions.map((item) => String(item.id)),
+    );
     expect(QUESTION_BANK).toHaveLength(MARRIAGE_QUESTION_SET.questions.length);
 
     for (const item of MARRIAGE_QUESTION_SET.questions) {
       expect(item.question.trim().length).toBeGreaterThan(0);
-      const answer = Array.isArray(item.answer) ? item.answer.join("") : item.answer;
+      const answer = Array.isArray(item.answer)
+        ? item.answer.join("")
+        : item.answer;
       expect(answer.trim().length).toBeGreaterThan(0);
     }
   });

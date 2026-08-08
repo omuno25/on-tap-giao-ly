@@ -1,6 +1,6 @@
-import marriageQuestionSetJson from '@/data/giao-ly-hon-nhan-dataset.json';
+import marriageQuestionSetJson from "@/data/giao-ly-hon-nhan-dataset.json";
 
-export type QuestionType = 'essay' | 'multiple-choice' | 'flashcard';
+export type QuestionType = "essay" | "multiple-choice" | "flashcard";
 
 export interface QuestionOption {
   id: string;
@@ -21,7 +21,7 @@ export interface Question {
 
 export interface MarriageSourceQuestion {
   id: number;
-  type: 'short' | 'essay' | 'true-false';
+  type: "short" | "essay" | "true-false";
   question: string;
   answer: string | string[];
 }
@@ -48,22 +48,22 @@ export const MARRIAGE_QUESTION_SET = {
   questions: [
     ...importedSet.questions.map<MarriageSourceQuestion>((item) => ({
       ...item,
-      type: typeof item.answer === 'boolean' ? 'true-false' : 'short',
+      type: typeof item.answer === "boolean" ? "true-false" : "short",
       answer:
-        typeof item.answer === 'boolean'
+        typeof item.answer === "boolean"
           ? item.answer
-            ? 'Đúng'
-            : 'Sai'
+            ? "Đúng"
+            : "Sai"
           : item.answer,
     })),
     ...importedSet.essays.map<MarriageSourceQuestion>((item) => ({
       ...item,
-      type: 'essay',
+      type: "essay",
       answer:
-        typeof item.answer === 'boolean'
+        typeof item.answer === "boolean"
           ? item.answer
-            ? 'Đúng'
-            : 'Sai'
+            ? "Đúng"
+            : "Sai"
           : item.answer,
     })),
   ],
@@ -71,20 +71,22 @@ export const MARRIAGE_QUESTION_SET = {
 
 function normalizeAnswer(answer: string | string[]) {
   if (Array.isArray(answer)) {
-    return answer.map((item) => `- ${item}`).join('\n');
+    return answer.map((item) => `- ${item}`).join("\n");
   }
 
   return answer;
 }
 
-const importedFlashcards: Question[] = MARRIAGE_QUESTION_SET.questions.map((item) => ({
+const importedFlashcards: Question[] = MARRIAGE_QUESTION_SET.questions.map(
+  (item) => ({
     id: String(item.id),
-    type: 'flashcard' as const,
+    type: "flashcard" as const,
     title: item.question,
     standardAnswer: normalizeAnswer(item.answer),
     category: importedSet.meta.title,
     description: importedSet.meta.note,
-  }));
+  }),
+);
 
 export const QUESTION_BANK: Question[] = importedFlashcards;
 

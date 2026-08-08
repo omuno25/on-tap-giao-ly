@@ -1,5 +1,5 @@
-import catechumenJson from "@/data/catechumen-question-set.json";
-import catechumen1528Json from "@/data/catechumen-15-28.json";
+import catechumen2940Json from "@/data/giao-ly-du-tong-29-40.json";
+import catechumen1528Json from "@/data/giao-ly-du-tong-15-28.json";
 
 export type CatechumenCard = {
   id: string;
@@ -23,7 +23,7 @@ type CatechumenData = {
   sets: CatechumenSet[];
 };
 
-const data = catechumenJson as CatechumenData;
+const data = catechumen2940Json as CatechumenData;
 
 export const CATECHUMEN_META = data.meta;
 export const CATECHUMEN_SETS = [

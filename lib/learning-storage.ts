@@ -39,10 +39,10 @@ export function readExamResults() {
 }
 
 export function saveExamResult(result: ExamResult) {
-  writeStorageJson(STORAGE_KEYS.examResults, [
-    result,
-    ...readExamResults(),
-  ].slice(0, 20));
+  writeStorageJson(
+    STORAGE_KEYS.examResults,
+    [result, ...readExamResults()].slice(0, 20),
+  );
 }
 
 export function readLearnerProfile() {

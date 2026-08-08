@@ -80,3 +80,8 @@ Các tệp MP3 trong `public/audio/` được người duy trì dự án tạo b
 Đây là repository đa license: phần mã nguồn là open source theo MIT; các tài nguyên trong `content/`, `data/` và `public/audio/` không thuộc MIT và bị giới hạn ở mục đích phi thương mại theo CC BY-NC 4.0.
 
 Xem thêm [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md).
+
+//TODO
+Làm room thi để có thể mời người khác join vào room được
+Kết nối telegram
+thêm các kênh tele để người dùng join vào

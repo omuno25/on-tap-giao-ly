@@ -136,7 +136,7 @@ export default function EssayInput() {
                   Quay lại
                 </button>
                 <Link
-                  href="/essay/review"
+                  href="/tu-luan/xem-lai"
                   className={`w-full sm:w-auto ${answer.trim() ? "" : "pointer-events-none opacity-50"}`}
                   aria-disabled={!answer.trim()}
                 >

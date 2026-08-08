@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function AboutPage() {
-  redirect("/settings/releases");
+  redirect("/cai-dat/lich-su-phien-ban");
 }

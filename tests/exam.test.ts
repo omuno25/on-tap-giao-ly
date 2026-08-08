@@ -21,15 +21,23 @@ describe("exam helpers", () => {
     const questions = buildExamQuestions(sourceQuestions, 2, 1, 1);
 
     expect(questions).toHaveLength(4);
-    expect(questions.filter((item) => item.examMode === "objective")).toHaveLength(2);
-    expect(questions.filter((item) => item.examMode === "essay")).toHaveLength(1);
-    expect(questions.filter((item) => item.examMode === "true-false")).toHaveLength(1);
+    expect(
+      questions.filter((item) => item.examMode === "objective"),
+    ).toHaveLength(2);
+    expect(questions.filter((item) => item.examMode === "essay")).toHaveLength(
+      1,
+    );
+    expect(
+      questions.filter((item) => item.examMode === "true-false"),
+    ).toHaveLength(1);
 
     for (const question of questions.filter(
       (item) => item.examMode === "objective",
     )) {
       expect(question.options).toHaveLength(4);
-      expect(question.options?.some((item) => item.id === question.correctOptionId)).toBe(true);
+      expect(
+        question.options?.some((item) => item.id === question.correctOptionId),
+      ).toBe(true);
     }
   });
 
@@ -62,7 +70,10 @@ describe("exam helpers", () => {
       correct: 2,
     });
 
-    expect(calculateScore(questions, { objective: "B", essay: "Có dấu chấm" }).correct).toBe(0);
+    expect(
+      calculateScore(questions, { objective: "B", essay: "Có dấu chấm" })
+        .correct,
+    ).toBe(0);
   });
 
   test("định dạng thời gian thi", () => {

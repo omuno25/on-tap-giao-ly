@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { motion } from 'motion/react';
+import { motion } from "motion/react";
 
 interface ProgressCircleProps {
   progress: number; // 0 to 100
@@ -10,20 +10,26 @@ interface ProgressCircleProps {
   subLabel?: string;
 }
 
-export default function ProgressCircle({ 
-  progress, 
-  size = 96, 
-  strokeWidth = 8, 
-  label, 
-  subLabel 
+export default function ProgressCircle({
+  progress,
+  size = 96,
+  strokeWidth = 8,
+  label,
+  subLabel,
 }: ProgressCircleProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="flex items-center justify-center relative" style={{ width: size, height: size }}>
-      <svg className="w-full h-full -rotate-90 transform" viewBox={`0 0 ${size} ${size}`}>
+    <div
+      className="flex items-center justify-center relative"
+      style={{ width: size, height: size }}
+    >
+      <svg
+        className="w-full h-full -rotate-90 transform"
+        viewBox={`0 0 ${size} ${size}`}
+      >
         {/* Track Circle */}
         <circle
           className="text-surface-container-highest"
@@ -49,14 +55,25 @@ export default function ProgressCircle({
           strokeWidth={strokeWidth}
         />
         <defs>
-          <linearGradient id="progress-gradient" x1="0%" x2="100%" y1="0%" y2="0%">
-            <stop offset="0%" style={{ stopColor: 'var(--color-secondary)' }} />
-            <stop offset="100%" style={{ stopColor: 'var(--color-progress-end)' }} />
+          <linearGradient
+            id="progress-gradient"
+            x1="0%"
+            x2="100%"
+            y1="0%"
+            y2="0%"
+          >
+            <stop offset="0%" style={{ stopColor: "var(--color-secondary)" }} />
+            <stop
+              offset="100%"
+              style={{ stopColor: "var(--color-progress-end)" }}
+            />
           </linearGradient>
         </defs>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold font-headline">{label || `${progress}%`}</span>
+        <span className="text-xl font-bold font-headline">
+          {label || `${progress}%`}
+        </span>
         {subLabel && (
           <span className="text-[9px] text-on-surface-variant uppercase font-bold tracking-widest leading-none mt-1">
             {subLabel}

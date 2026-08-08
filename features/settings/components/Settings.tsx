@@ -110,25 +110,25 @@ export default function Settings() {
 
       <section className="mt-6 overflow-hidden rounded-card border border-surface-container bg-surface-container-lowest">
         <SettingsLink
-          href="/settings/privacy"
+          href="/cai-dat/quyen-rieng-tu"
           icon={ShieldCheck}
           title="Chính sách"
           description="Quyền riêng tư và dữ liệu trên thiết bị"
         />
         <SettingsLink
-          href="/settings/rating"
+          href="/cai-dat/danh-gia"
           icon={Trophy}
           title="Xếp hạng"
           description="Bảng xếp hạng người học"
         />
         <SettingsLink
-          href="/settings/feedback"
+          href="/cai-dat/phan-hoi"
           icon={MessageSquarePlus}
           title="Góp ý ứng dụng"
           description="Gửi ý tưởng, báo lỗi hoặc góp ý nội dung"
         />
         <SettingsLink
-          href="/settings/releases"
+          href="/cai-dat/lich-su-phien-ban"
           icon={History}
           title="Phiên bản"
           description="Ghi chú phát hành"
@@ -141,9 +141,12 @@ export default function Settings() {
             <Trash2 className="size-[var(--icon-md)]" />
           </span>
           <div>
-            <h2 className="font-headline font-bold text-error">Đặt lại toàn bộ dữ liệu</h2>
+            <h2 className="font-headline font-bold text-error">
+              Đặt lại toàn bộ dữ liệu
+            </h2>
             <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
-              Xóa tên, tiến độ học, kết quả kiểm tra, câu trả lời và các audio đã hoàn thành trên thiết bị này.
+              Xóa tên, tiến độ học, kết quả kiểm tra, câu trả lời và các audio
+              đã hoàn thành trên thiết bị này.
             </p>
           </div>
         </div>
@@ -160,9 +163,12 @@ export default function Settings() {
           </button>
         ) : (
           <div className="mt-4 rounded-2xl bg-error/10 p-4">
-            <p className="text-sm font-bold text-error">Bạn chắc chắn muốn xóa?</p>
+            <p className="text-sm font-bold text-error">
+              Bạn chắc chắn muốn xóa?
+            </p>
             <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
-              Thao tác này không thể hoàn tác. Ứng dụng sẽ trở về trạng thái như lần đầu sử dụng.
+              Thao tác này không thể hoàn tác. Ứng dụng sẽ trở về trạng thái như
+              lần đầu sử dụng.
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button
@@ -184,7 +190,8 @@ export default function Settings() {
         )}
         {resetError && (
           <p role="alert" className="mt-3 text-xs font-bold text-error">
-            Không thể xóa dữ liệu. Hãy kiểm tra quyền lưu trữ của trình duyệt rồi thử lại.
+            Không thể xóa dữ liệu. Hãy kiểm tra quyền lưu trữ của trình duyệt
+            rồi thử lại.
           </p>
         )}
       </section>

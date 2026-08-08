@@ -1,6 +1,6 @@
 # Phiên bản 1.0.0
 
-Phiên bản đầu tiên của FlashCard.
+Phiên bản đầu tiên của Ôn tập Giáo lý.
 
 ## Tính năng mới
 

@@ -9,7 +9,8 @@ const BLOG_DIRECTORY = path.join(process.cwd(), "content", "blog");
 export const BLOG_META = {
   eyebrow: "Góc học tập",
   title: "Đọc thêm để học nhẹ hơn",
-  description: "Những gợi ý ngắn giúp bạn duy trì thói quen và ghi nhớ tốt hơn.",
+  description:
+    "Những gợi ý ngắn giúp bạn duy trì thói quen và ghi nhớ tốt hơn.",
 };
 
 export type BlogPostSummary = {
@@ -45,7 +46,12 @@ function readBlogPost(fileName: string): BlogPost {
   const slug = fileName.replace(/\.md$/, "");
   const source = fs.readFileSync(path.join(BLOG_DIRECTORY, fileName), "utf8");
   const { data, content } = matter(source);
-  const requiredFields = ["title", "category", "excerpt", "readingTime"] as const;
+  const requiredFields = [
+    "title",
+    "category",
+    "excerpt",
+    "readingTime",
+  ] as const;
 
   for (const field of requiredFields) {
     if (typeof data[field] !== "string" || !data[field].trim()) {
@@ -60,7 +66,8 @@ function readBlogPost(fileName: string): BlogPost {
     excerpt: data.excerpt,
     readingTime: data.readingTime,
     featured: data.featured === true,
-    order: typeof data.order === "number" ? data.order : Number.MAX_SAFE_INTEGER,
+    order:
+      typeof data.order === "number" ? data.order : Number.MAX_SAFE_INTEGER,
     content,
   };
 }

@@ -1,15 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
-import {
-  Headphones,
-  ListMusic,
-  Pause,
-  Play,
-  SkipBack,
-  SkipForward,
-  Volume2,
-} from "lucide-react";
+import { useEffect, useRef, useState, type RefObject } from "react";
+import { ListMusic, Play, Volume2 } from "lucide-react";
+import MediaPlayer, {
+  type RepeatMode,
+} from "@/features/prayers/components/MediaPlayer";
 import type { Prayer } from "@/lib/prayers";
 import { markPrayerCompleted } from "@/lib/prayer-progress";
 
@@ -17,13 +12,35 @@ type PrayerMediaPlayerProps = {
   prayers: Prayer[];
 };
 
+type AudioVisualizer = {
+  context: AudioContext | null;
+  source: MediaElementAudioSourceNode | null;
+  analyser: AnalyserNode | null;
+  connectedAudio: HTMLAudioElement | null;
+  animationFrame: number | null;
+  bars: (HTMLSpanElement | null)[];
+};
+
+const WAVEFORM_CONFIG = {
+  barCount: 72,
+  fftSize: 256,
+  smoothing: 0.82,
+  frequencyRange: 0.7,
+  minHeight: 10,
+} as const;
+
 export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { prepare, start, stop, setBar } = useAudioVisualizer(audioRef);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [volume, setVolume] = useState(0.7);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
   const activePrayer = prayers[activeIndex];
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   if (!activePrayer?.audio) return null;
 
@@ -32,6 +49,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     if (!audio) return;
 
     if (audio.paused) {
+      await prepare(audio);
       await audio.play();
     } else {
       audio.pause();
@@ -44,6 +62,19 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     setActiveIndex(index);
   };
 
+  const selectAndPlayTrack = async (index: number) => {
+    if (index === activeIndex) {
+      const audio = audioRef.current;
+      if (!audio) return;
+      await prepare(audio);
+      await audio.play();
+      return;
+    }
+
+    setIsPlaying(true);
+    selectTrack(index);
+  };
+
   const moveTrack = (step: number) => {
     selectTrack((activeIndex + step + prayers.length) % prayers.length);
   };
@@ -54,71 +85,90 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     setCurrentTime(time);
   };
 
+  const changePlaybackRate = (rate: number) => {
+    setPlaybackRate(rate);
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+  };
+
+  const changeVolume = (nextVolume: number) => {
+    const volume = Math.round(nextVolume * 100) / 100;
+    setVolume(volume);
+    if (audioRef.current) audioRef.current.volume = volume;
+  };
+
+  const cycleRepeatMode = () => {
+    setRepeatMode((mode) => {
+      if (mode === "off") return "one";
+      if (mode === "one") return "all";
+      return "off";
+    });
+  };
+
+  const handleTrackEnded = () => {
+    markPrayerCompleted(activePrayer.id);
+
+    if (activeIndex < prayers.length - 1) {
+      setIsPlaying(true);
+      selectTrack(activeIndex + 1);
+      return;
+    }
+
+    if (repeatMode === "all") {
+      setIsPlaying(true);
+      selectTrack(0);
+      return;
+    }
+
+    setIsPlaying(false);
+  };
+
   return (
     <div className="mt-6">
-      <section className="overflow-hidden rounded-feature bg-on-surface p-5 text-surface shadow-editorial">
-        <div className="flex items-start justify-between gap-4">
-          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-on-primary">
-            <Headphones className="size-[var(--icon-lg)]" />
-          </span>
-          <span className="rounded-full bg-surface/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-surface/75">
-            Đang phát
-          </span>
-        </div>
-
-        <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em] text-surface/60">Kinh cần thuộc</p>
-        <h2 className="mt-2 font-headline text-2xl font-bold">{activePrayer.title}</h2>
-
-        <div className="mt-7">
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            step="0.1"
-            value={Math.min(currentTime, duration || 0)}
-            onChange={(event) => seek(Number(event.target.value))}
-            className="h-1.5 w-full cursor-pointer accent-primary"
-            aria-label={`Tua ${activePrayer.title}`}
-          />
-          <div className="mt-2 flex justify-between text-[11px] font-bold tabular-nums text-surface/60">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-        </div>
-
-        <div className="mt-4 flex items-center justify-center gap-6">
-          <button type="button" onClick={() => moveTrack(-1)} className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10" aria-label="Bài trước">
-            <SkipBack className="size-[var(--icon-md)] fill-current" />
-          </button>
-          <button type="button" onClick={togglePlayback} className="grid h-16 w-16 cursor-pointer place-items-center rounded-full bg-surface text-on-surface shadow-soft transition-transform active:scale-95" aria-label={isPlaying ? "Tạm dừng" : "Phát audio"}>
-            {isPlaying ? <Pause className="size-[var(--icon-lg)] fill-current" /> : <Play className="ml-1 size-[var(--icon-lg)] fill-current" />}
-          </button>
-          <button type="button" onClick={() => moveTrack(1)} className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10" aria-label="Bài tiếp theo">
-            <SkipForward className="size-[var(--icon-md)] fill-current" />
-          </button>
-        </div>
-
-        <audio
-          key={activePrayer.id}
-          ref={audioRef}
-          src={activePrayer.audio}
-          preload="metadata"
-          autoPlay={isPlaying}
-          onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
-          onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => {
-            markPrayerCompleted(activePrayer.id);
-            moveTrack(1);
-          }}
-        />
-      </section>
+      <MediaPlayer
+        prayer={activePrayer}
+        audioRef={audioRef}
+        barCount={WAVEFORM_CONFIG.barCount}
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        duration={duration}
+        playbackRate={playbackRate}
+        volume={volume}
+        repeatMode={repeatMode}
+        progress={progress}
+        setBar={setBar}
+        onTogglePlayback={() => void togglePlayback()}
+        onPrevious={() => moveTrack(-1)}
+        onNext={() => moveTrack(1)}
+        onSeek={seek}
+        onPlaybackRateChange={changePlaybackRate}
+        onVolumeChange={changeVolume}
+        onRepeatModeChange={cycleRepeatMode}
+        onMetadataLoaded={(audio) => {
+          audio.playbackRate = playbackRate;
+          audio.volume = volume;
+          setDuration(audio.duration);
+        }}
+        onTimeChange={setCurrentTime}
+        onPlay={(audio) => {
+          setIsPlaying(true);
+          void start(audio);
+        }}
+        onPause={() => {
+          setIsPlaying(false);
+          stop();
+        }}
+        onEnded={handleTrackEnded}
+      />
 
       <section className="mt-7" aria-labelledby="prayer-playlist-title">
         <div className="flex items-center gap-2">
           <ListMusic className="size-[var(--icon-md)] text-primary" />
-          <h2 id="prayer-playlist-title" className="font-headline text-xl font-bold">Danh sách audio</h2>
+          <h2
+            id="prayer-playlist-title"
+            className="font-headline text-xl font-bold"
+          >
+            Danh sách audio
+          </h2>
         </div>
         <div className="mt-4 grid gap-3">
           {prayers.map((prayer, index) => {
@@ -127,17 +177,31 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
               <button
                 key={prayer.id}
                 type="button"
-                onClick={() => selectTrack(index)}
+                onClick={() => void selectAndPlayTrack(index)}
                 className={`flex w-full cursor-pointer items-center gap-4 rounded-2xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive ? "border-primary bg-primary/5" : "border-surface-container bg-surface-container-lowest hover:bg-surface-container-low"}`}
               >
-                <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${isActive ? "bg-primary text-on-primary" : "bg-surface-container-low text-primary"}`}>
-                  {isActive && isPlaying ? <Volume2 className="size-[var(--icon-md)]" /> : <Play className="size-[var(--icon-sm)] fill-current" />}
+                <span
+                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${isActive ? "bg-primary text-on-primary" : "bg-surface-container-low text-primary"}`}
+                >
+                  {isActive && isPlaying ? (
+                    <Volume2 className="size-[var(--icon-md)]" />
+                  ) : (
+                    <Play className="size-[var(--icon-sm)] fill-current" />
+                  )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Audio {index + 1}</span>
-                  <span className="mt-1 block truncate font-headline font-bold">{prayer.title}</span>
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                    Audio {index + 1}
+                  </span>
+                  <span className="mt-1 block truncate font-headline font-bold">
+                    {prayer.title}
+                  </span>
                 </span>
-                {isActive && <span className="text-xs font-bold text-primary">Đang chọn</span>}
+                {isActive && (
+                  <span className="text-xs font-bold text-primary">
+                    Đang chọn
+                  </span>
+                )}
               </button>
             );
           })}
@@ -147,9 +211,94 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   );
 }
 
-function formatTime(seconds: number) {
-  if (!Number.isFinite(seconds)) return "0:00";
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+function useAudioVisualizer(audioRef: RefObject<HTMLAudioElement | null>) {
+  const visualizerRef = useRef<AudioVisualizer>({
+    context: null,
+    source: null,
+    analyser: null,
+    connectedAudio: null,
+    animationFrame: null,
+    bars: [],
+  });
+
+  useEffect(() => {
+    const visualizer = visualizerRef.current;
+    return () => {
+      if (visualizer.animationFrame !== null) {
+        cancelAnimationFrame(visualizer.animationFrame);
+      }
+      visualizer.source?.disconnect();
+      visualizer.analyser?.disconnect();
+      void visualizer.context?.close();
+    };
+  }, []);
+
+  const prepare = async (audio: HTMLAudioElement) => {
+    const visualizer = visualizerRef.current;
+    const audioContext =
+      visualizer.context ?? (visualizer.context = new AudioContext());
+
+    if (audioContext.state === "suspended") await audioContext.resume();
+    if (visualizer.connectedAudio === audio && visualizer.analyser) return;
+
+    visualizer.source?.disconnect();
+    visualizer.analyser?.disconnect();
+
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = WAVEFORM_CONFIG.fftSize;
+    analyser.smoothingTimeConstant = WAVEFORM_CONFIG.smoothing;
+
+    const source = audioContext.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    visualizer.source = source;
+    visualizer.analyser = analyser;
+    visualizer.connectedAudio = audio;
+  };
+
+  const start = async (audio: HTMLAudioElement) => {
+    await prepare(audio);
+    const visualizer = visualizerRef.current;
+    const analyser = visualizer.analyser;
+    if (!analyser) return;
+
+    if (visualizer.animationFrame !== null) {
+      cancelAnimationFrame(visualizer.animationFrame);
+    }
+
+    const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+    const update = () => {
+      if (audioRef.current !== audio || audio.paused) return;
+
+      analyser.getByteFrequencyData(frequencyData);
+      visualizer.bars.forEach((bar, index) => {
+        if (!bar) return;
+        const frequencyIndex = Math.floor(
+          (index / WAVEFORM_CONFIG.barCount) *
+            frequencyData.length *
+            WAVEFORM_CONFIG.frequencyRange,
+        );
+        const amplitude = frequencyData[frequencyIndex] / 255;
+        bar.style.height = `${Math.max(WAVEFORM_CONFIG.minHeight, amplitude * 100)}%`;
+      });
+
+      visualizer.animationFrame = requestAnimationFrame(update);
+    };
+
+    update();
+  };
+
+  const stop = () => {
+    const visualizer = visualizerRef.current;
+    if (visualizer.animationFrame === null) return;
+    cancelAnimationFrame(visualizer.animationFrame);
+    visualizer.animationFrame = null;
+  };
+
+  const setBar = (index: number, element: HTMLSpanElement | null) => {
+    visualizerRef.current.bars[index] = element;
+  };
+
+  return { prepare, start, stop, setBar };
 }
