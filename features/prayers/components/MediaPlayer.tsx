@@ -231,7 +231,6 @@ export default function MediaPlayer({
       </div>
 
       <audio
-        key={prayer.id}
         ref={audioRef}
         src={prayer.audio}
         preload="metadata"
