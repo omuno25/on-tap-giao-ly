@@ -56,24 +56,26 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
 
   return (
     <div className="mt-6">
-      <section className="overflow-hidden rounded-feature bg-on-surface p-5 text-surface shadow-editorial">
-        <div className="flex items-start justify-between gap-4">
-          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-on-primary">
+      <section className="overflow-hidden rounded-feature bg-on-surface p-4 text-surface shadow-editorial sm:p-6">
+        <div className="flex items-center justify-between gap-3">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-on-primary sm:size-14">
             <Headphones className="size-[var(--icon-lg)]" />
           </span>
-          <span className="rounded-full bg-surface/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-surface/75">
+          <span className="shrink-0 rounded-full bg-surface/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-surface/75 sm:text-xs">
             Đang phát
           </span>
         </div>
 
-        <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em] text-surface/60">
-          Kinh cần thuộc
-        </p>
-        <h2 className="mt-2 font-headline text-2xl font-bold">
-          {activePrayer.title}
-        </h2>
+        <div className="mt-5 min-w-0 sm:mt-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-surface/60 sm:text-xs">
+            Kinh cần thuộc
+          </p>
+          <h2 className="mt-1.5 font-headline text-2xl leading-tight font-bold text-balance sm:text-3xl">
+            {activePrayer.title}
+          </h2>
+        </div>
 
-        <div className="mt-7">
+        <div className="mt-5 sm:mt-6">
           <input
             type="range"
             min="0"
@@ -81,20 +83,20 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
             step="0.1"
             value={Math.min(currentTime, duration || 0)}
             onChange={(event) => seek(Number(event.target.value))}
-            className="h-1.5 w-full cursor-pointer accent-primary"
+            className="h-6 w-full cursor-pointer accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label={`Tua ${activePrayer.title}`}
           />
-          <div className="mt-2 flex justify-between text-[11px] font-bold tabular-nums text-surface/60">
+          <div className="flex justify-between text-[11px] font-bold tabular-nums text-surface/60 sm:text-xs">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-6">
+        <div className="mt-3 flex items-center justify-center gap-3 sm:gap-5">
           <button
             type="button"
             onClick={() => moveTrack(-1)}
-            className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10"
+            className="grid size-12 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label="Bài trước"
           >
             <SkipBack className="size-[var(--icon-md)] fill-current" />
@@ -102,7 +104,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           <button
             type="button"
             onClick={togglePlayback}
-            className="grid h-16 w-16 cursor-pointer place-items-center rounded-full bg-surface text-on-surface shadow-soft transition-transform active:scale-95"
+            className="grid size-14 cursor-pointer place-items-center rounded-full bg-surface text-on-surface shadow-soft transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:size-16"
             aria-label={isPlaying ? "Tạm dừng" : "Phát audio"}
           >
             {isPlaying ? (
@@ -114,7 +116,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           <button
             type="button"
             onClick={() => moveTrack(1)}
-            className="grid h-11 w-11 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10"
+            className="grid size-12 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label="Bài tiếp theo"
           >
             <SkipForward className="size-[var(--icon-md)] fill-current" />
