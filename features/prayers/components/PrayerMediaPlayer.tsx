@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { ListMusic, Play, Volume2 } from "lucide-react";
-import MediaPlayer from "@/features/prayers/components/MediaPlayer";
+import MediaPlayer, {
+  type RepeatMode,
+} from "@/features/prayers/components/MediaPlayer";
 import type { Prayer } from "@/lib/prayers";
 import { markPrayerCompleted } from "@/lib/prayer-progress";
 
@@ -36,7 +38,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [volume, setVolume] = useState(0.7);
-  const [isRepeating, setIsRepeating] = useState(false);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
   const activePrayer = prayers[activeIndex];
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -94,6 +96,32 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     if (audioRef.current) audioRef.current.volume = volume;
   };
 
+  const cycleRepeatMode = () => {
+    setRepeatMode((mode) => {
+      if (mode === "off") return "one";
+      if (mode === "one") return "all";
+      return "off";
+    });
+  };
+
+  const handleTrackEnded = () => {
+    markPrayerCompleted(activePrayer.id);
+
+    if (activeIndex < prayers.length - 1) {
+      setIsPlaying(true);
+      selectTrack(activeIndex + 1);
+      return;
+    }
+
+    if (repeatMode === "all") {
+      setIsPlaying(true);
+      selectTrack(0);
+      return;
+    }
+
+    setIsPlaying(false);
+  };
+
   return (
     <div className="mt-6">
       <MediaPlayer
@@ -105,7 +133,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
         duration={duration}
         playbackRate={playbackRate}
         volume={volume}
-        isRepeating={isRepeating}
+        repeatMode={repeatMode}
         progress={progress}
         setBar={setBar}
         onTogglePlayback={() => void togglePlayback()}
@@ -114,7 +142,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
         onSeek={seek}
         onPlaybackRateChange={changePlaybackRate}
         onVolumeChange={changeVolume}
-        onRepeatToggle={() => setIsRepeating((repeat) => !repeat)}
+        onRepeatModeChange={cycleRepeatMode}
         onMetadataLoaded={(audio) => {
           audio.playbackRate = playbackRate;
           audio.volume = volume;
@@ -129,10 +157,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           setIsPlaying(false);
           stop();
         }}
-        onEnded={() => {
-          markPrayerCompleted(activePrayer.id);
-          moveTrack(1);
-        }}
+        onEnded={handleTrackEnded}
       />
 
       <section className="mt-7" aria-labelledby="prayer-playlist-title">

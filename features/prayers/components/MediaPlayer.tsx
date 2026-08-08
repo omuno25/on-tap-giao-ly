@@ -2,7 +2,6 @@ import type { RefObject } from "react";
 import {
   ChevronDown,
   Headphones,
-  MoreHorizontal,
   Pause,
   Play,
   Repeat,
@@ -14,6 +13,8 @@ import type { Prayer } from "@/lib/prayers";
 
 const PLAYBACK_RATES = [0.25, 0.75, 1, 2] as const;
 
+export type RepeatMode = "off" | "one" | "all";
+
 type MediaPlayerProps = {
   prayer: Prayer;
   audioRef: RefObject<HTMLAudioElement | null>;
@@ -23,7 +24,7 @@ type MediaPlayerProps = {
   duration: number;
   playbackRate: number;
   volume: number;
-  isRepeating: boolean;
+  repeatMode: RepeatMode;
   progress: number;
   setBar: (index: number, element: HTMLSpanElement | null) => void;
   onTogglePlayback: () => void;
@@ -32,7 +33,7 @@ type MediaPlayerProps = {
   onSeek: (time: number) => void;
   onPlaybackRateChange: (rate: number) => void;
   onVolumeChange: (volume: number) => void;
-  onRepeatToggle: () => void;
+  onRepeatModeChange: () => void;
   onMetadataLoaded: (audio: HTMLAudioElement) => void;
   onTimeChange: (time: number) => void;
   onPlay: (audio: HTMLAudioElement) => void;
@@ -49,7 +50,7 @@ export default function MediaPlayer({
   duration,
   playbackRate,
   volume,
-  isRepeating,
+  repeatMode,
   progress,
   setBar,
   onTogglePlayback,
@@ -58,7 +59,7 @@ export default function MediaPlayer({
   onSeek,
   onPlaybackRateChange,
   onVolumeChange,
-  onRepeatToggle,
+  onRepeatModeChange,
   onMetadataLoaded,
   onTimeChange,
   onPlay,
@@ -133,9 +134,9 @@ export default function MediaPlayer({
         </div>
       </div>
 
-      <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1 sm:mt-3 sm:gap-3">
-        <div className="flex min-w-0 items-center justify-start gap-1 text-surface/60 sm:gap-2">
-          <label className="hidden h-8 items-center gap-2 rounded-full bg-surface/5 px-2 sm:flex">
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4">
+        <div className="flex min-w-0 items-center justify-start text-surface/60">
+          <label className="flex h-9 items-center gap-1.5 rounded-full bg-surface/5 px-2.5">
             <Volume2
               className="size-[var(--icon-sm)] shrink-0"
               aria-hidden="true"
@@ -149,34 +150,14 @@ export default function MediaPlayer({
               onChange={(event) =>
                 onVolumeChange(Number(event.currentTarget.value))
               }
-              className="h-4 w-14 cursor-pointer accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="hidden h-4 w-10 cursor-pointer accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:block lg:w-14"
               aria-label="Âm lượng"
               aria-valuetext={`${Math.round(volume * 100)}%`}
             />
           </label>
-          <span className="relative inline-flex items-center">
-            <select
-              value={playbackRate}
-              onChange={(event) =>
-                onPlaybackRateChange(Number(event.currentTarget.value))
-              }
-              className="h-7 w-14 cursor-pointer appearance-none border-0 bg-transparent py-1 pr-3 pl-1 text-[11px] font-bold text-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              aria-label="Tốc độ phát"
-            >
-              {PLAYBACK_RATES.map((rate) => (
-                <option key={rate} value={rate}>
-                  {rate}×
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              className="pointer-events-none absolute right-0.5 size-3 text-surface/60"
-              aria-hidden="true"
-            />
-          </span>
         </div>
 
-        <div className="flex items-center justify-center gap-1 sm:gap-2">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2.5">
           <button
             type="button"
             onClick={onPrevious}
@@ -207,22 +188,45 @@ export default function MediaPlayer({
           </button>
         </div>
 
-        <div className="flex items-center justify-end gap-1 text-surface/60">
-          <button
-            type="button"
-            onClick={onRepeatToggle}
-            className={`grid size-9 cursor-pointer place-items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${isRepeating ? "bg-surface/10 text-primary" : "hover:bg-surface/10"}`}
-            aria-label={isRepeating ? "Tắt phát lặp lại" : "Phát lặp lại"}
-            aria-pressed={isRepeating}
-          >
-            <Repeat className="size-[var(--icon-sm)]" />
-          </button>
-          <span className="grid size-9 place-items-center">
-            <MoreHorizontal
-              className="size-[var(--icon-sm)]"
+        <div className="flex min-w-0 items-center justify-end gap-3 text-surface/60">
+          <span className="relative inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-surface/5 transition-colors hover:bg-surface/10">
+            <select
+              value={playbackRate}
+              onChange={(event) =>
+                onPlaybackRateChange(Number(event.currentTarget.value))
+              }
+              className="block h-9 w-[3.75rem] cursor-pointer appearance-none border-0 bg-transparent py-0 pr-5 pl-2.5 text-xs leading-none font-bold text-surface focus-visible:rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              aria-label="Tốc độ phát"
+            >
+              {PLAYBACK_RATES.map((rate) => (
+                <option key={rate} value={rate}>
+                  {rate === 1 ? "1.0×" : `${rate}×`}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-2 size-3 text-surface/60"
               aria-hidden="true"
             />
           </span>
+          <button
+            type="button"
+            onClick={onRepeatModeChange}
+            className={`grid size-9 shrink-0 cursor-pointer place-items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${repeatMode !== "off" ? "bg-surface/10 text-primary" : "hover:bg-surface/10"}`}
+            aria-label={getRepeatLabel(repeatMode)}
+            aria-pressed={repeatMode !== "off"}
+          >
+            {repeatMode === "one" ? (
+              <span className="relative grid place-items-center">
+                <Repeat className="size-[var(--icon-sm)]" />
+                <span className="absolute text-[8px] leading-none font-bold text-surface">
+                  1
+                </span>
+              </span>
+            ) : (
+              <Repeat className="size-[var(--icon-sm)]" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -232,7 +236,7 @@ export default function MediaPlayer({
         src={prayer.audio}
         preload="metadata"
         autoPlay={isPlaying}
-        loop={isRepeating}
+        loop={repeatMode === "one"}
         onLoadedMetadata={(event) => onMetadataLoaded(event.currentTarget)}
         onTimeUpdate={(event) => onTimeChange(event.currentTarget.currentTime)}
         onPlay={(event) => onPlay(event.currentTarget)}
@@ -248,4 +252,10 @@ function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+function getRepeatLabel(mode: RepeatMode) {
+  if (mode === "one") return "Lặp lại một bài; chuyển sang lặp lại danh sách";
+  if (mode === "all") return "Lặp lại danh sách; tắt lặp lại";
+  return "Bật lặp lại một bài";
 }
