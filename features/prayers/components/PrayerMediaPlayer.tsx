@@ -1,15 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import {
-  Headphones,
-  ListMusic,
-  Pause,
-  Play,
-  SkipBack,
-  SkipForward,
-  Volume2,
-} from "lucide-react";
+import { useEffect, useRef, useState, type RefObject } from "react";
+import { ListMusic, Play, Volume2 } from "lucide-react";
+import MediaPlayer from "@/features/prayers/components/MediaPlayer";
 import type { Prayer } from "@/lib/prayers";
 import { markPrayerCompleted } from "@/lib/prayer-progress";
 
@@ -17,13 +10,33 @@ type PrayerMediaPlayerProps = {
   prayers: Prayer[];
 };
 
+type AudioVisualizer = {
+  context: AudioContext | null;
+  source: MediaElementAudioSourceNode | null;
+  analyser: AnalyserNode | null;
+  connectedAudio: HTMLAudioElement | null;
+  animationFrame: number | null;
+  bars: (HTMLSpanElement | null)[];
+};
+
+const WAVEFORM_CONFIG = {
+  barCount: 72,
+  fftSize: 256,
+  smoothing: 0.82,
+  frequencyRange: 0.7,
+  minHeight: 10,
+} as const;
+
 export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { prepare, start, stop, setBar } = useAudioVisualizer(audioRef);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const activePrayer = prayers[activeIndex];
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   if (!activePrayer?.audio) return null;
 
@@ -32,6 +45,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     if (!audio) return;
 
     if (audio.paused) {
+      await prepare(audio);
       await audio.play();
     } else {
       audio.pause();
@@ -44,6 +58,19 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     setActiveIndex(index);
   };
 
+  const selectAndPlayTrack = async (index: number) => {
+    if (index === activeIndex) {
+      const audio = audioRef.current;
+      if (!audio) return;
+      await prepare(audio);
+      await audio.play();
+      return;
+    }
+
+    setIsPlaying(true);
+    selectTrack(index);
+  };
+
   const moveTrack = (step: number) => {
     selectTrack((activeIndex + step + prayers.length) % prayers.length);
   };
@@ -54,95 +81,46 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     setCurrentTime(time);
   };
 
+  const changePlaybackRate = (rate: number) => {
+    setPlaybackRate(rate);
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+  };
+
   return (
     <div className="mt-6">
-      <section className="overflow-hidden rounded-feature bg-on-surface p-4 text-surface shadow-editorial sm:p-6">
-        <div className="flex items-center justify-between gap-3">
-          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-on-primary sm:size-14">
-            <Headphones className="size-[var(--icon-lg)]" />
-          </span>
-          <span className="shrink-0 rounded-full bg-surface/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-surface/75 sm:text-xs">
-            Đang phát
-          </span>
-        </div>
-
-        <div className="mt-5 min-w-0 sm:mt-6">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-surface/60 sm:text-xs">
-            Kinh cần thuộc
-          </p>
-          <h2 className="mt-1.5 font-headline text-2xl leading-tight font-bold text-balance sm:text-3xl">
-            {activePrayer.title}
-          </h2>
-        </div>
-
-        <div className="mt-5 sm:mt-6">
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            step="0.1"
-            value={Math.min(currentTime, duration || 0)}
-            onChange={(event) => seek(Number(event.target.value))}
-            className="h-6 w-full cursor-pointer accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            aria-label={`Tua ${activePrayer.title}`}
-          />
-          <div className="flex justify-between text-[11px] font-bold tabular-nums text-surface/60 sm:text-xs">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center justify-center gap-3 sm:gap-5">
-          <button
-            type="button"
-            onClick={() => moveTrack(-1)}
-            className="grid size-12 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            aria-label="Bài trước"
-          >
-            <SkipBack className="size-[var(--icon-md)] fill-current" />
-          </button>
-          <button
-            type="button"
-            onClick={togglePlayback}
-            className="grid size-14 cursor-pointer place-items-center rounded-full bg-surface text-on-surface shadow-soft transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:size-16"
-            aria-label={isPlaying ? "Tạm dừng" : "Phát audio"}
-          >
-            {isPlaying ? (
-              <Pause className="size-[var(--icon-lg)] fill-current" />
-            ) : (
-              <Play className="ml-1 size-[var(--icon-lg)] fill-current" />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => moveTrack(1)}
-            className="grid size-12 cursor-pointer place-items-center rounded-full text-surface transition-colors hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            aria-label="Bài tiếp theo"
-          >
-            <SkipForward className="size-[var(--icon-md)] fill-current" />
-          </button>
-        </div>
-
-        <audio
-          key={activePrayer.id}
-          ref={audioRef}
-          src={activePrayer.audio}
-          preload="metadata"
-          autoPlay={isPlaying}
-          onLoadedMetadata={(event) =>
-            setDuration(event.currentTarget.duration)
-          }
-          onTimeUpdate={(event) =>
-            setCurrentTime(event.currentTarget.currentTime)
-          }
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => {
-            markPrayerCompleted(activePrayer.id);
-            moveTrack(1);
-          }}
-        />
-      </section>
+      <MediaPlayer
+        prayer={activePrayer}
+        audioRef={audioRef}
+        barCount={WAVEFORM_CONFIG.barCount}
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        duration={duration}
+        playbackRate={playbackRate}
+        progress={progress}
+        setBar={setBar}
+        onTogglePlayback={() => void togglePlayback()}
+        onPrevious={() => moveTrack(-1)}
+        onNext={() => moveTrack(1)}
+        onSeek={seek}
+        onPlaybackRateChange={changePlaybackRate}
+        onMetadataLoaded={(audio) => {
+          audio.playbackRate = playbackRate;
+          setDuration(audio.duration);
+        }}
+        onTimeChange={setCurrentTime}
+        onPlay={(audio) => {
+          setIsPlaying(true);
+          void start(audio);
+        }}
+        onPause={() => {
+          setIsPlaying(false);
+          stop();
+        }}
+        onEnded={() => {
+          markPrayerCompleted(activePrayer.id);
+          moveTrack(1);
+        }}
+      />
 
       <section className="mt-7" aria-labelledby="prayer-playlist-title">
         <div className="flex items-center gap-2">
@@ -161,7 +139,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
               <button
                 key={prayer.id}
                 type="button"
-                onClick={() => selectTrack(index)}
+                onClick={() => void selectAndPlayTrack(index)}
                 className={`flex w-full cursor-pointer items-center gap-4 rounded-2xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive ? "border-primary bg-primary/5" : "border-surface-container bg-surface-container-lowest hover:bg-surface-container-low"}`}
               >
                 <span
@@ -195,9 +173,94 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   );
 }
 
-function formatTime(seconds: number) {
-  if (!Number.isFinite(seconds)) return "0:00";
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+function useAudioVisualizer(audioRef: RefObject<HTMLAudioElement | null>) {
+  const visualizerRef = useRef<AudioVisualizer>({
+    context: null,
+    source: null,
+    analyser: null,
+    connectedAudio: null,
+    animationFrame: null,
+    bars: [],
+  });
+
+  useEffect(() => {
+    const visualizer = visualizerRef.current;
+    return () => {
+      if (visualizer.animationFrame !== null) {
+        cancelAnimationFrame(visualizer.animationFrame);
+      }
+      visualizer.source?.disconnect();
+      visualizer.analyser?.disconnect();
+      void visualizer.context?.close();
+    };
+  }, []);
+
+  const prepare = async (audio: HTMLAudioElement) => {
+    const visualizer = visualizerRef.current;
+    const audioContext =
+      visualizer.context ?? (visualizer.context = new AudioContext());
+
+    if (audioContext.state === "suspended") await audioContext.resume();
+    if (visualizer.connectedAudio === audio && visualizer.analyser) return;
+
+    visualizer.source?.disconnect();
+    visualizer.analyser?.disconnect();
+
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = WAVEFORM_CONFIG.fftSize;
+    analyser.smoothingTimeConstant = WAVEFORM_CONFIG.smoothing;
+
+    const source = audioContext.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    visualizer.source = source;
+    visualizer.analyser = analyser;
+    visualizer.connectedAudio = audio;
+  };
+
+  const start = async (audio: HTMLAudioElement) => {
+    await prepare(audio);
+    const visualizer = visualizerRef.current;
+    const analyser = visualizer.analyser;
+    if (!analyser) return;
+
+    if (visualizer.animationFrame !== null) {
+      cancelAnimationFrame(visualizer.animationFrame);
+    }
+
+    const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+    const update = () => {
+      if (audioRef.current !== audio || audio.paused) return;
+
+      analyser.getByteFrequencyData(frequencyData);
+      visualizer.bars.forEach((bar, index) => {
+        if (!bar) return;
+        const frequencyIndex = Math.floor(
+          (index / WAVEFORM_CONFIG.barCount) *
+            frequencyData.length *
+            WAVEFORM_CONFIG.frequencyRange,
+        );
+        const amplitude = frequencyData[frequencyIndex] / 255;
+        bar.style.height = `${Math.max(WAVEFORM_CONFIG.minHeight, amplitude * 100)}%`;
+      });
+
+      visualizer.animationFrame = requestAnimationFrame(update);
+    };
+
+    update();
+  };
+
+  const stop = () => {
+    const visualizer = visualizerRef.current;
+    if (visualizer.animationFrame === null) return;
+    cancelAnimationFrame(visualizer.animationFrame);
+    visualizer.animationFrame = null;
+  };
+
+  const setBar = (index: number, element: HTMLSpanElement | null) => {
+    visualizerRef.current.bars[index] = element;
+  };
+
+  return { prepare, start, stop, setBar };
 }

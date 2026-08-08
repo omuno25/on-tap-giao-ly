@@ -7,6 +7,8 @@ featured: false
 order: 0
 ---
 
+## Lời chào đầu tiên
+
 Hi, xin chào mọi người! ✌️
 
 Mình làm ứng dụng này đơn giản là để phục vụ cho việc học của bản thân. Trước đây, mình thường dùng Quizlet để học và tạo thẻ ghi nhớ, nhưng để sử dụng đầy đủ các tính năng thì phải mua gói 😒, còn làm quiz cũng bị giới hạn số lần kiểm tra.
@@ -20,7 +22,7 @@ Hiện tại, ứng dụng tập trung vào:
 - Các kinh cần thuộc kèm audio.
 - Bài kiểm tra và thống kê tiến độ học.
 
-Mục đích ban đầu chỉ là có một chỗ để lưu trữ tài liệu, làm flashcard và ôn tập online cho tiện, khỏi phải tìm lại tài liệu mỗi khi cần học. Sau một thời gian sử dụng, mình thấy ứng dụng cũng khá ổn nên quyết định chia sẻ với mọi người luôn. Biết đâu nó cũng sẽ giúp ích cho những anh chị và các bạn đang học Giáo lý Dự tòng hoặc Giáo lý Hôn nhân giống như mình.
+Mục đích ban đầu chỉ là có một chỗ để lưu trữ tài liệu, làm flashcard và ôn tập giáo lý online cho tiện, khỏi phải tìm lại tài liệu mỗi khi cần học. Sau một thời gian sử dụng, mình thấy ứng dụng cũng khá ổn nên quyết định chia sẻ với mọi người luôn. Biết đâu nó cũng sẽ giúp ích cho những anh chị và các bạn đang học Giáo lý Dự tòng hoặc Giáo lý Hôn nhân giống như mình.
 
 Mình không dám nói nội dung trong ứng dụng là đầy đủ hay chính xác 100%, vì tất cả đều được mình tổng hợp từ sách giáo lý và những đề cương mình đã học. Nếu có chỗ nào sai sót hoặc cần bổ sung, mọi người cứ góp ý cho mình nhé. Mình sẽ cố gắng cập nhật để ứng dụng ngày càng tốt hơn.
 
