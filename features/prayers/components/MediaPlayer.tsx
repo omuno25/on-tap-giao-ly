@@ -5,6 +5,7 @@ import {
   MoreHorizontal,
   Pause,
   Play,
+  Repeat,
   SkipBack,
   SkipForward,
   Volume2,
@@ -21,6 +22,8 @@ type MediaPlayerProps = {
   currentTime: number;
   duration: number;
   playbackRate: number;
+  volume: number;
+  isRepeating: boolean;
   progress: number;
   setBar: (index: number, element: HTMLSpanElement | null) => void;
   onTogglePlayback: () => void;
@@ -28,6 +31,8 @@ type MediaPlayerProps = {
   onNext: () => void;
   onSeek: (time: number) => void;
   onPlaybackRateChange: (rate: number) => void;
+  onVolumeChange: (volume: number) => void;
+  onRepeatToggle: () => void;
   onMetadataLoaded: (audio: HTMLAudioElement) => void;
   onTimeChange: (time: number) => void;
   onPlay: (audio: HTMLAudioElement) => void;
@@ -43,6 +48,8 @@ export default function MediaPlayer({
   currentTime,
   duration,
   playbackRate,
+  volume,
+  isRepeating,
   progress,
   setBar,
   onTogglePlayback,
@@ -50,6 +57,8 @@ export default function MediaPlayer({
   onNext,
   onSeek,
   onPlaybackRateChange,
+  onVolumeChange,
+  onRepeatToggle,
   onMetadataLoaded,
   onTimeChange,
   onPlay,
@@ -125,17 +134,26 @@ export default function MediaPlayer({
       </div>
 
       <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1 sm:mt-3 sm:gap-3">
-        <div className="flex min-w-0 items-center justify-start gap-2 text-surface/60">
-          <Volume2
-            className="hidden size-[var(--icon-sm)] shrink-0 sm:block"
-            aria-hidden="true"
-          />
-          <span
-            className="hidden h-1 w-12 rounded-full bg-surface/20 sm:block"
-            aria-hidden="true"
-          >
-            <span className="block h-full w-2/3 rounded-full bg-primary" />
-          </span>
+        <div className="flex min-w-0 items-center justify-start gap-1 text-surface/60 sm:gap-2">
+          <label className="hidden h-8 items-center gap-2 rounded-full bg-surface/5 px-2 sm:flex">
+            <Volume2
+              className="size-[var(--icon-sm)] shrink-0"
+              aria-hidden="true"
+            />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={volume}
+              onChange={(event) =>
+                onVolumeChange(Number(event.currentTarget.value))
+              }
+              className="h-4 w-14 cursor-pointer accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              aria-label="Âm lượng"
+              aria-valuetext={`${Math.round(volume * 100)}%`}
+            />
+          </label>
           <span className="relative inline-flex items-center">
             <select
               value={playbackRate}
@@ -189,15 +207,21 @@ export default function MediaPlayer({
           </button>
         </div>
 
-        <div
-          className="flex items-center justify-end gap-1 text-surface/60"
-          aria-hidden="true"
-        >
-          <span className="hidden size-9 place-items-center sm:grid">
-            <Volume2 className="size-[var(--icon-sm)]" />
-          </span>
+        <div className="flex items-center justify-end gap-1 text-surface/60">
+          <button
+            type="button"
+            onClick={onRepeatToggle}
+            className={`grid size-9 cursor-pointer place-items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${isRepeating ? "bg-surface/10 text-primary" : "hover:bg-surface/10"}`}
+            aria-label={isRepeating ? "Tắt phát lặp lại" : "Phát lặp lại"}
+            aria-pressed={isRepeating}
+          >
+            <Repeat className="size-[var(--icon-sm)]" />
+          </button>
           <span className="grid size-9 place-items-center">
-            <MoreHorizontal className="size-[var(--icon-sm)]" />
+            <MoreHorizontal
+              className="size-[var(--icon-sm)]"
+              aria-hidden="true"
+            />
           </span>
         </div>
       </div>
@@ -208,6 +232,7 @@ export default function MediaPlayer({
         src={prayer.audio}
         preload="metadata"
         autoPlay={isPlaying}
+        loop={isRepeating}
         onLoadedMetadata={(event) => onMetadataLoaded(event.currentTarget)}
         onTimeUpdate={(event) => onTimeChange(event.currentTarget.currentTime)}
         onPlay={(event) => onPlay(event.currentTarget)}

@@ -35,6 +35,8 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [volume, setVolume] = useState(0.7);
+  const [isRepeating, setIsRepeating] = useState(false);
   const activePrayer = prayers[activeIndex];
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -86,6 +88,12 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     if (audioRef.current) audioRef.current.playbackRate = rate;
   };
 
+  const changeVolume = (nextVolume: number) => {
+    const volume = Math.round(nextVolume * 100) / 100;
+    setVolume(volume);
+    if (audioRef.current) audioRef.current.volume = volume;
+  };
+
   return (
     <div className="mt-6">
       <MediaPlayer
@@ -96,6 +104,8 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
         currentTime={currentTime}
         duration={duration}
         playbackRate={playbackRate}
+        volume={volume}
+        isRepeating={isRepeating}
         progress={progress}
         setBar={setBar}
         onTogglePlayback={() => void togglePlayback()}
@@ -103,8 +113,11 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
         onNext={() => moveTrack(1)}
         onSeek={seek}
         onPlaybackRateChange={changePlaybackRate}
+        onVolumeChange={changeVolume}
+        onRepeatToggle={() => setIsRepeating((repeat) => !repeat)}
         onMetadataLoaded={(audio) => {
           audio.playbackRate = playbackRate;
+          audio.volume = volume;
           setDuration(audio.duration);
         }}
         onTimeChange={setCurrentTime}
