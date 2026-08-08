@@ -29,6 +29,8 @@ const WAVEFORM_CONFIG = {
   minHeight: 10,
 } as const;
 
+const waveformCache = new Map<string, Promise<number[]>>();
+
 export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { prepare, start, stop, setBar } = useAudioVisualizer(audioRef);
@@ -49,6 +51,12 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
     if (!audio) return;
 
     if (audio.paused) {
+      if (isIOSDevice()) {
+        await audio.play();
+        void prepare(audio);
+        return;
+      }
+
       await prepare(audio);
       await audio.play();
     } else {
@@ -63,15 +71,53 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   };
 
   const selectAndPlayTrack = async (index: number) => {
+    const audio = audioRef.current;
+    const selectedPrayer = prayers[index];
+    if (!audio || !selectedPrayer?.audio) return;
+
     if (index === activeIndex) {
-      const audio = audioRef.current;
-      if (!audio) return;
+      if (isIOSDevice()) {
+        await audio.play();
+        void prepare(audio);
+        return;
+      }
+
       await prepare(audio);
       await audio.play();
       return;
     }
 
+    if (isIOSDevice()) {
+      setCurrentTime(0);
+      setDuration(0);
+      setActiveIndex(index);
+      setIsPlaying(true);
+      audio.src = selectedPrayer.audio;
+      audio.load();
+      audio.playbackRate = playbackRate;
+      audio.volume = volume;
+      await audio.play();
+      void prepare(audio);
+      return;
+    }
+
+    setCurrentTime(0);
+    setDuration(0);
+    setActiveIndex(index);
+    audio.src = selectedPrayer.audio;
+    audio.load();
+    audio.playbackRate = playbackRate;
+    audio.volume = volume;
+    await prepare(audio);
     setIsPlaying(true);
+    await audio.play();
+  };
+
+  const selectTrackWithoutPlaying = (index: number) => {
+    if (index === activeIndex) return;
+
+    audioRef.current?.pause();
+    setIsPlaying(false);
     selectTrack(index);
   };
 
@@ -147,6 +193,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           audio.playbackRate = playbackRate;
           audio.volume = volume;
           setDuration(audio.duration);
+          if (isIOSDevice()) void prepare(audio);
         }}
         onTimeChange={setCurrentTime}
         onPlay={(audio) => {
@@ -174,13 +221,26 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
           {prayers.map((prayer, index) => {
             const isActive = index === activeIndex;
             return (
-              <button
+              <div
                 key={prayer.id}
-                type="button"
-                onClick={() => void selectAndPlayTrack(index)}
+                role="button"
+                tabIndex={0}
+                onClick={() => selectTrackWithoutPlaying(index)}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  selectTrackWithoutPlaying(index);
+                }}
                 className={`flex w-full cursor-pointer items-center gap-4 rounded-2xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive ? "border-primary bg-primary/5" : "border-surface-container bg-surface-container-lowest hover:bg-surface-container-low"}`}
               >
-                <span
+                <button
+                  type="button"
+                  onKeyDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void selectAndPlayTrack(index);
+                  }}
+                  aria-label={`Phát ${prayer.title}`}
                   className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${isActive ? "bg-primary text-on-primary" : "bg-surface-container-low text-primary"}`}
                 >
                   {isActive && isPlaying ? (
@@ -188,7 +248,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
                   ) : (
                     <Play className="size-[var(--icon-sm)] fill-current" />
                   )}
-                </span>
+                </button>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                     Audio {index + 1}
@@ -202,7 +262,7 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
                     Đang chọn
                   </span>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
@@ -234,9 +294,21 @@ function useAudioVisualizer(audioRef: RefObject<HTMLAudioElement | null>) {
   }, []);
 
   const prepare = async (audio: HTMLAudioElement) => {
-    if (isIOSDevice()) return;
-
     const visualizer = visualizerRef.current;
+
+    if (isIOSDevice()) {
+      const heights = await getStaticWaveform(
+        audio.currentSrc || audio.src,
+      ).catch(() => null);
+      if (!heights) return;
+      if (audioRef.current !== audio) return;
+
+      visualizer.bars.forEach((bar, index) => {
+        if (bar) bar.style.height = `${heights[index]}%`;
+      });
+      return;
+    }
+
     const audioContext =
       visualizer.context ?? (visualizer.context = new AudioContext());
 
@@ -311,5 +383,54 @@ function isIOSDevice() {
   return (
     /iPad|iPhone|iPod/.test(userAgent) ||
     (platform === "MacIntel" && maxTouchPoints > 1)
+  );
+}
+
+async function getStaticWaveform(source: string) {
+  const cachedWaveform = waveformCache.get(source);
+  if (cachedWaveform) return cachedWaveform;
+
+  const waveform = decodeWaveform(source).catch((error: unknown) => {
+    waveformCache.delete(source);
+    throw error;
+  });
+  waveformCache.set(source, waveform);
+  return waveform;
+}
+
+async function decodeWaveform(source: string) {
+  const response = await fetch(source);
+  if (!response.ok)
+    throw new Error(`Unable to load waveform: ${response.status}`);
+
+  const context = new OfflineAudioContext(1, 1, 44_100);
+  const audioBuffer = await context.decodeAudioData(
+    await response.arrayBuffer(),
+  );
+  const samples = audioBuffer.getChannelData(0);
+  const amplitudes = Array.from(
+    { length: WAVEFORM_CONFIG.barCount },
+    (_, index) => {
+      const start = Math.floor(
+        (index / WAVEFORM_CONFIG.barCount) * samples.length,
+      );
+      const end = Math.floor(
+        ((index + 1) / WAVEFORM_CONFIG.barCount) * samples.length,
+      );
+      let sumOfSquares = 0;
+
+      for (let sampleIndex = start; sampleIndex < end; sampleIndex += 1) {
+        sumOfSquares += samples[sampleIndex] ** 2;
+      }
+
+      return Math.sqrt(sumOfSquares / Math.max(1, end - start));
+    },
+  );
+  const peak = Math.max(...amplitudes, Number.EPSILON);
+
+  return amplitudes.map(
+    (amplitude) =>
+      WAVEFORM_CONFIG.minHeight +
+      Math.sqrt(amplitude / peak) * (100 - WAVEFORM_CONFIG.minHeight),
   );
 }
