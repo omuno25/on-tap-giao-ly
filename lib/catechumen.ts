@@ -1,3 +1,4 @@
+import catechumen0114Json from "@/data/giao-ly-du-tong-1-14.json";
 import catechumen2940Json from "@/data/giao-ly-du-tong-29-40.json";
 import catechumen1528Json from "@/data/giao-ly-du-tong-15-28.json";
 
@@ -27,6 +28,7 @@ const data = catechumen2940Json as CatechumenData;
 
 export const CATECHUMEN_META = data.meta;
 export const CATECHUMEN_SETS = [
+  catechumen0114Json as CatechumenSet,
   catechumen1528Json as CatechumenSet,
   ...data.sets,
 ];

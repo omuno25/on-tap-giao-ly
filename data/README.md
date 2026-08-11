@@ -3,6 +3,7 @@
 Chỉ chỉnh nội dung học trong thư mục này:
 
 - `giao-ly-hon-nhan-dataset.json`: câu hỏi Giáo lý Hôn nhân.
+- `giao-ly-du-tong-1-14.json`: set Giáo lý Dự tòng Bài 1–14.
 - `giao-ly-du-tong-29-40.json`: set Giáo lý Dự tòng Bài 29–40.
 - `giao-ly-du-tong-15-28.json`: set Giáo lý Dự tòng Bài 15–28.
 - `18-kinh-can-thuoc.json`: 18 Kinh cần thuộc và đường dẫn audio.
