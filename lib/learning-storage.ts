@@ -106,6 +106,15 @@ export function createExamSessionId() {
   );
 }
 
+export function getOrCreateUserId() {
+  const storedUserId = readStorageValue(STORAGE_KEYS.userId)?.trim();
+  if (storedUserId) return storedUserId;
+
+  const userId = createExamSessionId();
+  writeStorageValue(STORAGE_KEYS.userId, userId);
+  return userId;
+}
+
 export function createExamExpiration(durationSeconds: number) {
   return new Date(Date.now() + durationSeconds * 1000).toISOString();
 }

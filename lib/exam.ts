@@ -31,24 +31,57 @@ export type ScoreSummary = {
   correct: number;
 };
 
-function shuffle<T>(items: T[]) {
+type RandomSource = () => number;
+
+function hashStringToUint32(value: string) {
+  let hash = 2166136261;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return hash >>> 0;
+}
+
+function createSeededRandom(seed: string): RandomSource {
+  let state = hashStringToUint32(seed);
+
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function createQuestionSetHash() {
+  const bytes = new Uint8Array(8);
+  globalThis.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
+}
+
+function shuffle<T>(items: T[], random: RandomSource) {
   const result = [...items];
 
   for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
 
   return result;
 }
 
-function pickQuestions<T>(pool: T[], count: number) {
+function pickQuestions<T>(pool: T[], count: number, random: RandomSource) {
   if (pool.length === 0 || count <= 0) return [];
-  if (pool.length >= count) return shuffle(pool).slice(0, count);
+  if (pool.length >= count) return shuffle(pool, random).slice(0, count);
 
-  const picked = [...shuffle(pool)];
+  const picked = [...shuffle(pool, random)];
   while (picked.length < count) {
-    picked.push(pool[Math.floor(Math.random() * pool.length)]);
+    picked.push(pool[Math.floor(random() * pool.length)]);
   }
 
   return picked;
@@ -61,18 +94,22 @@ function normalizeAnswer(answer: string | string[]) {
 function buildObjectiveOptions(
   source: MockTestSourceQuestion,
   pool: MockTestSourceQuestion[],
+  random: RandomSource,
 ) {
   const correctText = normalizeAnswer(source.answer);
   const distractorPool = pool
     .map((item) => normalizeAnswer(item.answer))
     .filter((value) => value.trim().length > 0 && value !== correctText);
 
-  const distractors = shuffle(Array.from(new Set(distractorPool))).slice(0, 3);
+  const distractors = shuffle(
+    Array.from(new Set(distractorPool)),
+    random,
+  ).slice(0, 3);
   while (distractors.length < 3) {
     distractors.push("Không có đáp án phù hợp");
   }
 
-  const optionTexts = shuffle([correctText, ...distractors]);
+  const optionTexts = shuffle([correctText, ...distractors], random);
   const optionIds = ["A", "B", "C", "D"];
   const options = optionTexts.map((text, index) => ({
     id: optionIds[index],
@@ -91,7 +128,11 @@ export function buildExamQuestions(
   objectiveCount: number,
   essayCount: number,
   trueFalseCount: number,
+  questionSetHash?: string,
 ) {
+  const random = questionSetHash
+    ? createSeededRandom(questionSetHash)
+    : Math.random;
   const objectivePool = sourceQuestions.filter((q) => q.type === "short");
   const essayPool = sourceQuestions.filter((q) => q.type === "essay");
   const trueFalsePool = sourceQuestions.filter((q) => q.type === "true-false");
@@ -99,17 +140,19 @@ export function buildExamQuestions(
   const objectiveQuestions: ExamQuestion[] = pickQuestions(
     objectivePool,
     objectiveCount,
+    random,
   ).map((question) => ({
     id: String(question.id),
     title: question.question,
     standardAnswer: normalizeAnswer(question.answer),
-    ...buildObjectiveOptions(question, objectivePool),
+    ...buildObjectiveOptions(question, objectivePool, random),
     examMode: "objective",
   }));
 
   const essayQuestions: ExamQuestion[] = pickQuestions(
     essayPool,
     essayCount,
+    random,
   ).map((question) => ({
     id: String(question.id),
     title: question.question,
@@ -120,6 +163,7 @@ export function buildExamQuestions(
   const trueFalseQuestions: ExamQuestion[] = pickQuestions(
     trueFalsePool,
     trueFalseCount,
+    random,
   ).map((question) => {
     const correctText = normalizeAnswer(question.answer);
 
@@ -136,11 +180,10 @@ export function buildExamQuestions(
     };
   });
 
-  return shuffle<ExamQuestion>([
-    ...objectiveQuestions,
-    ...essayQuestions,
-    ...trueFalseQuestions,
-  ]);
+  return shuffle<ExamQuestion>(
+    [...objectiveQuestions, ...essayQuestions, ...trueFalseQuestions],
+    random,
+  );
 }
 
 export function formatExamTime(totalSeconds: number) {

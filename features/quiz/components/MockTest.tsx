@@ -25,6 +25,7 @@ import {
   formatExamTime,
   type ExamQuestion,
   type MockTestSourceQuestion,
+  type ScoreSummary,
 } from "@/lib/exam";
 
 export type { MockTestSourceQuestion } from "@/lib/exam";
@@ -44,6 +45,10 @@ type MockTestProps = {
   title?: string;
   exitHref?: string;
   saveResult?: boolean;
+  questionSetHash?: string;
+  initialExpiresAt?: string;
+  onSubmitted?: (score: ScoreSummary) => void;
+  resultHref?: string;
 };
 
 export default function MockTest({
@@ -56,6 +61,10 @@ export default function MockTest({
   title = "Thi Thử Giáo Lý Hôn Nhân",
   exitHref = AppRoute.Home,
   saveResult = true,
+  questionSetHash,
+  initialExpiresAt,
+  onSubmitted,
+  resultHref,
 }: MockTestProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -64,7 +73,7 @@ export default function MockTest({
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(durationSeconds);
   const [expiresAt, setExpiresAt] = useState(() =>
-    createExamExpiration(durationSeconds),
+    initialExpiresAt ?? createExamExpiration(durationSeconds),
   );
   const [manuallySubmitted, setManuallySubmitted] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
@@ -73,6 +82,7 @@ export default function MockTest({
   const [conflictingSession, setConflictingSession] =
     useState<ActiveExamSession | null>(null);
   const resultSaved = useRef(false);
+  const submissionNotified = useRef(false);
   const conflictDialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -90,7 +100,8 @@ export default function MockTest({
       } else if (savedSession) {
         setConflictingSession(savedSession);
       } else {
-        const newExpiresAt = createExamExpiration(durationSeconds);
+        const newExpiresAt =
+          initialExpiresAt ?? createExamExpiration(durationSeconds);
         setSessionId(createExamSessionId());
         setExpiresAt(newExpiresAt);
         setSecondsLeft(getRemainingExamSeconds(newExpiresAt));
@@ -100,6 +111,7 @@ export default function MockTest({
             objectiveCount,
             essayCount,
             trueFalseCount,
+            questionSetHash,
           ),
         );
         setSessionReady(true);
@@ -112,6 +124,8 @@ export default function MockTest({
     essayCount,
     objectiveCount,
     pathname,
+    initialExpiresAt,
+    questionSetHash,
     sourceQuestions,
     trueFalseCount,
   ]);
@@ -119,7 +133,8 @@ export default function MockTest({
   const submitted = manuallySubmitted || secondsLeft === 0;
 
   const startNewExam = () => {
-    const newExpiresAt = createExamExpiration(durationSeconds);
+    const newExpiresAt =
+      initialExpiresAt ?? createExamExpiration(durationSeconds);
     clearActiveExamSession(conflictingSession?.sessionId);
     setSessionId(createExamSessionId());
     setQuestions(
@@ -128,6 +143,7 @@ export default function MockTest({
         objectiveCount,
         essayCount,
         trueFalseCount,
+        questionSetHash,
       ),
     );
     setCurrentIndex(0);
@@ -236,6 +252,20 @@ export default function MockTest({
     });
     resultSaved.current = true;
   }, [answers, questions, saveResult, sessionInvalidated, submitted]);
+
+  useEffect(() => {
+    if (
+      !submitted ||
+      !questions ||
+      sessionInvalidated ||
+      submissionNotified.current
+    ) {
+      return;
+    }
+
+    onSubmitted?.(calculateScore(questions, answers));
+    submissionNotified.current = true;
+  }, [answers, onSubmitted, questions, sessionInvalidated, submitted]);
 
   useEffect(() => {
     if (
@@ -595,10 +625,10 @@ export default function MockTest({
             </p>
             <div className="mt-3">
               <Link
-                href={exitHref}
+                href={resultHref ?? exitHref}
                 className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-on-primary font-headline font-bold text-sm hover:opacity-90 transition-all active:scale-95"
               >
-                Trở về
+                {resultHref ? "Xem bảng xếp hạng" : "Trở về"}
               </Link>
             </div>
           </section>

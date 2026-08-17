@@ -12,9 +12,15 @@ import {
 import {
   clearActiveExamSession,
   getRemainingExamSeconds,
+  getOrCreateUserId,
   readActiveExamSession,
   saveActiveExamSession,
 } from "@/lib/learning-storage";
+import {
+  readActiveGroupExamRoom,
+  saveHostedExamRoom,
+  saveJoinedExamRoom,
+} from "@/lib/group-exam";
 import { AppRoute } from "@/lib/routes";
 
 class MemoryStorage implements Storage {
@@ -151,4 +157,48 @@ describe("app storage", () => {
       Date.now = originalDateNow;
     }
   });
+
+  test("tạo userId một lần và dùng lại trên cùng thiết bị", () => {
+    const firstUserId = getOrCreateUserId();
+    const secondUserId = getOrCreateUserId();
+
+    expect(firstUserId.length).toBeGreaterThan(0);
+    expect(secondUserId).toBe(firstUserId);
+    expect(readStorageValue(STORAGE_KEYS.userId)).toBe(firstUserId);
+  });
+
+  test("chỉ đánh dấu một phòng thi nhóm đang active khi đổi vai trò", () => {
+    saveHostedExamRoom({
+      version: 1,
+      roomCode: "ROOMA1",
+      hostUserId: "user-a",
+      hostName: "A",
+      createdAt: "2026-08-17T00:00:00.000Z",
+      status: "started",
+      participants: [],
+      results: [{ userId: "user-a", correctCount: 10 }],
+      start: null,
+    });
+    expect(readActiveGroupExamRoom()).toEqual({
+      role: "host",
+      roomCode: "ROOMA1",
+    });
+
+    saveJoinedExamRoom({
+      version: 1,
+      roomCode: "ROOMB2",
+      hostUserId: "user-b",
+      hostName: "B",
+      participantUserId: "user-a",
+      participantName: "A",
+      result: null,
+      leaderboard: [],
+      start: null,
+    });
+    expect(readActiveGroupExamRoom()).toEqual({
+      role: "participant",
+      roomCode: "ROOMB2",
+    });
+  });
+
 });

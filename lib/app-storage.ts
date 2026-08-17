@@ -4,14 +4,21 @@
  */
 export const STORAGE_KEYS = {
   profile: "learning.profile",
+  userId: "learning.user_id",
   examResults: "learning.exam_results",
   activeExamSession: "learning.exam.active_session",
   invalidatedExamSession: "learning.exam.invalidated_session",
+  activeHostedExamRoom: "learning.exam_room.active_hosted",
+  activeJoinedExamRoom: "learning.exam_room.active_joined",
+  activeGroupExamRoom: "learning.exam_room.active",
   studyCardIndex: "study.current_card_index",
   completedPrayers: "learning.prayers.completed",
   essayAnswer: (questionId: string) => `learning.essay.${questionId}`,
   catechumenCardIndex: (slug: string) =>
     `catechumen.${slug}.current_card_index`,
+  examRoom: (roomCode: string) => `learning.exam_room.${roomCode}`,
+  joinedExamRoom: (roomCode: string) =>
+    `learning.exam_room_joined.${roomCode}`,
 } as const;
 
 const APP_STORAGE_PREFIXES = ["learning.", "study.", "catechumen."] as const;

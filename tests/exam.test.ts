@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   buildExamQuestions,
   calculateScore,
+  createQuestionSetHash,
   formatExamTime,
   type ExamQuestion,
   type MockTestSourceQuestion,
@@ -39,6 +40,28 @@ describe("exam helpers", () => {
         question.options?.some((item) => item.id === question.correctOptionId),
       ).toBe(true);
     }
+  });
+
+  test("cùng hash luôn tạo cùng một bộ câu hỏi", () => {
+    const firstExam = buildExamQuestions(sourceQuestions, 3, 1, 1, "room-abc");
+    const secondExam = buildExamQuestions(
+      sourceQuestions,
+      3,
+      1,
+      1,
+      "room-abc",
+    );
+
+    expect(secondExam).toEqual(firstExam);
+  });
+
+  test("tạo hash bộ câu hỏi ngẫu nhiên đúng định dạng", () => {
+    const firstHash = createQuestionSetHash();
+    const secondHash = createQuestionSetHash();
+
+    expect(firstHash).toMatch(/^[a-f0-9]{16}$/);
+    expect(secondHash).toMatch(/^[a-f0-9]{16}$/);
+    expect(secondHash).not.toBe(firstHash);
   });
 
   test("chấm đúng câu khách quan và khớp chính xác câu tự luận", () => {
