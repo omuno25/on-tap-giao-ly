@@ -44,6 +44,17 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
   const activePrayer = prayers[activeIndex];
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  useEffect(() => {
+    if (!activePrayer || !("mediaSession" in navigator)) return;
+    if (typeof MediaMetadata === "undefined") return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: activePrayer.title,
+      artist: "KINH CẦN THUỘC",
+      album: "Ôn tập Giáo lý",
+    });
+  }, [activePrayer]);
+
   if (!activePrayer?.audio) return null;
 
   const togglePlayback = async () => {
@@ -198,10 +209,12 @@ export default function PrayerMediaPlayer({ prayers }: PrayerMediaPlayerProps) {
         onTimeChange={setCurrentTime}
         onPlay={(audio) => {
           setIsPlaying(true);
+          setMediaSessionPlaybackState("playing");
           void start(audio);
         }}
         onPause={() => {
           setIsPlaying(false);
+          setMediaSessionPlaybackState("paused");
           stop();
         }}
         onEnded={handleTrackEnded}
@@ -384,6 +397,10 @@ function isIOSDevice() {
     /iPad|iPhone|iPod/.test(userAgent) ||
     (platform === "MacIntel" && maxTouchPoints > 1)
   );
+}
+
+function setMediaSessionPlaybackState(state: MediaSessionPlaybackState) {
+  if ("mediaSession" in navigator) navigator.mediaSession.playbackState = state;
 }
 
 async function getStaticWaveform(source: string) {

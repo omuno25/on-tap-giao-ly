@@ -12,13 +12,13 @@ export default function CatechumenPage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl bg-surface px-4 pb-28 pt-8 sm:px-5 sm:pt-10">
       <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-tertiary">
-        Bài 15–40
+        Bài 1–40
       </span>
       <h1 className="mt-3 font-headline text-3xl font-bold">
         {CATECHUMEN_META.title}
       </h1>
       <p className="mt-2 text-on-surface-variant">
-        {CATECHUMEN_SETS.length} bộ gồm {totalCards} câu hỏi–đáp án từ Bài 15
+        {CATECHUMEN_SETS.length} bộ gồm {totalCards} câu hỏi–đáp án từ Bài 1
         đến Bài 40.
       </p>
       <section className="mt-8 grid gap-4">
