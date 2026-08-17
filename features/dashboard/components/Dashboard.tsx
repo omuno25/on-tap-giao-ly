@@ -24,6 +24,7 @@ import { readStudyPosition } from "@/lib/study-progress";
 import { readCatechumenPosition } from "@/lib/catechumen-progress";
 import BlogSection from "@/features/blog/components/BlogSection";
 import type { BlogPostSummary } from "@/lib/blog";
+import { AppRoute, appRoute } from "@/lib/routes";
 
 type DeckCardProps = {
   eyebrow: string;
@@ -98,7 +99,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
       <header className="sticky top-0 z-40 border-b border-surface-container/80 bg-surface/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <Link
-            href="/"
+            href={AppRoute.Home}
             className="flex min-w-0 items-center gap-2.5"
             aria-label="Trang chủ Ôn tập Giáo lý"
           >
@@ -111,7 +112,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
             </span>
           </Link>
           <Link
-            href="/cai-dat"
+            href={AppRoute.Settings}
             className="flex items-center gap-2 rounded-full bg-surface-container-low px-2 py-1.5 pr-3 text-sm font-bold transition-colors hover:bg-surface-container"
             aria-label="Mở cài đặt"
           >
@@ -141,7 +142,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
               </p>
             </div>
             <Link
-              href="/hoc"
+              href={AppRoute.Study}
               className="relative mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-on-hero px-6 py-3.5 font-headline text-sm font-bold text-hero shadow-sm transition-transform active:scale-[0.98]"
             >
               <Play className="size-[var(--icon-sm)] fill-current" />
@@ -155,19 +156,19 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
             icon={Church}
             value={`${marriageProgress}%`}
             label="Hôn nhân"
-            href="/thong-ke"
+            href={AppRoute.Statistics}
           />
           <Summary
             icon={BookOpen}
             value={`${catechumenProgress}%`}
             label="Dự tòng"
-            href="/giao-ly-du-tong"
+            href={AppRoute.CatechumenCatechism}
           />
           <Summary
             icon={ScrollText}
             value={`${prayerProgress}%`}
             label="Kinh thánh"
-            href="/kinh-quan-trong"
+            href={AppRoute.ImportantPrayers}
           />
         </section>
 
@@ -183,7 +184,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
               title="Giáo lý Hôn nhân"
               description="Ôn tập kiến thức Hôn nhân và Gia đình Công giáo."
               count={`${totalMarriageCards} thẻ`}
-              href="/giao-ly-hon-nhan"
+              href={AppRoute.MarriageCatechism}
               icon={Church}
               tone="blue"
               progress={marriageProgress}
@@ -205,7 +206,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
                   title={set.title.replace("Giáo lý Dự tòng · ", "")}
                   description={set.description}
                   count={`${set.cards.length} thẻ`}
-                  href={`/giao-ly-du-tong/${set.slug}`}
+                  href={appRoute.catechumenSet(set.slug)}
                   icon={BookOpen}
                   tone="amber"
                   progress={percent(
@@ -227,7 +228,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
               title="18 Kinh cần thuộc"
               description="Một vị trí riêng đã sẵn sàng cho bộ kinh đọc và học thuộc."
               count="18 bài kinh"
-              href="/kinh-quan-trong"
+              href={AppRoute.ImportantPrayers}
               icon={ScrollText}
               tone="green"
             />
@@ -244,7 +245,7 @@ export default function Dashboard({ blogPosts }: DashboardProps) {
             </p>
           </div>
           <Link
-            href="/thi-thu"
+            href={AppRoute.MockTest}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-on-surface px-6 py-3 text-sm font-bold text-surface"
           >
             Thi thử ngay <ArrowRight className="size-[var(--icon-sm)]" />

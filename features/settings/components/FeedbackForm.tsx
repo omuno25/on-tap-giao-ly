@@ -1,31 +1,67 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ExternalLink, MessageSquarePlus, Star } from "lucide-react";
+import { CheckCircle2, MessageSquarePlus, Send, Star } from "lucide-react";
 import SettingsPageHeader from "@/components/settings/SettingsPageHeader";
+import {
+  FEEDBACK_TYPES,
+  MAX_FEEDBACK_MESSAGE_LENGTH,
+  type FeedbackType,
+} from "@/lib/feedback";
+import { AppRoute } from "@/lib/routes";
 
-const FEEDBACK_TYPES = ["Góp ý", "Báo lỗi", "Nội dung"] as const;
-const GITHUB_ISSUE_URL = "https://github.com/omuno25/on-tap-giao-ly/issues/new";
+type SubmitStatus = "idle" | "submitting" | "success" | "error";
 
 export default function FeedbackForm() {
-  const [type, setType] = useState<(typeof FEEDBACK_TYPES)[number]>("Góp ý");
+  const [type, setType] = useState<FeedbackType>("Góp ý");
   const [rating, setRating] = useState(0);
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<SubmitStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
     const body = message.trim();
-    if (!body || rating === 0) return;
+    if (!body || rating === 0 || status === "submitting") return;
 
-    const query = new URLSearchParams({
-      title: `[${type}] `,
-      body: `**Đánh giá:** ${rating}/5 sao\n\n${body}`,
-    });
-    window.open(
-      `${GITHUB_ISSUE_URL}?${query.toString()}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    setStatus("submitting");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch(AppRoute.FeedbackApi, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          rating,
+          message: body,
+          page: window.location.pathname,
+        }),
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        message?: string;
+      };
+
+      if (!response.ok || result.ok !== true) {
+        throw new Error(result.message || "Không thể gửi góp ý.");
+      }
+
+      setMessage("");
+      setRating(0);
+      setStatus("success");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Không thể gửi góp ý. Vui lòng thử lại.",
+      );
+      setStatus("error");
+    }
+  };
+
+  const markAsEditing = () => {
+    if (status !== "submitting") setStatus("idle");
   };
 
   return (
@@ -53,7 +89,10 @@ export default function FeedbackForm() {
             <button
               key={item}
               type="button"
-              onClick={() => setType(item)}
+              onClick={() => {
+                setType(item);
+                markAsEditing();
+              }}
               aria-pressed={type === item}
               className={`cursor-pointer rounded-full px-4 py-2 text-xs font-bold transition-colors ${type === item ? "bg-primary text-on-primary" : "bg-surface-container-low text-on-surface-variant"}`}
             >
@@ -73,7 +112,10 @@ export default function FeedbackForm() {
               <button
                 key={value}
                 type="button"
-                onClick={() => setRating(value)}
+                onClick={() => {
+                  setRating(value);
+                  markAsEditing();
+                }}
                 aria-label={`${value} sao`}
                 aria-pressed={rating === value}
                 className="cursor-pointer rounded-xl p-2 transition-colors hover:bg-tertiary-container/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tertiary/40"
@@ -97,28 +139,40 @@ export default function FeedbackForm() {
         <textarea
           id="feedback"
           value={message}
-          onChange={(event) => setMessage(event.target.value.slice(0, 1000))}
+          onChange={(event) => {
+            setMessage(
+              event.target.value.slice(0, MAX_FEEDBACK_MESSAGE_LENGTH),
+            );
+            markAsEditing();
+          }}
           rows={7}
           placeholder="Nhập góp ý của bạn..."
           required
           className="mt-2 w-full resize-none rounded-control bg-surface-container-low p-4 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-primary/30"
         />
         <p className="mt-1 text-right text-xs text-on-surface-variant">
-          {message.length}/1000
+          {message.length}/{MAX_FEEDBACK_MESSAGE_LENGTH}
         </p>
 
         <button
           type="submit"
-          disabled={!message.trim() || rating === 0}
+          disabled={!message.trim() || rating === 0 || status === "submitting"}
           className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-bold text-on-primary disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Tiếp tục trên GitHub{" "}
-          <ExternalLink className="size-[var(--icon-sm)]" />
+          {status === "submitting" ? "Đang gửi..." : "Gửi góp ý"}
+          <Send className="size-[var(--icon-sm)]" />
         </button>
-        <p className="mt-3 text-xs leading-relaxed text-on-surface-variant">
-          Nội dung chỉ được chuyển sang GitHub khi bạn bấm nút. Bạn có thể kiểm
-          tra lại trước khi gửi.
-        </p>
+
+        <div className="mt-3" aria-live="polite">
+          {status === "success" ? (
+            <p className="flex items-center gap-2 text-sm font-medium text-secondary">
+              <CheckCircle2 className="size-[var(--icon-sm)]" />
+              Cảm ơn bạn! Góp ý đã được gửi thành công.
+            </p>
+          ) : status === "error" ? (
+            <p className="text-sm font-medium text-error">{errorMessage}</p>
+          ) : null}
+        </div>
       </form>
     </main>
   );

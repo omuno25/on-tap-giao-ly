@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AppRoute } from "@/lib/routes";
 import { ArrowLeft, Clock3 } from "lucide-react";
 import MarkdownContent from "@/components/content/MarkdownContent";
 import { getBlogPost, getBlogPosts } from "@/lib/blog";
@@ -31,7 +32,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6 sm:px-6">
       <Link
-        href="/"
+        href={AppRoute.Home}
         className="inline-flex items-center gap-2 text-sm font-bold text-primary"
       >
         <ArrowLeft className="size-[var(--icon-sm)]" /> Về trang học tập
@@ -59,7 +60,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       </article>
 
       <Link
-        href="/"
+        href={AppRoute.Home}
         className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3.5 text-sm font-bold text-on-primary"
       >
         Về trang học tập

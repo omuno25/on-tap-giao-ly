@@ -3,6 +3,7 @@ import { Lexend, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import BottomNavBar from "@/components/layout/BottomNavBar";
 import NameSetupModal from "@/components/onboarding/NameSetupModal";
+import { AppRoute } from "@/lib/routes";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   title: "Ôn tập Giáo lý",
   description: "Ứng dụng ôn tập giáo lý bằng flashcard, bài kiểm tra và audio.",
   alternates: {
-    canonical: "/",
+    canonical: AppRoute.Home,
   },
 };
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { CATECHUMEN_META, CATECHUMEN_SETS } from "@/lib/catechumen";
+import { appRoute } from "@/lib/routes";
 
 export default function CatechumenPage() {
   const totalCards = CATECHUMEN_SETS.reduce(
@@ -24,7 +25,7 @@ export default function CatechumenPage() {
         {CATECHUMEN_SETS.map((set) => (
           <Link
             key={set.slug}
-            href={`/giao-ly-du-tong/${set.slug}`}
+            href={appRoute.catechumenSet(set.slug)}
             className="flex cursor-pointer flex-col rounded-2xl border border-surface-container bg-surface-container-lowest p-5 transition-all hover:-translate-y-0.5 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <BookOpen className="size-[var(--icon-lg)] text-primary" />

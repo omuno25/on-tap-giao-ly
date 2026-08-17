@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { getQuestionById, QUESTION_BANK } from "@/lib/question-bank";
 import TopAppBar from "@/components/layout/TopAppBar";
 import { readEssayAnswer, saveEssayAnswer } from "@/lib/learning-storage";
+import { AppRoute } from "@/lib/routes";
 
 export default function EssayInput() {
   const [answer, setAnswer] = useState("");
@@ -136,7 +137,7 @@ export default function EssayInput() {
                   Quay lại
                 </button>
                 <Link
-                  href="/tu-luan/xem-lai"
+                  href={AppRoute.EssayReview}
                   className={`w-full sm:w-auto ${answer.trim() ? "" : "pointer-events-none opacity-50"}`}
                   aria-disabled={!answer.trim()}
                 >

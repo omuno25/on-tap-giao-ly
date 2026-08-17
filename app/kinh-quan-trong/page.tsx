@@ -2,12 +2,13 @@ import Link from "next/link";
 import { ArrowLeft, ScrollText } from "lucide-react";
 import { PRAYER_META, PRAYERS } from "@/lib/prayers";
 import PrayerMediaPlayer from "@/features/prayers/components/PrayerMediaPlayer";
+import { AppRoute } from "@/lib/routes";
 
 export default function PrayersPage() {
   return (
     <main className="mx-auto min-h-screen max-w-2xl bg-surface px-4 pb-28 pt-6 sm:px-6 sm:pt-10">
       <Link
-        href="/"
+        href={AppRoute.Home}
         className="inline-flex items-center gap-2 text-sm font-bold text-primary"
       >
         <ArrowLeft className="size-[var(--icon-sm)]" />

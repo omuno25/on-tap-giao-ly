@@ -1,5 +1,6 @@
 import MockTest from "@/features/quiz/components/MockTest";
+import { AppRoute } from "@/lib/routes";
 
 export default function TestPage() {
-  return <MockTest exitHref="/giao-ly-hon-nhan" />;
+  return <MockTest exitHref={AppRoute.MarriageCatechism} />;
 }

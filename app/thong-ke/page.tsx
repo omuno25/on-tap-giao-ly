@@ -6,6 +6,7 @@ import { BarChart3, BookOpen, Trophy } from "lucide-react";
 import { QUESTION_BANK } from "@/lib/question-bank";
 import { readStudyPosition } from "@/lib/study-progress";
 import { ExamResult, readExamResults } from "@/lib/learning-storage";
+import { AppRoute } from "@/lib/routes";
 
 export default function StatsPage() {
   const [studyPosition, setStudyPosition] = useState(0);
@@ -55,7 +56,7 @@ export default function StatsPage() {
         {results.length === 0 ? (
           <p className="mt-4 text-sm text-on-surface-variant">
             Chưa có kết quả.{" "}
-            <Link className="text-primary font-bold" href="/thi-thu">
+            <Link className="text-primary font-bold" href={AppRoute.MockTest}>
               Làm bài thi thử
             </Link>
           </p>

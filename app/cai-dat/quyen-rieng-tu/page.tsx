@@ -1,13 +1,9 @@
-import fs from "node:fs";
-import path from "node:path";
 import Markdown from "react-markdown";
 import SettingsPageHeader from "@/components/settings/SettingsPageHeader";
+import { readContentTextFile } from "@/lib/utils/server";
 
 export default function PrivacyPage() {
-  const content = fs.readFileSync(
-    path.join(process.cwd(), "content", "privacy-policy.md"),
-    "utf8",
-  );
+  const content = readContentTextFile("privacy-policy.md");
 
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6">

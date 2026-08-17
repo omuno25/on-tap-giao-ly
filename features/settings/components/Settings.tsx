@@ -21,6 +21,7 @@ import {
   saveLearnerProfile,
 } from "@/lib/learning-storage";
 import { clearAllAppStorage } from "@/lib/app-storage";
+import { AppRoute } from "@/lib/routes";
 
 export default function Settings() {
   const [name, setName] = useState("");
@@ -110,25 +111,25 @@ export default function Settings() {
 
       <section className="mt-6 overflow-hidden rounded-card border border-surface-container bg-surface-container-lowest">
         <SettingsLink
-          href="/cai-dat/quyen-rieng-tu"
+          href={AppRoute.SettingsPrivacy}
           icon={ShieldCheck}
           title="Chính sách"
           description="Quyền riêng tư và dữ liệu trên thiết bị"
         />
         <SettingsLink
-          href="/cai-dat/danh-gia"
+          href={AppRoute.SettingsRating}
           icon={Trophy}
           title="Xếp hạng"
           description="Bảng xếp hạng người học"
         />
         <SettingsLink
-          href="/cai-dat/phan-hoi"
+          href={AppRoute.SettingsFeedback}
           icon={MessageSquarePlus}
           title="Góp ý ứng dụng"
           description="Gửi ý tưởng, báo lỗi hoặc góp ý nội dung"
         />
         <SettingsLink
-          href="/cai-dat/lich-su-phien-ban"
+          href={AppRoute.SettingsReleaseNotes}
           icon={History}
           title="Phiên bản"
           description="Ghi chú phát hành"

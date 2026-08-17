@@ -3,9 +3,11 @@ import {
   hasStorageValue,
   readStorageJson,
   readStorageValue,
+  removeStorageValue,
   writeStorageJson,
   writeStorageValue,
 } from "@/lib/app-storage";
+import type { ExamQuestion } from "@/lib/exam";
 
 export type ExamResult = {
   correct: number;
@@ -19,6 +21,21 @@ export type ExamResult = {
 
 export type LearnerProfile = {
   name: string;
+};
+
+export type ActiveExamSession = {
+  version: 2;
+  sessionId: string;
+  pathname: string;
+  title: string;
+  eyebrow: string;
+  exitHref: string;
+  questions: ExamQuestion[];
+  currentIndex: number;
+  answers: Record<string, string>;
+  secondsLeft: number;
+  durationSeconds: number;
+  updatedAt: string;
 };
 
 export const MAX_PROFILE_NAME_LENGTH = 20;
@@ -42,6 +59,152 @@ export function saveExamResult(result: ExamResult) {
   writeStorageJson(
     STORAGE_KEYS.examResults,
     [result, ...readExamResults()].slice(0, 20),
+  );
+}
+
+export function readActiveExamSession() {
+  const value = readStorageJson<unknown>(
+    STORAGE_KEYS.activeExamSession,
+    null,
+  );
+
+  const session = normalizeActiveExamSession(value);
+  if (!session || isActiveExamSessionInvalidated(session.sessionId)) {
+    removeStorageValue(STORAGE_KEYS.activeExamSession);
+    return null;
+  }
+
+  if (!isRecord(value) || value.version !== 2) {
+    writeStorageJson(STORAGE_KEYS.activeExamSession, session);
+  }
+
+  return session;
+}
+
+export function saveActiveExamSession(session: ActiveExamSession) {
+  if (isActiveExamSessionInvalidated(session.sessionId)) return false;
+  writeStorageJson(STORAGE_KEYS.activeExamSession, session);
+  return true;
+}
+
+export function clearActiveExamSession(sessionId?: string) {
+  if (sessionId) {
+    writeStorageValue(STORAGE_KEYS.invalidatedExamSession, sessionId);
+  }
+  removeStorageValue(STORAGE_KEYS.activeExamSession);
+}
+
+export function isActiveExamSessionInvalidated(sessionId: string) {
+  return readStorageValue(STORAGE_KEYS.invalidatedExamSession) === sessionId;
+}
+
+export function createExamSessionId() {
+  return (
+    globalThis.crypto?.randomUUID?.() ??
+    `exam-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
+}
+
+function normalizeActiveExamSession(value: unknown): ActiveExamSession | null {
+  if (!isRecord(value)) return null;
+
+  const questions = value.questions;
+  const answers = value.answers;
+  if (
+    (value.version !== 1 && value.version !== 2) ||
+    (value.version === 2 && !isNonEmptyString(value.sessionId)) ||
+    !isSafeAppPath(value.pathname) ||
+    !isNonEmptyString(value.title) ||
+    typeof value.eyebrow !== "string" ||
+    !isSafeAppPath(value.exitHref) ||
+    !Array.isArray(questions) ||
+    questions.length === 0 ||
+    !questions.every(isExamQuestion) ||
+    !isStringRecord(answers) ||
+    !Number.isInteger(value.currentIndex) ||
+    (value.currentIndex as number) < 0 ||
+    (value.currentIndex as number) >= questions.length ||
+    !isPositiveFiniteNumber(value.secondsLeft) ||
+    !isPositiveFiniteNumber(value.durationSeconds) ||
+    (value.secondsLeft as number) > (value.durationSeconds as number) ||
+    typeof value.updatedAt !== "string" ||
+    !Number.isFinite(Date.parse(value.updatedAt))
+  ) {
+    return null;
+  }
+
+  return {
+    version: 2,
+    sessionId:
+      value.version === 2 ? (value.sessionId as string) : createExamSessionId(),
+    pathname: value.pathname as string,
+    title: value.title as string,
+    eyebrow: value.eyebrow as string,
+    exitHref: value.exitHref as string,
+    questions,
+    currentIndex: value.currentIndex as number,
+    answers,
+    secondsLeft: value.secondsLeft as number,
+    durationSeconds: value.durationSeconds as number,
+    updatedAt: value.updatedAt,
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isSafeAppPath(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.startsWith("/") &&
+    !value.startsWith("//")
+  );
+}
+
+function isPositiveFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return (
+    isRecord(value) &&
+    Object.values(value).every((item) => typeof item === "string")
+  );
+}
+
+function isExamQuestion(value: unknown): value is ExamQuestion {
+  if (!isRecord(value)) return false;
+  if (
+    !isNonEmptyString(value.id) ||
+    !isNonEmptyString(value.title) ||
+    typeof value.standardAnswer !== "string" ||
+    !["objective", "essay", "true-false"].includes(String(value.examMode))
+  ) {
+    return false;
+  }
+
+  if (value.options !== undefined) {
+    if (
+      !Array.isArray(value.options) ||
+      !value.options.every(
+        (option) =>
+          isRecord(option) &&
+          isNonEmptyString(option.id) &&
+          typeof option.text === "string",
+      )
+    ) {
+      return false;
+    }
+  }
+
+  return (
+    value.correctOptionId === undefined ||
+    typeof value.correctOptionId === "string"
   );
 }
 
