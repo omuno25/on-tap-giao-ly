@@ -8,6 +8,11 @@ import {
   writeStorageJson,
   writeStorageValue,
 } from "@/lib/app-storage";
+import {
+  clearActiveExamSession,
+  readActiveExamSession,
+  saveActiveExamSession,
+} from "@/lib/learning-storage";
 
 class MemoryStorage implements Storage {
   private values = new Map<string, string>();
@@ -79,5 +84,34 @@ describe("app storage", () => {
     expect(readStorageValue("learning.profile")).toBeNull();
     expect(readStorageValue("study.index")).toBeNull();
     expect(readStorageValue("unrelated")).toBe("keep");
+  });
+
+  test("lưu, đọc và xóa phiên thi đang hoạt động", () => {
+    const session = {
+      version: 1 as const,
+      pathname: "/thi-thu",
+      title: "Thi thử",
+      eyebrow: "Giáo lý",
+      exitHref: "/",
+      questions: [
+        {
+          id: "q1",
+          title: "Câu hỏi",
+          standardAnswer: "Đáp án",
+          examMode: "essay" as const,
+        },
+      ],
+      currentIndex: 0,
+      answers: { q1: "Đang trả lời" },
+      secondsLeft: 120,
+      durationSeconds: 300,
+      updatedAt: "2026-08-17T00:00:00.000Z",
+    };
+
+    saveActiveExamSession(session);
+    expect(readActiveExamSession()).toEqual(session);
+
+    clearActiveExamSession();
+    expect(readActiveExamSession()).toBeNull();
   });
 });

@@ -1,11 +1,18 @@
 "use client";
 
-import { X, Timer, Flag, UserRound } from "lucide-react";
+import { AlertTriangle, X, Timer, Flag, UserRound } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
-import { saveExamResult } from "@/lib/learning-storage";
+import {
+  clearActiveExamSession,
+  readActiveExamSession,
+  saveActiveExamSession,
+  saveExamResult,
+  type ActiveExamSession,
+} from "@/lib/learning-storage";
 import { MARRIAGE_QUESTION_SET } from "@/lib/question-bank";
 import {
   buildExamQuestions,
@@ -45,29 +52,99 @@ export default function MockTest({
   exitHref = "/",
   saveResult = true,
 }: MockTestProps) {
+  const pathname = usePathname();
   const [questions, setQuestions] = useState<ExamQuestion[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(durationSeconds);
   const [manuallySubmitted, setManuallySubmitted] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [conflictingSession, setConflictingSession] =
+    useState<ActiveExamSession | null>(null);
   const resultSaved = useRef(false);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      setQuestions(
-        buildExamQuestions(
-          sourceQuestions,
-          objectiveCount,
-          essayCount,
-          trueFalseCount,
-        ),
-      );
+      const savedSession = readActiveExamSession();
+
+      if (savedSession?.pathname === pathname) {
+        setQuestions(savedSession.questions);
+        setCurrentIndex(savedSession.currentIndex);
+        setAnswers(savedSession.answers);
+        setSecondsLeft(savedSession.secondsLeft);
+        setSessionReady(true);
+      } else if (savedSession) {
+        setConflictingSession(savedSession);
+      } else {
+        setQuestions(
+          buildExamQuestions(
+            sourceQuestions,
+            objectiveCount,
+            essayCount,
+            trueFalseCount,
+          ),
+        );
+        setSessionReady(true);
+      }
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [essayCount, objectiveCount, sourceQuestions, trueFalseCount]);
+  }, [essayCount, objectiveCount, pathname, sourceQuestions, trueFalseCount]);
 
   const submitted = manuallySubmitted || secondsLeft === 0;
+
+  const startNewExam = () => {
+    clearActiveExamSession();
+    setQuestions(
+      buildExamQuestions(
+        sourceQuestions,
+        objectiveCount,
+        essayCount,
+        trueFalseCount,
+      ),
+    );
+    setCurrentIndex(0);
+    setAnswers({});
+    setSecondsLeft(durationSeconds);
+    setManuallySubmitted(false);
+    setConflictingSession(null);
+    setSessionReady(true);
+  };
+
+  useEffect(() => {
+    if (!sessionReady || !questions) return;
+
+    if (submitted) {
+      clearActiveExamSession();
+      return;
+    }
+
+    saveActiveExamSession({
+      version: 1,
+      pathname,
+      title,
+      eyebrow,
+      exitHref,
+      questions,
+      currentIndex,
+      answers,
+      secondsLeft,
+      durationSeconds,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [
+    answers,
+    currentIndex,
+    durationSeconds,
+    eyebrow,
+    exitHref,
+    pathname,
+    questions,
+    secondsLeft,
+    sessionReady,
+    submitted,
+    title,
+  ]);
 
   useEffect(() => {
     if (!saveResult || !submitted || !questions || resultSaved.current) return;
@@ -100,6 +177,57 @@ export default function MockTest({
     totalQuestions > 0
       ? Math.round(((currentIndex + 1) / totalQuestions) * 100)
       : 0;
+
+  if (conflictingSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-surface px-4 pb-28">
+        <section
+          role="alertdialog"
+          aria-labelledby="exam-conflict-title"
+          aria-describedby="exam-conflict-description"
+          className="w-full max-w-md rounded-2xl border border-error/20 bg-surface-container-lowest p-6 text-center shadow-lg"
+        >
+          <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-error/10 text-error">
+            <AlertTriangle className="size-[var(--icon-md)]" />
+          </span>
+          <h1
+            id="exam-conflict-title"
+            className="mt-4 font-headline text-xl font-bold"
+          >
+            Bạn đang có một phiên chưa hoàn thành
+          </h1>
+          <p
+            id="exam-conflict-description"
+            className="mt-2 text-sm leading-relaxed text-on-surface-variant"
+          >
+            Phiên “{conflictingSession.title}” vẫn đang được lưu. Bắt đầu bài
+            mới sẽ xóa tiến độ và các câu trả lời của phiên này.
+          </p>
+          <div className="mt-6 grid gap-3">
+            <Link
+              href={conflictingSession.pathname}
+              className="rounded-full bg-primary px-5 py-3 text-sm font-bold text-on-primary transition-opacity hover:opacity-90 active:scale-95"
+            >
+              Tiếp tục phiên cũ
+            </Link>
+            <button
+              type="button"
+              onClick={startNewExam}
+              className="rounded-full border border-error/30 px-5 py-3 text-sm font-bold text-error transition-colors hover:bg-error/10 active:scale-95"
+            >
+              Xóa phiên cũ và bắt đầu bài mới
+            </button>
+            <Link
+              href="/phong-thi"
+              className="px-5 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface"
+            >
+              Hủy
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   if (!questions || !currentQuestion) {
     return (

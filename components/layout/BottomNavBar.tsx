@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, BarChart3, Settings } from "lucide-react";
+import { GraduationCap, BarChart3, Settings, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ export default function BottomNavBar() {
 
   const navItems = [
     { label: "Học tập", icon: GraduationCap, href: "/" },
+    { label: "Phòng thi", icon: UsersRound, href: "/phong-thi" },
     { label: "Thống kê", icon: BarChart3, href: "/thong-ke" },
     { label: "Cài đặt", icon: Settings, href: "/cai-dat" },
   ];

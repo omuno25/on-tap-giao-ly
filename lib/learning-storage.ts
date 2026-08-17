@@ -3,9 +3,11 @@ import {
   hasStorageValue,
   readStorageJson,
   readStorageValue,
+  removeStorageValue,
   writeStorageJson,
   writeStorageValue,
 } from "@/lib/app-storage";
+import type { ExamQuestion } from "@/lib/exam";
 
 export type ExamResult = {
   correct: number;
@@ -19,6 +21,20 @@ export type ExamResult = {
 
 export type LearnerProfile = {
   name: string;
+};
+
+export type ActiveExamSession = {
+  version: 1;
+  pathname: string;
+  title: string;
+  eyebrow: string;
+  exitHref: string;
+  questions: ExamQuestion[];
+  currentIndex: number;
+  answers: Record<string, string>;
+  secondsLeft: number;
+  durationSeconds: number;
+  updatedAt: string;
 };
 
 export const MAX_PROFILE_NAME_LENGTH = 20;
@@ -43,6 +59,38 @@ export function saveExamResult(result: ExamResult) {
     STORAGE_KEYS.examResults,
     [result, ...readExamResults()].slice(0, 20),
   );
+}
+
+export function readActiveExamSession() {
+  const session = readStorageJson<ActiveExamSession | null>(
+    STORAGE_KEYS.activeExamSession,
+    null,
+  );
+
+  if (
+    !session ||
+    session.version !== 1 ||
+    !session.pathname.startsWith("/") ||
+    !Array.isArray(session.questions) ||
+    session.questions.length === 0 ||
+    !Number.isInteger(session.currentIndex) ||
+    session.currentIndex < 0 ||
+    session.currentIndex >= session.questions.length ||
+    !Number.isFinite(session.secondsLeft) ||
+    session.secondsLeft <= 0
+  ) {
+    return null;
+  }
+
+  return session;
+}
+
+export function saveActiveExamSession(session: ActiveExamSession) {
+  writeStorageJson(STORAGE_KEYS.activeExamSession, session);
+}
+
+export function clearActiveExamSession() {
+  removeStorageValue(STORAGE_KEYS.activeExamSession);
 }
 
 export function readLearnerProfile() {
