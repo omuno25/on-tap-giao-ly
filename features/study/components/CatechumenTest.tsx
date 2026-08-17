@@ -2,6 +2,7 @@ import MockTest, {
   type MockTestSourceQuestion,
 } from "@/features/quiz/components/MockTest";
 import type { CatechumenSet } from "@/lib/catechumen";
+import { appRoute } from "@/lib/routes";
 
 export default function CatechumenTest({ set }: { set: CatechumenSet }) {
   const sourceQuestions: MockTestSourceQuestion[] = set.cards.map((card) => ({
@@ -18,7 +19,7 @@ export default function CatechumenTest({ set }: { set: CatechumenSet }) {
       essayCount={0}
       eyebrow="Giáo lý Dự tòng"
       title={`Kiểm tra ${set.title.replace("Giáo lý Dự tòng · ", "")}`}
-      exitHref={`/giao-ly-du-tong/${set.slug}`}
+      exitHref={appRoute.catechumenSet(set.slug)}
       saveResult={false}
     />
   );

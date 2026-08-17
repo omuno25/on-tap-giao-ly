@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { MARRIAGE_QUESTION_SET } from "@/lib/question-bank";
 import { clearStudyCardIndex, readStudyPosition } from "@/lib/study-progress";
+import { AppRoute } from "@/lib/routes";
 
 export default function MarriageSetDetail() {
   const questions = MARRIAGE_QUESTION_SET.questions;
@@ -39,7 +40,7 @@ export default function MarriageSetDetail() {
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6">
       <Link
-        href="/"
+        href={AppRoute.Home}
         className="inline-flex items-center gap-2 text-sm font-bold text-primary"
       >
         <ArrowLeft className="size-[var(--icon-sm)]" /> Trang học tập
@@ -87,14 +88,14 @@ export default function MarriageSetDetail() {
           />
         </div>
         <Link
-          href="/hoc"
+          href={AppRoute.Study}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-on-primary transition active:scale-[0.98]"
         >
           {position > 0 ? "Tiếp tục học" : "Bắt đầu học"}
           <ChevronRight className="size-[var(--icon-sm)]" />
         </Link>
         <Link
-          href="/thi-thu"
+          href={AppRoute.MockTest}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary px-6 py-3.5 font-bold text-primary transition-colors hover:bg-primary/5 active:scale-[0.98]"
         >
           <ClipboardCheck className="size-[var(--icon-sm)]" /> Kiểm tra 20 câu

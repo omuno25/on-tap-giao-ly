@@ -3,6 +3,7 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { readContentTextFile } from "@/lib/utils/server";
 
 const BLOG_DIRECTORY = path.join(process.cwd(), "content", "blog");
 
@@ -44,7 +45,7 @@ export function getBlogPost(slug: string): BlogPost | undefined {
 
 function readBlogPost(fileName: string): BlogPost {
   const slug = fileName.replace(/\.md$/, "");
-  const source = fs.readFileSync(path.join(BLOG_DIRECTORY, fileName), "utf8");
+  const source = readContentTextFile("blog", fileName);
   const { data, content } = matter(source);
   const requiredFields = [
     "title",

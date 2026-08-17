@@ -15,6 +15,7 @@ import {
   clearCatechumenProgress,
   readCatechumenPosition,
 } from "@/lib/catechumen-progress";
+import { AppRoute, appRoute } from "@/lib/routes";
 
 export default function CatechumenSetDetail({ set }: { set: CatechumenSet }) {
   const [position, setPosition] = useState(0);
@@ -48,7 +49,7 @@ export default function CatechumenSetDetail({ set }: { set: CatechumenSet }) {
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6">
       <Link
-        href="/giao-ly-du-tong"
+        href={AppRoute.CatechumenCatechism}
         className="inline-flex items-center gap-2 text-sm font-bold text-primary"
       >
         <ArrowLeft className="size-[var(--icon-sm)]" />
@@ -99,14 +100,14 @@ export default function CatechumenSetDetail({ set }: { set: CatechumenSet }) {
           />
         </div>
         <Link
-          href={`/giao-ly-du-tong/${set.slug}/hoc`}
+          href={appRoute.catechumenStudy(set.slug)}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-on-primary transition active:scale-[0.98]"
         >
           {position > 0 ? "Tiếp tục học" : "Bắt đầu học"}
           <ChevronRight className="size-[var(--icon-sm)]" />
         </Link>
         <Link
-          href={`/giao-ly-du-tong/${set.slug}/thi-thu`}
+          href={appRoute.catechumenMockTest(set.slug)}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary px-6 py-3.5 font-bold text-primary transition-colors hover:bg-primary/5 active:scale-[0.98]"
         >
           <ClipboardCheck className="size-[var(--icon-sm)]" />

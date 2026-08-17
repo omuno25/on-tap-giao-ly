@@ -13,6 +13,7 @@ import { getQuestionById, QUESTION_BANK } from "@/lib/question-bank";
 import TopAppBar from "@/components/layout/TopAppBar";
 import ProgressCircle from "@/components/ui/ProgressCircle";
 import { readEssayAnswer } from "@/lib/learning-storage";
+import { AppRoute } from "@/lib/routes";
 
 export default function EssayReview() {
   const question = getQuestionById("13");
@@ -128,7 +129,7 @@ export default function EssayReview() {
         {/* Action Section */}
         <div className="mt-10 flex justify-center">
           <Link
-            href="/thi-thu"
+            href={AppRoute.MockTest}
             className="group flex items-center gap-3 bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-4 rounded-full font-headline font-bold text-base shadow-lg hover:shadow-primary-container/20 transition-all duration-300 active:scale-95"
           >
             Câu tiếp theo

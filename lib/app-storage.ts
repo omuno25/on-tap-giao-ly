@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   profile: "learning.profile",
   examResults: "learning.exam_results",
   activeExamSession: "learning.exam.active_session",
+  invalidatedExamSession: "learning.exam.invalidated_session",
   studyCardIndex: "study.current_card_index",
   completedPrayers: "learning.prayers.completed",
   essayAnswer: (questionId: string) => `learning.essay.${questionId}`,

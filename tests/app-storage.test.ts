@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
+  STORAGE_KEYS,
   clearAllAppStorage,
   readStorageIndex,
   readStorageJson,
@@ -13,6 +14,7 @@ import {
   readActiveExamSession,
   saveActiveExamSession,
 } from "@/lib/learning-storage";
+import { AppRoute } from "@/lib/routes";
 
 class MemoryStorage implements Storage {
   private values = new Map<string, string>();
@@ -88,11 +90,12 @@ describe("app storage", () => {
 
   test("lưu, đọc và xóa phiên thi đang hoạt động", () => {
     const session = {
-      version: 1 as const,
-      pathname: "/thi-thu",
+      version: 2 as const,
+      sessionId: "session-1",
+      pathname: AppRoute.MockTest,
       title: "Thi thử",
       eyebrow: "Giáo lý",
-      exitHref: "/",
+      exitHref: AppRoute.Home,
       questions: [
         {
           id: "q1",
@@ -111,7 +114,21 @@ describe("app storage", () => {
     saveActiveExamSession(session);
     expect(readActiveExamSession()).toEqual(session);
 
-    clearActiveExamSession();
+    clearActiveExamSession(session.sessionId);
     expect(readActiveExamSession()).toBeNull();
+    expect(saveActiveExamSession(session)).toBe(false);
+    expect(readActiveExamSession()).toBeNull();
+  });
+
+  test("tự dọn phiên thi có dữ liệu không hợp lệ", () => {
+    writeStorageJson(STORAGE_KEYS.activeExamSession, {
+      version: 2,
+      sessionId: "broken-session",
+      pathname: 123,
+      questions: [],
+    });
+
+    expect(readActiveExamSession()).toBeNull();
+    expect(readStorageValue(STORAGE_KEYS.activeExamSession)).toBeNull();
   });
 });

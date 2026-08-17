@@ -1,13 +1,9 @@
-import fs from "node:fs";
-import path from "node:path";
 import Markdown from "react-markdown";
 import SettingsPageHeader from "@/components/settings/SettingsPageHeader";
+import { readContentTextFile } from "@/lib/utils/server";
 
 export default function ReleasesPage() {
-  const content = fs.readFileSync(
-    path.join(process.cwd(), "content", "release-notes.md"),
-    "utf8",
-  );
+  const content = readContentTextFile("release-notes.md");
 
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6">

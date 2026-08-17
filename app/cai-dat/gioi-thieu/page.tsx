@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { AppRoute } from "@/lib/routes";
 
 export default function AboutPage() {
-  redirect("/cai-dat/lich-su-phien-ban");
+  redirect(AppRoute.SettingsReleaseNotes);
 }

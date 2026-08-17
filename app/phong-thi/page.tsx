@@ -9,6 +9,7 @@ import {
   type ActiveExamSession,
 } from "@/lib/learning-storage";
 import { formatExamTime } from "@/lib/exam";
+import { AppRoute } from "@/lib/routes";
 
 export default function ExamRoomPage() {
   const [session, setSession] = useState<ActiveExamSession | null>(null);
@@ -90,7 +91,7 @@ export default function ExamRoomPage() {
             đây.
           </p>
           <Link
-            href="/thi-thu"
+            href={AppRoute.MockTest}
             className="mt-5 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-opacity hover:opacity-90 active:scale-95"
           >
             Bắt đầu thi thử

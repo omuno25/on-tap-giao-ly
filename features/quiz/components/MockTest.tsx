@@ -3,17 +3,20 @@
 import { AlertTriangle, X, Timer, Flag, UserRound } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
+import { STORAGE_KEYS } from "@/lib/app-storage";
 import {
   clearActiveExamSession,
+  createExamSessionId,
   readActiveExamSession,
   saveActiveExamSession,
   saveExamResult,
   type ActiveExamSession,
 } from "@/lib/learning-storage";
 import { MARRIAGE_QUESTION_SET } from "@/lib/question-bank";
+import { AppRoute } from "@/lib/routes";
 import {
   buildExamQuestions,
   calculateScore,
@@ -49,25 +52,30 @@ export default function MockTest({
   durationSeconds = EXAM_DURATION_SECONDS,
   eyebrow = "Giáo Xứ Đức Mẹ Hằng Cứu Giúp",
   title = "Thi Thử Giáo Lý Hôn Nhân",
-  exitHref = "/",
+  exitHref = AppRoute.Home,
   saveResult = true,
 }: MockTestProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [questions, setQuestions] = useState<ExamQuestion[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(durationSeconds);
   const [manuallySubmitted, setManuallySubmitted] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionInvalidated, setSessionInvalidated] = useState(false);
   const [conflictingSession, setConflictingSession] =
     useState<ActiveExamSession | null>(null);
   const resultSaved = useRef(false);
+  const conflictDialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
       const savedSession = readActiveExamSession();
 
       if (savedSession?.pathname === pathname) {
+        setSessionId(savedSession.sessionId);
         setQuestions(savedSession.questions);
         setCurrentIndex(savedSession.currentIndex);
         setAnswers(savedSession.answers);
@@ -76,6 +84,7 @@ export default function MockTest({
       } else if (savedSession) {
         setConflictingSession(savedSession);
       } else {
+        setSessionId(createExamSessionId());
         setQuestions(
           buildExamQuestions(
             sourceQuestions,
@@ -94,7 +103,8 @@ export default function MockTest({
   const submitted = manuallySubmitted || secondsLeft === 0;
 
   const startNewExam = () => {
-    clearActiveExamSession();
+    clearActiveExamSession(conflictingSession?.sessionId);
+    setSessionId(createExamSessionId());
     setQuestions(
       buildExamQuestions(
         sourceQuestions,
@@ -112,15 +122,51 @@ export default function MockTest({
   };
 
   useEffect(() => {
-    if (!sessionReady || !questions) return;
+    if (!sessionId) return;
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (
+        event.key === STORAGE_KEYS.invalidatedExamSession &&
+        event.newValue === sessionId
+      ) {
+        setSessionInvalidated(true);
+        setSessionReady(false);
+        return;
+      }
+
+      if (event.key === STORAGE_KEYS.activeExamSession && event.newValue) {
+        const activeSession = readActiveExamSession();
+        if (activeSession && activeSession.sessionId !== sessionId) {
+          setSessionInvalidated(true);
+          setSessionReady(false);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!conflictingSession) return;
+    const dialog = conflictDialogRef.current;
+    const firstControl = dialog?.querySelector<HTMLElement>(
+      "a[href], button:not([disabled])",
+    );
+    firstControl?.focus();
+  }, [conflictingSession]);
+
+  useEffect(() => {
+    if (!sessionReady || !sessionId || !questions || sessionInvalidated) return;
 
     if (submitted) {
-      clearActiveExamSession();
+      clearActiveExamSession(sessionId);
       return;
     }
 
     saveActiveExamSession({
-      version: 1,
+      version: 2,
+      sessionId,
       pathname,
       title,
       eyebrow,
@@ -141,13 +187,23 @@ export default function MockTest({
     pathname,
     questions,
     secondsLeft,
+    sessionId,
+    sessionInvalidated,
     sessionReady,
     submitted,
     title,
   ]);
 
   useEffect(() => {
-    if (!saveResult || !submitted || !questions || resultSaved.current) return;
+    if (
+      !saveResult ||
+      !submitted ||
+      !questions ||
+      sessionInvalidated ||
+      resultSaved.current
+    ) {
+      return;
+    }
     const score = calculateScore(questions, answers);
     saveExamResult({
       correct: score.correct,
@@ -159,17 +215,31 @@ export default function MockTest({
       completedAt: new Date().toISOString(),
     });
     resultSaved.current = true;
-  }, [answers, questions, saveResult, submitted]);
+  }, [answers, questions, saveResult, sessionInvalidated, submitted]);
 
   useEffect(() => {
-    if (submitted || secondsLeft <= 0) return;
+    if (
+      !sessionReady ||
+      conflictingSession ||
+      sessionInvalidated ||
+      submitted ||
+      secondsLeft <= 0
+    ) {
+      return;
+    }
 
     const timerId = setInterval(() => {
       setSecondsLeft((prev) => Math.max(prev - 1, 0));
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [secondsLeft, submitted]);
+  }, [
+    conflictingSession,
+    secondsLeft,
+    sessionInvalidated,
+    sessionReady,
+    submitted,
+  ]);
 
   const currentQuestion = questions?.[currentIndex];
   const totalQuestions = questions?.length ?? 0;
@@ -178,13 +248,65 @@ export default function MockTest({
       ? Math.round(((currentIndex + 1) / totalQuestions) * 100)
       : 0;
 
-  if (conflictingSession) {
+  const handleConflictDialogKeyDown = (
+    event: React.KeyboardEvent<HTMLElement>,
+  ) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      router.push(AppRoute.ExamRoom);
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+    const controls = Array.from(
+      conflictDialogRef.current?.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled])",
+      ) ?? [],
+    );
+    if (controls.length === 0) return;
+
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  if (sessionInvalidated) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface px-4 pb-28">
+        <section className="w-full max-w-md rounded-2xl border border-surface-container bg-surface-container-lowest p-6 text-center shadow-lg">
+          <h1 className="font-headline text-xl font-bold">
+            Phiên này đã kết thúc
+          </h1>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            Phiên đã được hoàn thành hoặc thay thế trong một tab khác.
+          </p>
+          <Link
+            href={AppRoute.ExamRoom}
+            className="mt-5 inline-flex rounded-full bg-primary px-5 py-3 text-sm font-bold text-on-primary"
+          >
+            Về Phòng thi
+          </Link>
+        </section>
+      </main>
+    );
+  }
+
+  if (conflictingSession) {
+    return (
+      <main className="fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/45 px-4 backdrop-blur-sm">
         <section
+          ref={conflictDialogRef}
           role="alertdialog"
+          aria-modal="true"
           aria-labelledby="exam-conflict-title"
           aria-describedby="exam-conflict-description"
+          onKeyDown={handleConflictDialogKeyDown}
           className="w-full max-w-md rounded-2xl border border-error/20 bg-surface-container-lowest p-6 text-center shadow-lg"
         >
           <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-error/10 text-error">
@@ -218,7 +340,7 @@ export default function MockTest({
               Xóa phiên cũ và bắt đầu bài mới
             </button>
             <Link
-              href="/phong-thi"
+              href={AppRoute.ExamRoom}
               className="px-5 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface"
             >
               Hủy

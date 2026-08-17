@@ -4,22 +4,25 @@ import { GraduationCap, BarChart3, Settings, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { AppRoute } from "@/lib/routes";
 
 export default function BottomNavBar() {
   const pathname = usePathname();
 
   const navItems = [
-    { label: "Học tập", icon: GraduationCap, href: "/" },
-    { label: "Phòng thi", icon: UsersRound, href: "/phong-thi" },
-    { label: "Thống kê", icon: BarChart3, href: "/thong-ke" },
-    { label: "Cài đặt", icon: Settings, href: "/cai-dat" },
+    { label: "Học tập", icon: GraduationCap, href: AppRoute.Home },
+    { label: "Phòng thi", icon: UsersRound, href: AppRoute.ExamRoom },
+    { label: "Thống kê", icon: BarChart3, href: AppRoute.Statistics },
+    { label: "Cài đặt", icon: Settings, href: AppRoute.Settings },
   ];
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[var(--app-max-width)] items-center justify-around rounded-t-2xl border-t border-surface-container bg-surface/90 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-bottom-nav backdrop-blur-xl">
       {navItems.map((item) => {
         const isActive =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          item.href === AppRoute.Home
+            ? pathname === AppRoute.Home
+            : pathname.startsWith(item.href);
         return (
           <Link
             key={item.label}

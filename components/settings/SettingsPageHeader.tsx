@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { AppRoute } from "@/lib/routes";
 
 export default function SettingsPageHeader({
   title,
@@ -11,7 +12,7 @@ export default function SettingsPageHeader({
   return (
     <header>
       <Link
-        href="/cai-dat"
+        href={AppRoute.Settings}
         className="inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-primary"
       >
         <ArrowLeft className="size-[var(--icon-sm)]" />

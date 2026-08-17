@@ -9,6 +9,7 @@ import {
   saveCatechumenCardIndex,
 } from "@/lib/catechumen-progress";
 import FlipCard from "@/features/study/components/FlipCard";
+import { appRoute } from "@/lib/routes";
 
 export default function CatechumenStudy({ set }: { set: CatechumenSet }) {
   const [index, setIndex] = useState(0);
@@ -38,7 +39,7 @@ export default function CatechumenStudy({ set }: { set: CatechumenSet }) {
     <div className="min-h-screen bg-surface px-5 pt-6 pb-28">
       <header className="mx-auto flex w-full max-w-2xl items-center justify-between gap-2 sm:gap-4">
         <Link
-          href={`/giao-ly-du-tong/${set.slug}`}
+          href={appRoute.catechumenSet(set.slug)}
           className="p-2 rounded-full bg-surface-container-low"
           aria-label="Quay lại chi tiết bộ thẻ"
         >
