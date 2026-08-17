@@ -16,6 +16,7 @@ export enum AppRoute {
   SettingsFeedback = "/cai-dat/phan-hoi",
   SettingsAbout = "/cai-dat/gioi-thieu",
   SettingsReleaseNotes = "/cai-dat/lich-su-phien-ban",
+  FeedbackApi = "/api/feedback",
 }
 
 export const appRoute = {
