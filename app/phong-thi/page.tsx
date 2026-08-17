@@ -14,18 +14,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
-import { useExamRoomConnection } from "@/features/group-exam/useExamRoomConnection";
 import {
   readActiveJoinedExamRoom,
   readActiveGroupExamRoom,
   readActiveHostedExamRoom,
-  removeJoinedExamRoom,
-  saveJoinedExamRoom,
   type HostedExamRoom,
   type JoinedExamRoom,
 } from "@/lib/group-exam";
 import {
-  clearActiveExamSession,
   getRemainingExamSeconds,
   readActiveExamSession,
   type ActiveExamSession,
@@ -40,53 +36,8 @@ export default function ExamRoomPage() {
   const [hostedRoom, setHostedRoom] = useState<HostedExamRoom | null>(null);
   const [hostedRoomExamActive, setHostedRoomExamActive] = useState(false);
   const [joinedRoom, setJoinedRoom] = useState<JoinedExamRoom | null>(null);
-  const [joinedRoomExamActive, setJoinedRoomExamActive] = useState(false);
   const [roomAction, setRoomAction] = useState<"create" | "join">("create");
   const [roomCode, setRoomCode] = useState("");
-
-  useExamRoomConnection({
-    roomCode: joinedRoom?.roomCode ?? "",
-    role: "participant",
-    userId: joinedRoom?.participantUserId ?? "",
-    name: joinedRoom?.participantName ?? "Người tham gia",
-    onRoomState: (roomState) => {
-      if (!joinedRoom) return;
-      const nextRoom = { ...joinedRoom, start: roomState.start };
-      saveJoinedExamRoom(nextRoom);
-
-      if (roomState.status === "completed") {
-        router.replace(
-          `${AppRoute.GroupExamResults}?room=${joinedRoom.roomCode}&role=participant`,
-        );
-      } else if (roomState.status === "started" && roomState.start) {
-        const target =
-          joinedRoom.result ||
-          Date.parse(roomState.start.expiresAt) <= Date.now()
-            ? AppRoute.GroupExamResults
-            : AppRoute.GroupExam;
-        router.replace(
-          `${target}?room=${joinedRoom.roomCode}&role=participant`,
-        );
-      } else if (roomState.status === "lobby") {
-        setJoinedRoom(nextRoom);
-        setJoinedRoomExamActive(false);
-        if (session?.pathname === AppRoute.GroupExam) {
-          clearActiveExamSession(session.sessionId);
-          setSession(null);
-        }
-      }
-    },
-    onRoomClosed: () => {
-      if (!joinedRoom) return;
-      removeJoinedExamRoom(joinedRoom.roomCode);
-      setJoinedRoom(null);
-      setJoinedRoomExamActive(false);
-      if (session?.pathname === AppRoute.GroupExam) {
-        clearActiveExamSession(session.sessionId);
-        setSession(null);
-      }
-    },
-  });
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -94,9 +45,7 @@ export default function ExamRoomPage() {
       const activeGroupRoom = readActiveGroupExamRoom();
       const activeHostedRoom = readActiveHostedExamRoom();
       const resolvedHostedRoom =
-        !activeGroupRoom || activeGroupRoom.role === "host"
-          ? activeHostedRoom
-          : null;
+        activeHostedRoom?.status === "completed" ? null : activeHostedRoom;
       setHostedRoom(resolvedHostedRoom);
       setHostedRoomExamActive(
         Boolean(
@@ -105,19 +54,13 @@ export default function ExamRoomPage() {
         ),
       );
       const activeJoinedRoom = readActiveJoinedExamRoom();
-      const resolvedJoinedRoom = activeGroupRoom
-        ? activeGroupRoom.role === "participant"
-          ? activeJoinedRoom
-          : null
-        : activeHostedRoom
-          ? null
-          : activeJoinedRoom;
+      const resolvedJoinedRoom =
+        activeJoinedRoom?.status === "completed" ? null : activeJoinedRoom;
       setJoinedRoom(resolvedJoinedRoom);
-      setJoinedRoomExamActive(
-        Boolean(
-          resolvedJoinedRoom?.start &&
-            Date.parse(resolvedJoinedRoom.start.expiresAt) > Date.now(),
-        ),
+      setRoomAction(
+        activeGroupRoom?.role === "participant" && resolvedJoinedRoom
+          ? "join"
+          : "create",
       );
       setLoaded(true);
     });
@@ -168,16 +111,21 @@ export default function ExamRoomPage() {
       : AppRoute.CreateExamRoom
     : AppRoute.CreateExamRoom;
   const joinedRoomTarget = joinedRoom
-    ? joinedRoom.result
+    ? joinedRoom.status === "completed" || joinedRoom.result
       ? `${AppRoute.GroupExamResults}?room=${joinedRoom.roomCode}&role=participant`
-      : joinedRoom.start
-      ? `${
-          joinedRoomExamActive
-            ? AppRoute.GroupExam
-            : AppRoute.GroupExamResults
-        }?room=${joinedRoom.roomCode}&role=participant`
       : `${AppRoute.JoinExamRoom}?code=${joinedRoom.roomCode}&resume=1`
     : AppRoute.JoinExamRoom;
+  const hostedRoomCompleted = Boolean(
+    hostedRoom &&
+      (hostedRoom.status === "completed" ||
+        hostedRoom.results?.some(
+          (result) => result.userId === hostedRoom.hostUserId,
+        )),
+  );
+  const joinedRoomCompleted = Boolean(
+    joinedRoom &&
+      (joinedRoom.status === "completed" || joinedRoom.result),
+  );
   const isGroupSession = session?.pathname === AppRoute.GroupExam;
 
   return (
@@ -431,7 +379,7 @@ export default function ExamRoomPage() {
             </p>
           </div>
           <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-primary">
-            Tiếp tục
+            {hostedRoomCompleted ? "Xem kết quả" : "Tiếp tục"}
             <ArrowRight className="size-[var(--icon-sm)]" />
           </span>
         </Link>
@@ -453,14 +401,12 @@ export default function ExamRoomPage() {
               {joinedRoom.result
                 ? "Bạn đã nộp bài · Xem bảng xếp hạng"
                 : joinedRoom.start
-                ? joinedRoomExamActive
-                  ? "Bài thi đang diễn ra"
-                  : "Xem bảng xếp hạng"
+                ? "Tiếp tục bài thi"
                 : `Chủ phòng: ${joinedRoom.hostName}`}
             </p>
           </div>
           <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-primary">
-            Tiếp tục
+            {joinedRoomCompleted ? "Xem kết quả" : "Tiếp tục"}
             <ArrowRight className="size-[var(--icon-sm)]" />
           </span>
         </Link>

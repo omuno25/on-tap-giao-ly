@@ -18,6 +18,9 @@ import {
 } from "@/lib/learning-storage";
 import {
   readActiveGroupExamRoom,
+  readGroupExamHistory,
+  readGroupExamHistoryEntry,
+  saveGroupExamHistoryEntry,
   saveHostedExamRoom,
   saveJoinedExamRoom,
 } from "@/lib/group-exam";
@@ -141,6 +144,48 @@ describe("app storage", () => {
     expect(readStorageValue(STORAGE_KEYS.activeExamSession)).toBeNull();
   });
 
+  test("phiên thi cá nhân và thi nhóm được lưu độc lập", () => {
+    const expiresAt = new Date(Date.now() + 120_000).toISOString();
+    const baseSession = {
+      version: 3 as const,
+      pathname: AppRoute.MockTest,
+      title: "Thi thử",
+      eyebrow: "Giáo lý",
+      exitHref: AppRoute.Home,
+      questions: [
+        {
+          id: "q1",
+          title: "Câu hỏi",
+          standardAnswer: "Đáp án",
+          examMode: "essay" as const,
+        },
+      ],
+      currentIndex: 0,
+      answers: {},
+      secondsLeft: 120,
+      durationSeconds: 300,
+      expiresAt,
+      updatedAt: new Date().toISOString(),
+    };
+    const personalSession = { ...baseSession, sessionId: "personal-1" };
+    const groupSession = {
+      ...baseSession,
+      sessionId: "group-1",
+      pathname: AppRoute.GroupExam,
+      scope: "group:ROOMA1:user-a",
+    };
+
+    saveActiveExamSession(personalSession);
+    saveActiveExamSession(groupSession, "group");
+
+    expect(readActiveExamSession()).toEqual(personalSession);
+    expect(readActiveExamSession("group")).toEqual(groupSession);
+
+    clearActiveExamSession(groupSession.sessionId, "group");
+    expect(readActiveExamSession("group")).toBeNull();
+    expect(readActiveExamSession()).toEqual(personalSession);
+  });
+
   test("tính thời gian còn lại theo thời điểm hết hạn", () => {
     const now = Date.now();
     const originalDateNow = Date.now;
@@ -191,6 +236,7 @@ describe("app storage", () => {
       hostName: "B",
       participantUserId: "user-a",
       participantName: "A",
+      status: "lobby",
       result: null,
       leaderboard: [],
       start: null,
@@ -199,6 +245,37 @@ describe("app storage", () => {
       role: "participant",
       roomCode: "ROOMB2",
     });
+  });
+
+  test("lưu lịch sử thi nhóm độc lập với phiên phòng đang hoạt động", () => {
+    const baseHistory = {
+      version: 1 as const,
+      roomCode: "ROOMA1",
+      role: "participant" as const,
+      userId: "user-a",
+      name: "A",
+      hostName: "B",
+      status: "started" as const,
+      questionSetHash: "hash-1",
+      startedAt: "2026-08-17T00:00:00.000Z",
+      expiresAt: "2026-08-17T00:25:00.000Z",
+      submittedAt: null,
+      result: null,
+      leaderboard: [],
+      updatedAt: "2026-08-17T00:00:00.000Z",
+    };
+
+    saveGroupExamHistoryEntry(baseHistory);
+    saveGroupExamHistoryEntry({
+      ...baseHistory,
+      submittedAt: "2026-08-17T00:20:00.000Z",
+      result: { userId: "user-a", correctCount: 12 },
+    });
+
+    expect(readGroupExamHistory()).toHaveLength(1);
+    expect(
+      readGroupExamHistoryEntry("rooma1", "participant", "user-a")?.result,
+    ).toEqual({ userId: "user-a", correctCount: 12 });
   });
 
 });

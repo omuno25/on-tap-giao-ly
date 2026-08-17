@@ -12,9 +12,12 @@ import {
   GROUP_EXAM_OBJECTIVE_COUNT,
   GROUP_EXAM_TRUE_FALSE_COUNT,
   normalizeExamRoomCode,
+  readGroupExamHistoryEntry,
+  removeJoinedExamRoom,
   readHostedExamRoom,
   readJoinedExamRoom,
   saveHostedExamRoom,
+  saveGroupExamHistoryEntry,
   saveJoinedExamRoom,
   type HostedExamRoom,
   type JoinedExamRoom,
@@ -22,12 +25,17 @@ import {
   type GroupExamResult,
 } from "@/lib/group-exam";
 import { AppRoute } from "@/lib/routes";
+import {
+  clearActiveExamSession,
+  readActiveExamSession,
+} from "@/lib/learning-storage";
 
 type LoadedRoom =
   | { role: "host"; room: HostedExamRoom }
   | { role: "participant"; room: JoinedExamRoom };
 
 function GroupExamRunner({ loaded }: { loaded: LoadedRoom }) {
+  const router = useRouter();
   const { role, room } = loaded;
   const start = room.start!;
   const userId =
@@ -35,6 +43,39 @@ function GroupExamRunner({ loaded }: { loaded: LoadedRoom }) {
   const name = role === "host" ? room.hostName : room.participantName;
   const [hostedRoom, setHostedRoom] = useState<HostedExamRoom | null>(
     role === "host" ? { ...room, results: room.results ?? [] } : null,
+  );
+  const participantLeaderboard = useMemo(
+    () => (role === "participant" ? room.leaderboard : []),
+    [role, room],
+  );
+
+  const persistHistory = useCallback(
+    (
+      result: GroupExamResult | null,
+      nextLeaderboard: GroupExamLeaderboardEntry[],
+    ) => {
+      const current = readGroupExamHistoryEntry(room.roomCode, role, userId);
+      saveGroupExamHistoryEntry({
+        version: 1,
+        roomCode: room.roomCode,
+        role,
+        userId,
+        name,
+        hostName: role === "host" ? name : room.hostName,
+        status: role === "host" ? (hostedRoom?.status ?? "started") : room.status,
+        questionSetHash: start.questionSetHash,
+        startedAt: start.startedAt,
+        expiresAt: start.expiresAt,
+        submittedAt:
+          result && !current?.submittedAt
+            ? new Date().toISOString()
+            : (current?.submittedAt ?? null),
+        result,
+        leaderboard: nextLeaderboard,
+        updatedAt: new Date().toISOString(),
+      });
+    },
+    [hostedRoom?.status, name, role, room.hostName, room.roomCode, room.status, start, userId],
   );
 
   const updateHostedRoom = useCallback(
@@ -66,6 +107,7 @@ function GroupExamRunner({ loaded }: { loaded: LoadedRoom }) {
     const current = readJoinedExamRoom(room.roomCode);
     if (!current) return;
     saveJoinedExamRoom({ ...current, leaderboard: next });
+    persistHistory(current.result, next);
   };
 
   const { sendResult, sendLeaderboard } = useExamRoomConnection({
@@ -116,12 +158,51 @@ function GroupExamRunner({ loaded }: { loaded: LoadedRoom }) {
             })
         : undefined,
     onLeaderboard: handleLeaderboard,
+    onRoomClosed: () => {
+      if (role !== "participant") return;
+      removeJoinedExamRoom(room.roomCode);
+      const session = readActiveExamSession("group");
+      clearActiveExamSession(session?.sessionId, "group");
+      router.replace(AppRoute.ExamRoom);
+    },
+    onKicked: () => {
+      if (role !== "participant") return;
+      removeJoinedExamRoom(room.roomCode);
+      const session = readActiveExamSession("group");
+      clearActiveExamSession(session?.sessionId, "group");
+      router.replace(
+        `${AppRoute.JoinExamRoom}?code=${room.roomCode}&resume=1&kicked=1`,
+      );
+    },
   });
 
   useEffect(() => {
     if (role !== "host" || leaderboard.length === 0) return;
+    persistHistory(
+      hostedRoom?.results.find((result) => result.userId === userId) ?? null,
+      leaderboard,
+    );
     void sendLeaderboard(leaderboard);
-  }, [leaderboard, role, sendLeaderboard]);
+  }, [hostedRoom?.results, leaderboard, persistHistory, role, sendLeaderboard, userId]);
+
+  useEffect(() => {
+    const existingResult =
+      role === "host"
+        ? (hostedRoom?.results.find((result) => result.userId === userId) ?? null)
+        : room.result;
+    persistHistory(
+      existingResult,
+      role === "participant" ? participantLeaderboard : leaderboard,
+    );
+  }, [
+    hostedRoom?.results,
+    leaderboard,
+    participantLeaderboard,
+    persistHistory,
+    role,
+    room,
+    userId,
+  ]);
 
   const handleSubmitted = useCallback(
     (score: { correct: number }) => {
@@ -143,8 +224,21 @@ function GroupExamRunner({ loaded }: { loaded: LoadedRoom }) {
         if (current) saveJoinedExamRoom({ ...current, result });
         void sendResult(result);
       }
+      persistHistory(
+        result,
+        role === "host" ? leaderboard : participantLeaderboard,
+      );
     },
-    [role, room.roomCode, sendResult, updateHostedRoom, userId],
+    [
+      leaderboard,
+      participantLeaderboard,
+      persistHistory,
+      role,
+      room.roomCode,
+      sendResult,
+      updateHostedRoom,
+      userId,
+    ],
   );
 
   return (
@@ -159,6 +253,8 @@ function GroupExamRunner({ loaded }: { loaded: LoadedRoom }) {
       title="Thi nhóm Giáo lý Hôn nhân"
       exitHref={AppRoute.ExamRoom}
       resultHref={`${AppRoute.GroupExamResults}?room=${room.roomCode}&role=${role}`}
+      sessionScope={`group:${room.roomCode}:${userId}`}
+      sessionChannel="group"
       onSubmitted={handleSubmitted}
       saveResult={false}
     />

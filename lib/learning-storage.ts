@@ -27,6 +27,7 @@ export type ActiveExamSession = {
   version: 3;
   sessionId: string;
   pathname: string;
+  scope?: string;
   title: string;
   eyebrow: string;
   exitHref: string;
@@ -38,6 +39,20 @@ export type ActiveExamSession = {
   expiresAt: string;
   updatedAt: string;
 };
+
+export type ExamSessionChannel = "personal" | "group";
+
+function getExamSessionStorageKeys(channel: ExamSessionChannel) {
+  return channel === "group"
+    ? {
+        active: STORAGE_KEYS.activeGroupExamSession,
+        invalidated: STORAGE_KEYS.invalidatedGroupExamSession,
+      }
+    : {
+        active: STORAGE_KEYS.activeExamSession,
+        invalidated: STORAGE_KEYS.invalidatedExamSession,
+      };
+}
 
 export const MAX_PROFILE_NAME_LENGTH = 20;
 export const MAX_GREETING_NAME_LENGTH = 16;
@@ -63,40 +78,54 @@ export function saveExamResult(result: ExamResult) {
   );
 }
 
-export function readActiveExamSession() {
+export function readActiveExamSession(channel: ExamSessionChannel = "personal") {
+  const keys = getExamSessionStorageKeys(channel);
   const value = readStorageJson<unknown>(
-    STORAGE_KEYS.activeExamSession,
+    keys.active,
     null,
   );
 
   const session = normalizeActiveExamSession(value);
-  if (!session || isActiveExamSessionInvalidated(session.sessionId)) {
-    removeStorageValue(STORAGE_KEYS.activeExamSession);
+  if (!session || isActiveExamSessionInvalidated(session.sessionId, channel)) {
+    removeStorageValue(keys.active);
     return null;
   }
 
   if (!isRecord(value) || value.version !== 3) {
-    writeStorageJson(STORAGE_KEYS.activeExamSession, session);
+    writeStorageJson(keys.active, session);
   }
 
   return session;
 }
 
-export function saveActiveExamSession(session: ActiveExamSession) {
-  if (isActiveExamSessionInvalidated(session.sessionId)) return false;
-  writeStorageJson(STORAGE_KEYS.activeExamSession, session);
+export function saveActiveExamSession(
+  session: ActiveExamSession,
+  channel: ExamSessionChannel = "personal",
+) {
+  if (isActiveExamSessionInvalidated(session.sessionId, channel)) return false;
+  writeStorageJson(getExamSessionStorageKeys(channel).active, session);
   return true;
 }
 
-export function clearActiveExamSession(sessionId?: string) {
+export function clearActiveExamSession(
+  sessionId?: string,
+  channel: ExamSessionChannel = "personal",
+) {
+  const keys = getExamSessionStorageKeys(channel);
   if (sessionId) {
-    writeStorageValue(STORAGE_KEYS.invalidatedExamSession, sessionId);
+    writeStorageValue(keys.invalidated, sessionId);
   }
-  removeStorageValue(STORAGE_KEYS.activeExamSession);
+  removeStorageValue(keys.active);
 }
 
-export function isActiveExamSessionInvalidated(sessionId: string) {
-  return readStorageValue(STORAGE_KEYS.invalidatedExamSession) === sessionId;
+export function isActiveExamSessionInvalidated(
+  sessionId: string,
+  channel: ExamSessionChannel = "personal",
+) {
+  return (
+    readStorageValue(getExamSessionStorageKeys(channel).invalidated) ===
+    sessionId
+  );
 }
 
 export function createExamSessionId() {
@@ -167,6 +196,7 @@ function normalizeActiveExamSession(value: unknown): ActiveExamSession | null {
         ? (value.sessionId as string)
         : createExamSessionId(),
     pathname: value.pathname as string,
+    scope: typeof value.scope === "string" ? value.scope : undefined,
     title: value.title as string,
     eyebrow: value.eyebrow as string,
     exitHref: value.exitHref as string,

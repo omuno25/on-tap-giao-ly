@@ -63,6 +63,7 @@ export type JoinedExamRoom = {
   hostName: string;
   participantUserId: string;
   participantName: string;
+  status: HostedExamRoom["status"];
   result: GroupExamResult | null;
   leaderboard: GroupExamLeaderboardEntry[];
   start: GroupExamStart | null;
@@ -72,6 +73,93 @@ export type ActiveGroupExamRoom = {
   role: "host" | "participant";
   roomCode: string;
 };
+
+export type GroupExamHistoryEntry = {
+  version: 1;
+  roomCode: string;
+  role: ActiveGroupExamRoom["role"];
+  userId: string;
+  name: string;
+  hostName: string;
+  status: HostedExamRoom["status"];
+  questionSetHash: string;
+  startedAt: string;
+  expiresAt: string;
+  submittedAt: string | null;
+  result: GroupExamResult | null;
+  leaderboard: GroupExamLeaderboardEntry[];
+  updatedAt: string;
+};
+
+const MAX_GROUP_EXAM_HISTORY = 50;
+
+export function readGroupExamHistory() {
+  const history = readStorageJson<unknown>(STORAGE_KEYS.groupExamHistory, []);
+  return Array.isArray(history)
+    ? history.filter(isGroupExamHistoryEntry)
+    : [];
+}
+
+export function readGroupExamHistoryEntry(
+  roomCode: string,
+  role: ActiveGroupExamRoom["role"],
+  userId: string,
+) {
+  const normalizedRoomCode = normalizeExamRoomCode(roomCode);
+  return (
+    readGroupExamHistory().find(
+      (entry) =>
+        entry.roomCode === normalizedRoomCode &&
+        entry.role === role &&
+        entry.userId === userId,
+    ) ?? null
+  );
+}
+
+export function saveGroupExamHistoryEntry(entry: GroupExamHistoryEntry) {
+  const normalized = {
+    ...entry,
+    roomCode: normalizeExamRoomCode(entry.roomCode),
+    updatedAt: new Date().toISOString(),
+  };
+  const history = readGroupExamHistory().filter(
+    (item) =>
+      !(
+        item.roomCode === normalized.roomCode &&
+        item.role === normalized.role &&
+        item.userId === normalized.userId
+      ),
+  );
+  writeStorageJson(
+    STORAGE_KEYS.groupExamHistory,
+    [normalized, ...history].slice(0, MAX_GROUP_EXAM_HISTORY),
+  );
+  return normalized;
+}
+
+function isGroupExamHistoryEntry(value: unknown): value is GroupExamHistoryEntry {
+  if (typeof value !== "object" || value === null) return false;
+  const entry = value as Record<string, unknown>;
+  return (
+    entry.version === 1 &&
+    typeof entry.roomCode === "string" &&
+    (entry.role === "host" || entry.role === "participant") &&
+    typeof entry.userId === "string" &&
+    typeof entry.name === "string" &&
+    typeof entry.hostName === "string" &&
+    (entry.status === "lobby" ||
+      entry.status === "started" ||
+      entry.status === "completed") &&
+    typeof entry.questionSetHash === "string" &&
+    typeof entry.startedAt === "string" &&
+    typeof entry.expiresAt === "string" &&
+    (entry.submittedAt === null || typeof entry.submittedAt === "string") &&
+    (entry.result === null ||
+      (typeof entry.result === "object" && entry.result !== null)) &&
+    Array.isArray(entry.leaderboard) &&
+    typeof entry.updatedAt === "string"
+  );
+}
 
 export function buildGroupExamLeaderboard(
   host: { userId: string; name: string },
@@ -176,10 +264,27 @@ export function removeHostedExamRoom(roomCode: string) {
 }
 
 export function readJoinedExamRoom(roomCode: string) {
-  return readStorageJson<JoinedExamRoom | null>(
+  const room = readStorageJson<JoinedExamRoom | null>(
     STORAGE_KEYS.joinedExamRoom(normalizeExamRoomCode(roomCode)),
     null,
   );
+  if (!room) return null;
+  if (
+    room.status === "lobby" ||
+    room.status === "started" ||
+    room.status === "completed"
+  ) {
+    return room;
+  }
+  const migratedRoom = {
+    ...room,
+    status: room.result ? "completed" : room.start ? "started" : "lobby",
+  } satisfies JoinedExamRoom;
+  writeStorageJson(
+    STORAGE_KEYS.joinedExamRoom(migratedRoom.roomCode),
+    migratedRoom,
+  );
+  return migratedRoom;
 }
 
 export function readActiveJoinedExamRoom() {

@@ -11,6 +11,7 @@ import {
   UserRound,
   UserMinus,
   UserPlus,
+  UserX,
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -48,6 +49,7 @@ export default function CreateExamRoomPage() {
   const [codeCopied, setCodeCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [kickingUserId, setKickingUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
@@ -60,10 +62,7 @@ export default function CreateExamRoomPage() {
         activeRoom?.hostUserId === nextHost.userId &&
         activeRoom.status === "completed"
       ) {
-        router.replace(
-          `${AppRoute.GroupExamResults}?room=${activeRoom.roomCode}&role=host`,
-        );
-        return;
+        removeHostedExamRoom(activeRoom.roomCode);
       }
       if (
         activeRoom?.hostUserId === nextHost.userId &&
@@ -179,7 +178,8 @@ export default function CreateExamRoomPage() {
     setRoomToast({ type: "left", name: leavingParticipant.name });
   };
 
-  const { status, sendStart, sendRoomClosed } = useExamRoomConnection({
+  const { status, sendStart, sendRoomClosed, sendKick } =
+    useExamRoomConnection({
     roomCode,
     role: "host",
     userId: host?.userId ?? "",
@@ -193,6 +193,23 @@ export default function CreateExamRoomPage() {
     () => participants.filter((participant) => participant.connected),
     [participants],
   );
+
+  const kickParticipant = async (participant: ExamRoomParticipant) => {
+    const confirmed = window.confirm(
+      `Mời ${participant.name} ra khỏi phòng?`,
+    );
+    if (!confirmed) return;
+
+    setKickingUserId(participant.userId);
+    try {
+      await sendKick(participant.peerId);
+      handleParticipantLeave(participant.peerId);
+    } catch (error) {
+      console.error("Không thể mời người tham gia ra khỏi phòng:", error);
+    } finally {
+      setKickingUserId(null);
+    }
+  };
 
   const copyInvite = async () => {
     const inviteUrl = `${window.location.origin}${AppRoute.JoinExamRoom}?code=${roomCode}`;
@@ -385,7 +402,16 @@ export default function CreateExamRoomPage() {
                     Đã sẵn sàng
                   </p>
                 </div>
-                <span className="size-2.5 rounded-full bg-primary" />
+                <button
+                  type="button"
+                  disabled={kickingUserId === participant.userId}
+                  onClick={() => void kickParticipant(participant)}
+                  aria-label={`Mời ${participant.name} ra khỏi phòng`}
+                  title="Mời ra khỏi phòng"
+                  className="grid size-9 shrink-0 place-items-center rounded-full text-error transition-colors hover:bg-error/10 disabled:opacity-40"
+                >
+                  <UserX className="size-[var(--icon-sm)]" />
+                </button>
               </div>
             ))
           )}

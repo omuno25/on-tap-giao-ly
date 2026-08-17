@@ -13,6 +13,9 @@ import type {
 const ROOM_CONFIG = { appId: "on-tap-giao-ly-group-exam-v1" } as const;
 const ROOM_REJOIN_DELAY_MS = 150;
 let previousRoomLeave: Promise<void> = Promise.resolve();
+let closeErrorFilterUsers = 0;
+let restoreCloseErrorFilterTimer: number | null = null;
+let originalConsoleError: typeof console.error | null = null;
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
@@ -24,8 +27,45 @@ type IdentityPayload = {
 
 function isIntentionalCloseError(error: unknown) {
   const message =
-    error instanceof Error ? error.message : typeof error === "string" ? error : "";
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "";
   return message.includes("Close called") || message.includes("room left");
+}
+
+function installIntentionalCloseErrorFilter() {
+  closeErrorFilterUsers += 1;
+  if (restoreCloseErrorFilterTimer !== null) {
+    window.clearTimeout(restoreCloseErrorFilterTimer);
+    restoreCloseErrorFilterTimer = null;
+  }
+  if (originalConsoleError) return;
+
+  originalConsoleError = console.error;
+  console.error = (...args: unknown[]) => {
+    const isTrysteroPeerError = args.some(
+      (arg) =>
+        typeof arg === "string" && arg.includes("Trystero peer error"),
+    );
+    if (isTrysteroPeerError && args.some(isIntentionalCloseError)) return;
+    originalConsoleError?.(...args);
+  };
+}
+
+function scheduleIntentionalCloseErrorFilterRemoval() {
+  closeErrorFilterUsers = Math.max(0, closeErrorFilterUsers - 1);
+  if (closeErrorFilterUsers > 0 || restoreCloseErrorFilterTimer !== null) return;
+
+  // Peer WebRTC có thể báo abort sau khi room.leave() đã resolve.
+  restoreCloseErrorFilterTimer = window.setTimeout(() => {
+    if (closeErrorFilterUsers === 0 && originalConsoleError) {
+      console.error = originalConsoleError;
+      originalConsoleError = null;
+    }
+    restoreCloseErrorFilterTimer = null;
+  }, 2_000);
 }
 
 type UseExamRoomConnectionOptions = {
@@ -33,6 +73,7 @@ type UseExamRoomConnectionOptions = {
   role: IdentityPayload["role"];
   userId: string;
   name: string;
+  reconnectToken?: number;
   onParticipant?: (participant: ExamRoomParticipant) => void;
   onParticipantLeave?: (peerId: string) => void;
   onHost?: (host: { userId: string; name: string; peerId: string }) => void;
@@ -43,6 +84,7 @@ type UseExamRoomConnectionOptions = {
   onResult?: (result: GroupExamResult, peerId: string) => void;
   onLeaderboard?: (leaderboard: GroupExamLeaderboardEntry[]) => void;
   onRoomClosed?: () => void;
+  onKicked?: () => void;
 };
 
 function isIdentityPayload(value: unknown): value is IdentityPayload {
@@ -115,6 +157,7 @@ export function useExamRoomConnection({
   role,
   userId,
   name,
+  reconnectToken,
   onParticipant,
   onParticipantLeave,
   onHost,
@@ -125,6 +168,7 @@ export function useExamRoomConnection({
   onResult,
   onLeaderboard,
   onRoomClosed,
+  onKicked,
 }: UseExamRoomConnectionOptions) {
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const roomRef = useRef<Room | null>(null);
@@ -133,6 +177,8 @@ export function useExamRoomConnection({
   const resultActionRef = useRef<MessageAction<JsonValue> | null>(null);
   const leaderboardActionRef = useRef<MessageAction<JsonValue> | null>(null);
   const roomClosedActionRef = useRef<MessageAction<JsonValue> | null>(null);
+  const roomStateActionRef = useRef<MessageAction<JsonValue> | null>(null);
+  const kickActionRef = useRef<MessageAction<JsonValue> | null>(null);
   const hostPeerIdRef = useRef<string | null>(null);
   const pendingStartRef = useRef<{
     start: GroupExamStart;
@@ -153,6 +199,7 @@ export function useExamRoomConnection({
     onResult,
     onLeaderboard,
     onRoomClosed,
+    onKicked,
   });
 
   callbacksRef.current = {
@@ -166,9 +213,11 @@ export function useExamRoomConnection({
     onResult,
     onLeaderboard,
     onRoomClosed,
+    onKicked,
   };
 
   useEffect(() => {
+    installIntentionalCloseErrorFilter();
     let cancelled = false;
     let room: Room | null = null;
 
@@ -177,6 +226,12 @@ export function useExamRoomConnection({
 
       try {
         await previousRoomLeave;
+        if (cancelled) return;
+        // Trystero cần thêm một nhịp sau khi leave() resolve để dọn room/peer
+        // cũ trước khi join lại đúng room ID.
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, ROOM_REJOIN_DELAY_MS);
+        });
         if (cancelled) return;
         const { joinRoom } = await import("trystero");
         if (cancelled) return;
@@ -189,11 +244,14 @@ export function useExamRoomConnection({
         const leaderboardAction = room.makeAction<JsonValue>("leaderboard");
         const roomClosedAction = room.makeAction<JsonValue>("room-closed");
         const roomStateAction = room.makeAction<JsonValue>("room-state");
+        const kickAction = room.makeAction<JsonValue>("room-kick");
         identityActionRef.current = identityAction;
         startActionRef.current = startAction;
         resultActionRef.current = resultAction;
         leaderboardActionRef.current = leaderboardAction;
         roomClosedActionRef.current = roomClosedAction;
+        roomStateActionRef.current = roomStateAction;
+        kickActionRef.current = kickAction;
 
         identityAction.onMessage = (data, { peerId }) => {
           if (!isIdentityPayload(data)) return;
@@ -255,10 +313,7 @@ export function useExamRoomConnection({
         };
 
         roomClosedAction.onMessage = (_, { peerId }) => {
-          if (
-            role === "participant" &&
-            peerId === hostPeerIdRef.current
-          ) {
+          if (role === "participant" && peerId === hostPeerIdRef.current) {
             callbacksRef.current.onRoomClosed?.();
           }
         };
@@ -269,6 +324,12 @@ export function useExamRoomConnection({
             callbacksRef.current.onRoomState?.(data);
           } else if (!hostPeerIdRef.current) {
             pendingRoomStateRef.current = { state: data, peerId };
+          }
+        };
+
+        kickAction.onMessage = (_, { peerId }) => {
+          if (role === "participant" && peerId === hostPeerIdRef.current) {
+            callbacksRef.current.onKicked?.();
           }
         };
 
@@ -320,8 +381,8 @@ export function useExamRoomConnection({
       }
     }
 
-    // Trystero hoàn tất leave sau khoảng 99 ms. Chờ thêm một nhịp trước khi
-    // join lại để không nhận nhầm instance phòng đang đóng.
+    // Trì hoãn việc khởi tạo; connect() còn đợi leave hoàn tất và chờ thêm
+    // một nhịp trước khi join lại để không nhận instance phòng đang đóng.
     const connectTimer = window.setTimeout(() => {
       void connect();
     }, ROOM_REJOIN_DELAY_MS);
@@ -334,6 +395,8 @@ export function useExamRoomConnection({
       resultActionRef.current = null;
       leaderboardActionRef.current = null;
       roomClosedActionRef.current = null;
+      roomStateActionRef.current = null;
+      kickActionRef.current = null;
       hostPeerIdRef.current = null;
       pendingStartRef.current = null;
       pendingRoomStateRef.current = null;
@@ -344,8 +407,20 @@ export function useExamRoomConnection({
           // intentionally leaves during navigation or React cleanup.
         });
       }
+      scheduleIntentionalCloseErrorFilterRemoval();
     };
-  }, [name, role, roomCode, userId]);
+  }, [name, reconnectToken, role, roomCode, userId]);
+
+  useEffect(() => {
+    if (role !== "host" || !activeRoomState) return;
+    void roomStateActionRef.current
+      ?.send(activeRoomState as unknown as JsonValue)
+      .catch((error) => {
+        if (!isIntentionalCloseError(error)) {
+          console.error("Không thể phát trạng thái phòng:", error);
+        }
+      });
+  }, [activeRoomState, role]);
 
   const sendStart = useCallback(async (start: GroupExamStart) => {
     try {
@@ -384,11 +459,20 @@ export function useExamRoomConnection({
     }
   }, []);
 
+  const sendKick = useCallback(async (peerId: string) => {
+    try {
+      await kickActionRef.current?.send(true, { target: peerId });
+    } catch (error) {
+      if (!isIntentionalCloseError(error)) throw error;
+    }
+  }, []);
+
   return {
     status,
     sendStart,
     sendResult,
     sendLeaderboard,
     sendRoomClosed,
+    sendKick,
   };
 }

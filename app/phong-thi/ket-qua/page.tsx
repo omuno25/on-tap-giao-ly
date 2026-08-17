@@ -3,7 +3,6 @@
 import {
   ArrowLeft,
   Crown,
-  LogOut,
   Medal,
   Trophy,
   UserRound,
@@ -21,21 +20,124 @@ import { useExamRoomConnection } from "@/features/group-exam/useExamRoomConnecti
 import {
   buildGroupExamLeaderboard,
   normalizeExamRoomCode,
+  readGroupExamHistoryEntry,
   readHostedExamRoom,
   readJoinedExamRoom,
-  removeHostedExamRoom,
   removeJoinedExamRoom,
   saveHostedExamRoom,
+  saveGroupExamHistoryEntry,
   saveJoinedExamRoom,
   type GroupExamLeaderboardEntry,
+  type GroupExamHistoryEntry,
   type HostedExamRoom,
   type JoinedExamRoom,
 } from "@/lib/group-exam";
 import { AppRoute } from "@/lib/routes";
+import { getOrCreateUserId } from "@/lib/learning-storage";
 
 type ResultRoom =
   | { role: "host"; room: HostedExamRoom }
   | { role: "participant"; room: JoinedExamRoom };
+
+function completeRoomWhenAllSubmitted(room: HostedExamRoom) {
+  const expectedUserIds = new Set([
+    room.hostUserId,
+    ...room.participants.map((participant) => participant.userId),
+  ]);
+  const submittedUserIds = new Set(
+    room.results.map((result) => result.userId),
+  );
+  return expectedUserIds.size > 0 &&
+    [...expectedUserIds].every((userId) => submittedUserIds.has(userId))
+    ? { ...room, status: "completed" as const }
+    : room;
+}
+
+type LoadedResults =
+  | ResultRoom
+  | {
+      role: "stored";
+      roomRole: "host" | "participant";
+      history: GroupExamHistoryEntry;
+    };
+
+function StoredResultsBoard({ history }: { history: GroupExamHistoryEntry }) {
+  const currentUser = history.leaderboard.find(
+    (entry) => entry.userId === history.userId,
+  );
+
+  return (
+    <main className="mx-auto min-h-screen w-full max-w-3xl bg-surface px-4 pb-28 pt-8 sm:px-5">
+      <Link
+        href={AppRoute.Statistics}
+        className="inline-flex items-center gap-2 text-sm font-bold text-primary"
+      >
+        <ArrowLeft className="size-[var(--icon-sm)]" />
+        Thống kê
+      </Link>
+      <header className="mt-7 text-center">
+        <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary text-on-primary">
+          <Trophy className="size-[var(--icon-lg)]" />
+        </span>
+        <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-primary">
+          Phòng {history.roomCode}
+        </p>
+        <h1 className="mt-2 font-headline text-3xl font-bold">Kết quả đã lưu</h1>
+        <p className="mt-2 text-sm text-on-surface-variant">
+          Bản xếp hạng được lưu trên thiết bị này
+        </p>
+      </header>
+
+      {history.result && (
+        <section className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-primary px-5 py-4 text-on-primary">
+          <div>
+            <p className="text-xs text-on-primary/75">Kết quả của bạn</p>
+            <p className="mt-1 font-headline text-xl font-bold">
+              {currentUser?.rank ? `Hạng ${currentUser.rank}` : "Đã hoàn thành"}
+            </p>
+          </div>
+          <p className="font-headline text-2xl font-bold">
+            {history.result.correctCount}/20
+          </p>
+        </section>
+      )}
+
+      <section className="mt-6 overflow-hidden rounded-2xl border border-surface-container bg-surface-container-lowest">
+        {history.leaderboard.length === 0 ? (
+          <p className="px-5 py-10 text-center text-sm text-on-surface-variant">
+            Chưa có snapshot bảng xếp hạng trên thiết bị này.
+          </p>
+        ) : (
+          history.leaderboard.map((entry) => (
+            <div
+              key={entry.userId}
+              className="flex items-center gap-3 border-b border-surface-container p-4 last:border-b-0"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-container-low text-on-surface-variant">
+                {entry.rank === 1 ? (
+                  <Crown className="size-[var(--icon-sm)]" />
+                ) : (
+                  <Medal className="size-[var(--icon-sm)]" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-bold">
+                  {entry.name}{entry.userId === history.userId ? " (Bạn)" : ""}
+                </p>
+                <p className="text-xs text-on-surface-variant">
+                  {entry.submitted ? `Hạng ${entry.rank}` : "Chưa nộp bài"}
+                </p>
+              </div>
+              <p className="font-headline font-bold">
+                {entry.submitted ? `${entry.correctCount}/20` : "—"}
+              </p>
+            </div>
+          ))
+        )}
+      </section>
+    </main>
+  );
+}
 
 function ResultsBoard({ initial }: { initial: ResultRoom }) {
   const router = useRouter();
@@ -49,7 +151,10 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     role === "host" ? initial.room.hostName : initial.room.participantName;
   const [hostedRoom, setHostedRoom] = useState<HostedExamRoom | null>(
     role === "host"
-      ? { ...initial.room, results: initial.room.results ?? [] }
+      ? completeRoomWhenAllSubmitted({
+          ...initial.room,
+          results: initial.room.results ?? [],
+        })
       : null,
   );
   const [participantRoom, setParticipantRoom] =
@@ -73,7 +178,7 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     (update: (current: HostedExamRoom) => HostedExamRoom) => {
       setHostedRoom((current) => {
         if (!current) return current;
-        const next = update(current);
+        const next = completeRoomWhenAllSubmitted(update(current));
         saveHostedExamRoom(next);
         return next;
       });
@@ -81,7 +186,7 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     [],
   );
 
-  const { status, sendResult, sendLeaderboard, sendRoomClosed } =
+  const { status, sendResult, sendLeaderboard } =
     useExamRoomConnection({
     roomCode,
     role,
@@ -137,27 +242,25 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
       setParticipantRoom(next);
       saveJoinedExamRoom(next);
     },
+    onRoomState: (roomState) => {
+      if (role !== "participant" || !participantRoom) return;
+      const next = { ...participantRoom, status: roomState.status };
+      setParticipantRoom(next);
+      saveJoinedExamRoom(next);
+    },
     onRoomClosed: () => {
       if (role !== "participant") return;
       removeJoinedExamRoom(roomCode);
       router.replace(AppRoute.ExamRoom);
     },
+    onKicked: () => {
+      if (role !== "participant") return;
+      removeJoinedExamRoom(roomCode);
+      router.replace(
+        `${AppRoute.JoinExamRoom}?code=${roomCode}&resume=1&kicked=1`,
+      );
+    },
   });
-
-  const closeRoom = async () => {
-    if (role !== "host") return;
-    const confirmed = window.confirm(
-      "Đóng phòng thi này? Kết quả phòng sẽ bị xoá và người tham gia không thể mở lại phòng cũ.",
-    );
-    if (!confirmed) return;
-
-    try {
-      await sendRoomClosed();
-    } finally {
-      removeHostedExamRoom(roomCode);
-      router.replace(AppRoute.ExamRoom);
-    }
-  };
 
   useEffect(() => {
     if (role === "host" && leaderboard.length > 0) {
@@ -167,18 +270,6 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
 
   const allResultsSubmitted =
     leaderboard.length > 0 && leaderboard.every((entry) => entry.submitted);
-
-  useEffect(() => {
-    if (
-      role !== "host" ||
-      !hostedRoom ||
-      hostedRoom.status === "completed" ||
-      !allResultsSubmitted
-    ) {
-      return;
-    }
-    updateHostedRoom((current) => ({ ...current, status: "completed" }));
-  }, [allResultsSubmitted, hostedRoom, role, updateHostedRoom]);
 
   useEffect(() => {
     if (
@@ -192,6 +283,46 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
 
   const currentUser = leaderboard.find((entry) => entry.userId === userId);
   const submittedCount = leaderboard.filter((entry) => entry.submitted).length;
+
+  useEffect(() => {
+    const start = initial.room.start;
+    if (!start) return;
+    const result =
+      role === "host"
+        ? (hostedRoom?.results.find((item) => item.userId === userId) ?? null)
+        : (participantRoom?.result ?? null);
+    const previous = readGroupExamHistoryEntry(roomCode, role, userId);
+    saveGroupExamHistoryEntry({
+      version: 1,
+      roomCode,
+      role,
+      userId,
+      name,
+      hostName: role === "host" ? name : initial.room.hostName,
+      status: role === "host" ? (hostedRoom?.status ?? "completed") : participantRoom?.status ?? "completed",
+      questionSetHash: start.questionSetHash,
+      startedAt: start.startedAt,
+      expiresAt: start.expiresAt,
+      submittedAt:
+        result && !previous?.submittedAt
+          ? new Date().toISOString()
+          : (previous?.submittedAt ?? null),
+      result,
+      leaderboard,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [
+    hostedRoom?.results,
+    hostedRoom?.status,
+    initial.room,
+    leaderboard,
+    name,
+    participantRoom?.result,
+    participantRoom?.status,
+    role,
+    roomCode,
+    userId,
+  ]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl bg-surface px-4 pb-28 pt-8 sm:px-5">
@@ -280,17 +411,6 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
           ))
         )}
       </section>
-
-      {role === "host" && (
-        <button
-          type="button"
-          onClick={closeRoom}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-error transition-colors hover:bg-error/10 active:scale-[0.99]"
-        >
-          <LogOut className="size-[var(--icon-sm)]" />
-          Đóng phòng và xoá kết quả
-        </button>
-      )}
     </main>
   );
 }
@@ -299,16 +419,38 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const roomCode = normalizeExamRoomCode(searchParams.get("room") ?? "");
   const role = searchParams.get("role");
-  const [initial, setInitial] = useState<ResultRoom | null | undefined>();
+  const [initial, setInitial] = useState<LoadedResults | null | undefined>();
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
       if (role === "host") {
         const room = readHostedExamRoom(roomCode);
-        setInitial(room ? { role, room } : null);
+        const history = readGroupExamHistoryEntry(
+          roomCode,
+          role,
+          getOrCreateUserId(),
+        );
+        setInitial(
+          room
+            ? { role, room }
+            : history
+              ? { role: "stored", roomRole: role, history }
+              : null,
+        );
       } else if (role === "participant") {
         const room = readJoinedExamRoom(roomCode);
-        setInitial(room ? { role, room } : null);
+        const history = readGroupExamHistoryEntry(
+          roomCode,
+          role,
+          getOrCreateUserId(),
+        );
+        setInitial(
+          room
+            ? { role, room }
+            : history
+              ? { role: "stored", roomRole: role, history }
+              : null,
+        );
       } else {
         setInitial(null);
       }
@@ -327,7 +469,11 @@ function ResultsContent() {
     );
   }
 
-  return <ResultsBoard initial={initial} />;
+  return initial.role === "stored" ? (
+    <StoredResultsBoard history={initial.history} />
+  ) : (
+    <ResultsBoard initial={initial} />
+  );
 }
 
 export default function GroupExamResultsPage() {

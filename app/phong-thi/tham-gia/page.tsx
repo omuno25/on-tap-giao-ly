@@ -29,14 +29,39 @@ import { AppRoute } from "@/lib/routes";
 type Identity = { userId: string; name: string };
 type HostIdentity = Identity & { peerId: string };
 
-function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity }) {
+function ConnectedRoom({
+  roomCode,
+  user,
+  initiallyKicked = false,
+}: {
+  roomCode: string;
+  user: Identity;
+  initiallyKicked?: boolean;
+}) {
   const router = useRouter();
   const [host, setHost] = useState<HostIdentity | null>(null);
+  const [hostLookupExpired, setHostLookupExpired] = useState(false);
+  const [reconnectToken, setReconnectToken] = useState(0);
+  const [wasKicked, setWasKicked] = useState(initiallyKicked);
   const hostRef = useRef<HostIdentity | null>(null);
 
   const handleHost = (nextHost: HostIdentity) => {
     hostRef.current = nextHost;
+    setHostLookupExpired(false);
     setHost(nextHost);
+  };
+
+  useEffect(() => {
+    if (host) return;
+    const timeoutId = window.setTimeout(() => {
+      setHostLookupExpired(true);
+    }, 6_000);
+    return () => window.clearTimeout(timeoutId);
+  }, [host, reconnectToken]);
+
+  const discardMissingRoom = () => {
+    removeJoinedExamRoom(roomCode);
+    router.replace(AppRoute.ExamRoom);
   };
 
   const handleStart = (start: GroupExamStart) => {
@@ -49,6 +74,7 @@ function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity })
       hostName: currentHost.name,
       participantUserId: user.userId,
       participantName: user.name,
+      status: "started",
       result: null,
       leaderboard: [],
       start,
@@ -61,12 +87,17 @@ function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity })
     role: "participant",
     userId: user.userId,
     name: user.name,
+    reconnectToken,
     onHost: handleHost,
     onStart: handleStart,
     onRoomState: (roomState) => {
       if (roomState.status === "started" && roomState.start) {
         handleStart(roomState.start);
       } else if (roomState.status === "completed") {
+        const current = readJoinedExamRoom(roomCode);
+        if (current) {
+          saveJoinedExamRoom({ ...current, status: "completed" });
+        }
         router.replace(
           `${AppRoute.GroupExamResults}?room=${roomCode}&role=participant`,
         );
@@ -75,6 +106,12 @@ function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity })
     onRoomClosed: () => {
       removeJoinedExamRoom(roomCode);
       router.replace(AppRoute.ExamRoom);
+    },
+    onKicked: () => {
+      removeJoinedExamRoom(roomCode);
+      hostRef.current = null;
+      setHost(null);
+      setWasKicked(true);
     },
   });
 
@@ -88,6 +125,8 @@ function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity })
       hostName: host.name,
       participantUserId: user.userId,
       participantName: user.name,
+      status:
+        currentRoom?.status ?? (currentRoom?.start ? "started" : "lobby"),
       result: currentRoom?.result ?? null,
       leaderboard: currentRoom?.leaderboard ?? [],
       start: currentRoom?.start ?? null,
@@ -105,6 +144,42 @@ function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity })
       </Link>
 
       <section className="mt-8 rounded-2xl border border-surface-container bg-surface-container-lowest p-6 text-center shadow-sm">
+        {wasKicked ? (
+          <>
+            <span className="mx-auto grid size-14 place-items-center rounded-full bg-error/10 text-error">
+              <DoorOpen className="size-[var(--icon-lg)]" />
+            </span>
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">
+              Phòng {roomCode}
+            </p>
+            <h1 className="mt-2 font-headline text-2xl font-bold">
+              Bạn đã bị mời ra khỏi phòng
+            </h1>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Bạn vẫn có thể gửi yêu cầu tham gia lại phòng này.
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              <Link
+                href={AppRoute.ExamRoom}
+                className="rounded-full bg-surface-container-high px-4 py-3 text-sm font-bold text-on-surface"
+              >
+                Về Phòng thi
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setWasKicked(false);
+                  setHostLookupExpired(false);
+                  setReconnectToken((current) => current + 1);
+                }}
+                className="rounded-full bg-primary px-4 py-3 text-sm font-bold text-on-primary"
+              >
+                Tham gia lại
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
         <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
           {host ? (
             <ShieldCheck className="size-[var(--icon-lg)]" />
@@ -116,12 +191,18 @@ function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity })
           Phòng {roomCode}
         </p>
         <h1 className="mt-2 font-headline text-2xl font-bold">
-          {host ? "Đã vào phòng" : "Đang tìm chủ phòng…"}
+          {host
+            ? "Đã vào phòng"
+            : hostLookupExpired
+              ? "Không tìm thấy phòng"
+              : "Đang tìm chủ phòng…"}
         </h1>
         <p className="mt-2 text-sm text-on-surface-variant">
           {host
             ? `Chủ phòng: ${host.name}`
-            : "Giữ trang này mở trong khi kết nối."}
+            : hostLookupExpired
+              ? "Chưa nhận được phản hồi từ chủ phòng."
+              : "Giữ trang này mở trong khi kết nối."}
         </p>
 
         <div className="mt-6 flex items-center gap-3 rounded-xl bg-surface-container-low p-4 text-left">
@@ -141,8 +222,38 @@ function ConnectedRoom({ roomCode, user }: { roomCode: string; user: Identity })
 
         <div className="mt-4 flex items-center justify-center gap-2 text-sm text-on-surface-variant">
           <Clock3 className="size-[var(--icon-sm)]" />
-          {host ? "Đang chờ chủ phòng bắt đầu" : "Đang kết nối P2P"}
+          {host
+            ? "Đang chờ chủ phòng bắt đầu"
+            : hostLookupExpired
+              ? "Phòng có thể đã bị đóng hoặc không còn tồn tại"
+              : "Đang kết nối P2P"}
         </div>
+
+        {hostLookupExpired && (
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                hostRef.current = null;
+                setHost(null);
+                setHostLookupExpired(false);
+                setReconnectToken((current) => current + 1);
+              }}
+              className="rounded-full bg-primary px-4 py-3 text-sm font-bold text-on-primary"
+            >
+              Tìm lại
+            </button>
+            <button
+              type="button"
+              onClick={discardMissingRoom}
+              className="rounded-full border border-error px-4 py-3 text-sm font-bold text-error"
+            >
+              Xoá phòng
+            </button>
+          </div>
+        )}
+          </>
+        )}
       </section>
     </main>
   );
@@ -167,8 +278,18 @@ function JoinExamRoomContent() {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
+  const joinRoom = () => {
+    setActiveRoomCode(roomCode);
+  };
+
   if (activeRoomCode && user) {
-    return <ConnectedRoom roomCode={activeRoomCode} user={user} />;
+    return (
+      <ConnectedRoom
+        roomCode={activeRoomCode}
+        user={user}
+        initiallyKicked={searchParams.get("kicked") === "1"}
+      />
+    );
   }
 
   return (
@@ -210,7 +331,7 @@ function JoinExamRoomContent() {
         <button
           type="button"
           disabled={roomCode.length !== EXAM_ROOM_CODE_LENGTH || !user}
-          onClick={() => setActiveRoomCode(roomCode)}
+          onClick={joinRoom}
           className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-on-primary active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Vào phòng

@@ -16,6 +16,7 @@ import {
   saveActiveExamSession,
   saveExamResult,
   type ActiveExamSession,
+  type ExamSessionChannel,
 } from "@/lib/learning-storage";
 import { MARRIAGE_QUESTION_SET } from "@/lib/question-bank";
 import { AppRoute } from "@/lib/routes";
@@ -49,6 +50,8 @@ type MockTestProps = {
   initialExpiresAt?: string;
   onSubmitted?: (score: ScoreSummary) => void;
   resultHref?: string;
+  sessionScope?: string;
+  sessionChannel?: ExamSessionChannel;
 };
 
 export default function MockTest({
@@ -65,6 +68,8 @@ export default function MockTest({
   initialExpiresAt,
   onSubmitted,
   resultHref,
+  sessionScope,
+  sessionChannel = "personal",
 }: MockTestProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -87,9 +92,14 @@ export default function MockTest({
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      const savedSession = readActiveExamSession();
+      const savedSession = readActiveExamSession(sessionChannel);
 
-      if (savedSession?.pathname === pathname) {
+      if (
+        savedSession?.pathname === pathname &&
+        (sessionScope
+          ? savedSession.scope === sessionScope
+          : savedSession.scope === undefined)
+      ) {
         setSessionId(savedSession.sessionId);
         setQuestions(savedSession.questions);
         setCurrentIndex(savedSession.currentIndex);
@@ -126,6 +136,8 @@ export default function MockTest({
     pathname,
     initialExpiresAt,
     questionSetHash,
+    sessionScope,
+    sessionChannel,
     sourceQuestions,
     trueFalseCount,
   ]);
@@ -135,7 +147,7 @@ export default function MockTest({
   const startNewExam = () => {
     const newExpiresAt =
       initialExpiresAt ?? createExamExpiration(durationSeconds);
-    clearActiveExamSession(conflictingSession?.sessionId);
+    clearActiveExamSession(conflictingSession?.sessionId, sessionChannel);
     setSessionId(createExamSessionId());
     setQuestions(
       buildExamQuestions(
@@ -160,7 +172,10 @@ export default function MockTest({
 
     const handleStorageChange = (event: StorageEvent) => {
       if (
-        event.key === STORAGE_KEYS.invalidatedExamSession &&
+        event.key ===
+          (sessionChannel === "group"
+            ? STORAGE_KEYS.invalidatedGroupExamSession
+            : STORAGE_KEYS.invalidatedExamSession) &&
         event.newValue === sessionId
       ) {
         setSessionInvalidated(true);
@@ -168,8 +183,12 @@ export default function MockTest({
         return;
       }
 
-      if (event.key === STORAGE_KEYS.activeExamSession && event.newValue) {
-        const activeSession = readActiveExamSession();
+      const activeSessionKey =
+        sessionChannel === "group"
+          ? STORAGE_KEYS.activeGroupExamSession
+          : STORAGE_KEYS.activeExamSession;
+      if (event.key === activeSessionKey && event.newValue) {
+        const activeSession = readActiveExamSession(sessionChannel);
         if (activeSession && activeSession.sessionId !== sessionId) {
           setSessionInvalidated(true);
           setSessionReady(false);
@@ -179,7 +198,7 @@ export default function MockTest({
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, [sessionId]);
+  }, [sessionChannel, sessionId]);
 
   useEffect(() => {
     if (!conflictingSession) return;
@@ -194,7 +213,7 @@ export default function MockTest({
     if (!sessionReady || !sessionId || !questions || sessionInvalidated) return;
 
     if (submitted) {
-      clearActiveExamSession(sessionId);
+      clearActiveExamSession(sessionId, sessionChannel);
       return;
     }
 
@@ -202,6 +221,7 @@ export default function MockTest({
       version: 3,
       sessionId,
       pathname,
+      scope: sessionScope,
       title,
       eyebrow,
       exitHref,
@@ -212,7 +232,7 @@ export default function MockTest({
       durationSeconds,
       expiresAt,
       updatedAt: new Date().toISOString(),
-    });
+    }, sessionChannel);
   }, [
     answers,
     currentIndex,
@@ -226,6 +246,8 @@ export default function MockTest({
     sessionId,
     sessionInvalidated,
     sessionReady,
+    sessionChannel,
+    sessionScope,
     submitted,
     title,
   ]);
