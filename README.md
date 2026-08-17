@@ -10,6 +10,7 @@ Sử dụng trực tuyến tại [ontapgiaoly.site](https://ontapgiaoly.site/).
 
 - Ôn Giáo lý Hôn nhân và Giáo lý Dự tòng theo từng bộ câu hỏi.
 - Học bằng flashcard và làm bài kiểm tra có lưu kết quả cục bộ.
+- Tạo phòng thi P2P, mời bạn bè bằng mã phòng và làm cùng một bộ đề.
 - Học các kinh quan trọng với bản đọc audio.
 - Theo dõi tiến độ và thống kê ngay trên thiết bị.
 - Đọc các bài viết hướng dẫn học tập.
@@ -28,7 +29,71 @@ bun run dev
 
 Mở [http://localhost:3000](http://localhost:3000).
 
-Ứng dụng hiện không cần API key hoặc dịch vụ bên ngoài để chạy.
+Ứng dụng không cần cấu hình API key hay máy chủ dữ liệu riêng để chạy. Tính năng phòng thi sử dụng các kênh signaling do Trystero hỗ trợ để thiết lập kết nối P2P như mô tả bên dưới.
+
+## Phòng thi P2P
+
+Phòng thi nhóm sử dụng [Trystero](https://github.com/dmotz/trystero) để thiết lập kết nối WebRTC trực tiếp giữa các trình duyệt. Dự án không có máy chủ ứng dụng trung gian để lưu phòng, người tham gia hoặc kết quả thi.
+
+Trystero vẫn cần một kênh signaling phi tập trung để các trình duyệt tìm thấy nhau và trao đổi thông tin thiết lập WebRTC. Sau khi kết nối, dữ liệu phòng thi được gửi trực tiếp, mã hóa đầu cuối giữa các peer và không đi qua Next.js API của dự án.
+
+### Luồng hoạt động
+
+1. Chủ phòng tạo mã gồm 6 ký tự và giữ trạng thái chính của phòng trên trình duyệt của mình.
+2. Người tham gia nhập mã hoặc mở link mời để kết nối với chủ phòng.
+3. Chủ phòng bắt đầu thi và gửi hash bộ đề cùng thời điểm kết thúc cho mọi người.
+4. Mỗi trình duyệt tự tạo cùng một bộ câu hỏi từ hash, tự lưu tiến độ và tự chấm bài.
+5. Khi nộp bài, người tham gia chỉ gửi số câu đúng cần thiết để đồng bộ kết quả.
+6. Khi phiên đã hoàn thành, lịch sử và kết quả được lưu riêng trên thiết bị của từng người; trang kết quả không cần duy trì kết nối P2P.
+
+Trạng thái phòng đi theo thứ tự `lobby` → `started` → `completed`. Trong lúc phòng còn hoạt động, chủ phòng là nguồn dữ liệu chính cho trạng thái phòng và thời gian thi.
+
+### Dữ liệu được trao đổi
+
+Hook [`useExamRoomConnection`](features/group-exam/useExamRoomConnection.ts) tạo các action Trystero sau:
+
+| Action | Mục đích |
+| --- | --- |
+| `identity` | Nhận diện chủ phòng hoặc người tham gia. |
+| `exam-start` | Đồng bộ hash bộ đề và thời gian bắt đầu/kết thúc. |
+| `room-state` | Đồng bộ trạng thái hiện tại của phòng. |
+| `exam-result` | Gửi số câu đúng về chủ phòng. |
+| `leaderboard` | Đồng bộ bảng xếp hạng khi kết nối còn hoạt động. |
+| `room-kick` | Thông báo một người tham gia bị đưa ra khỏi phòng. |
+| `room-closed` | Thông báo phiên phòng không còn khả dụng. |
+
+`action.send()` không truyền `target` sẽ gửi cho tất cả peer; khi có `target`, thông điệp chỉ được gửi tới peer tương ứng. `onPeerJoin` và `onPeerLeave` cập nhật danh sách người đang kết nối.
+
+### Lưu trữ và khôi phục phiên
+
+- Hồ sơ, `userId`, phiên cá nhân, phiên nhóm, phòng đang tạo/tham gia và lịch sử thi được lưu trong `localStorage`.
+- Phiên cá nhân và phiên nhóm dùng khóa riêng, vì vậy chúng không ghi đè lẫn nhau.
+- Người thi có thể rời trang rồi tiếp tục bài đang làm trên cùng trình duyệt.
+- Khi bấm tiếp tục một phòng chưa hoàn thành, ứng dụng kết nối lại với chủ phòng để kiểm tra trạng thái trước khi điều hướng.
+- Phòng đã hoàn thành được đọc từ lịch sử cục bộ và không mở lại kết nối P2P.
+
+Các khóa lưu trữ được quản lý tập trung trong [`lib/app-storage.ts`](lib/app-storage.ts); adapter và migration nằm trong [`lib/learning-storage.ts`](lib/learning-storage.ts).
+
+### Giới hạn cần biết
+
+- Chủ phòng phải giữ ứng dụng hoạt động trong lúc phiên thi đang diễn ra. Nếu tab hoặc thiết bị của chủ phòng mất kết nối, peer khác không thể lấy trạng thái mới cho đến khi chủ phòng kết nối lại.
+- Vì không có cơ sở dữ liệu trung tâm, một peer không thể xác nhận tức thời và tuyệt đối rằng mã phòng không tồn tại; giao diện cần cho phép thử kết nối lại khi mạng chậm.
+- Dữ liệu chỉ có trên từng trình duyệt. Xóa dữ liệu trang web hoặc đổi thiết bị sẽ làm mất phiên và lịch sử cục bộ của thiết bị đó.
+- Mã phòng dùng để tìm đúng room, không phải mật khẩu. Không gửi dữ liệu nhạy cảm qua phòng thi.
+- Một số mạng hạn chế WebRTC có thể khiến hai thiết bị không kết nối được trực tiếp.
+
+### Chạy thử hai peer
+
+```bash
+bun run dev --hostname 0.0.0.0
+```
+
+1. Mở ứng dụng bằng hai trình duyệt, hai profile trình duyệt hoặc hai thiết bị khác nhau.
+2. Đặt tên người dùng riêng trên mỗi thiết bị.
+3. Tạo phòng ở thiết bị thứ nhất rồi dùng mã hoặc link mời trên thiết bị thứ hai.
+4. Kiểm tra lần lượt các luồng tham gia, rời phòng, kết nối lại, bắt đầu thi, nộp bài và xem lịch sử.
+
+Khi phát triển, thông báo `User-Initiated Abort, reason=Close called` có thể xuất hiện lúc Trystero chủ động đóng kết nối trong quá trình điều hướng hoặc cleanup. Đây không phải lỗi nghiệp vụ nếu kết nối được đóng có chủ đích; hook hiện chỉ lọc đúng trường hợp đóng chủ động và vẫn giữ lại các lỗi P2P khác.
 
 ## Kiểm tra trước khi đóng góp
 
@@ -80,8 +145,3 @@ Các tệp MP3 trong `public/audio/` được người duy trì dự án tạo b
 Đây là repository đa license: phần mã nguồn là open source theo MIT; các tài nguyên trong `content/`, `data/` và `public/audio/` không thuộc MIT và bị giới hạn ở mục đích phi thương mại theo CC BY-NC 4.0.
 
 Xem thêm [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), [CONTRIBUTING.md](CONTRIBUTING.md) và [SECURITY.md](SECURITY.md).
-
-//TODO
-Làm room thi để có thể mời người khác join vào room được
-Kết nối telegram
-thêm các kênh tele để người dùng join vào
