@@ -202,19 +202,33 @@ export function useExamRoomConnection({
     onKicked,
   });
 
-  callbacksRef.current = {
+  useEffect(() => {
+    callbacksRef.current = {
+      onParticipant,
+      onParticipantLeave,
+      onHost,
+      onStart,
+      activeStart,
+      activeRoomState,
+      onRoomState,
+      onResult,
+      onLeaderboard,
+      onRoomClosed,
+      onKicked,
+    };
+  }, [
+    activeRoomState,
+    activeStart,
+    onHost,
+    onKicked,
+    onLeaderboard,
     onParticipant,
     onParticipantLeave,
-    onHost,
-    onStart,
-    activeStart,
-    activeRoomState,
-    onRoomState,
     onResult,
-    onLeaderboard,
     onRoomClosed,
-    onKicked,
-  };
+    onRoomState,
+    onStart,
+  ]);
 
   useEffect(() => {
     installIntentionalCloseErrorFilter();
