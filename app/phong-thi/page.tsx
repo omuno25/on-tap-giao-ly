@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
 import {
+  getRemainingExamSeconds,
   readActiveExamSession,
   type ActiveExamSession,
 } from "@/lib/learning-storage";
@@ -23,6 +24,27 @@ export default function ExamRoomPage() {
 
     return () => window.cancelAnimationFrame(frameId);
   }, []);
+
+  const sessionExpiresAt = session?.expiresAt;
+
+  useEffect(() => {
+    if (!sessionExpiresAt) return;
+
+    const timerId = window.setInterval(() => {
+      setSession((currentSession) =>
+        currentSession
+          ? {
+              ...currentSession,
+              secondsLeft: getRemainingExamSeconds(
+                currentSession.expiresAt,
+              ),
+            }
+          : null,
+      );
+    }, 1000);
+
+    return () => window.clearInterval(timerId);
+  }, [sessionExpiresAt]);
 
   const progress = session
     ? Math.round(((session.currentIndex + 1) / session.questions.length) * 100)
