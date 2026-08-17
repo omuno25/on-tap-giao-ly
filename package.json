@@ -42,7 +42,8 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "trystero": "^0.25.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",

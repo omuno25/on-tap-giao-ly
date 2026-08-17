@@ -9,11 +9,14 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import { STORAGE_KEYS } from "@/lib/app-storage";
 import {
   clearActiveExamSession,
+  createExamExpiration,
   createExamSessionId,
+  getRemainingExamSeconds,
   readActiveExamSession,
   saveActiveExamSession,
   saveExamResult,
   type ActiveExamSession,
+  type ExamSessionChannel,
 } from "@/lib/learning-storage";
 import { MARRIAGE_QUESTION_SET } from "@/lib/question-bank";
 import { AppRoute } from "@/lib/routes";
@@ -23,6 +26,7 @@ import {
   formatExamTime,
   type ExamQuestion,
   type MockTestSourceQuestion,
+  type ScoreSummary,
 } from "@/lib/exam";
 
 export type { MockTestSourceQuestion } from "@/lib/exam";
@@ -42,6 +46,12 @@ type MockTestProps = {
   title?: string;
   exitHref?: string;
   saveResult?: boolean;
+  questionSetHash?: string;
+  initialExpiresAt?: string;
+  onSubmitted?: (score: ScoreSummary) => void;
+  resultHref?: string;
+  sessionScope?: string;
+  sessionChannel?: ExamSessionChannel;
 };
 
 export default function MockTest({
@@ -54,6 +64,12 @@ export default function MockTest({
   title = "Thi Thử Giáo Lý Hôn Nhân",
   exitHref = AppRoute.Home,
   saveResult = true,
+  questionSetHash,
+  initialExpiresAt,
+  onSubmitted,
+  resultHref,
+  sessionScope,
+  sessionChannel = "personal",
 }: MockTestProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -61,6 +77,9 @@ export default function MockTest({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(durationSeconds);
+  const [expiresAt, setExpiresAt] = useState(() =>
+    initialExpiresAt ?? createExamExpiration(durationSeconds),
+  );
   const [manuallySubmitted, setManuallySubmitted] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -68,29 +87,41 @@ export default function MockTest({
   const [conflictingSession, setConflictingSession] =
     useState<ActiveExamSession | null>(null);
   const resultSaved = useRef(false);
+  const submissionNotified = useRef(false);
   const conflictDialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      const savedSession = readActiveExamSession();
+      const savedSession = readActiveExamSession(sessionChannel);
 
-      if (savedSession?.pathname === pathname) {
+      if (
+        savedSession?.pathname === pathname &&
+        (sessionScope
+          ? savedSession.scope === sessionScope
+          : savedSession.scope === undefined)
+      ) {
         setSessionId(savedSession.sessionId);
         setQuestions(savedSession.questions);
         setCurrentIndex(savedSession.currentIndex);
         setAnswers(savedSession.answers);
-        setSecondsLeft(savedSession.secondsLeft);
+        setExpiresAt(savedSession.expiresAt);
+        setSecondsLeft(getRemainingExamSeconds(savedSession.expiresAt));
         setSessionReady(true);
       } else if (savedSession) {
         setConflictingSession(savedSession);
       } else {
+        const newExpiresAt =
+          initialExpiresAt ?? createExamExpiration(durationSeconds);
         setSessionId(createExamSessionId());
+        setExpiresAt(newExpiresAt);
+        setSecondsLeft(getRemainingExamSeconds(newExpiresAt));
         setQuestions(
           buildExamQuestions(
             sourceQuestions,
             objectiveCount,
             essayCount,
             trueFalseCount,
+            questionSetHash,
           ),
         );
         setSessionReady(true);
@@ -98,12 +129,25 @@ export default function MockTest({
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [essayCount, objectiveCount, pathname, sourceQuestions, trueFalseCount]);
+  }, [
+    durationSeconds,
+    essayCount,
+    objectiveCount,
+    pathname,
+    initialExpiresAt,
+    questionSetHash,
+    sessionScope,
+    sessionChannel,
+    sourceQuestions,
+    trueFalseCount,
+  ]);
 
   const submitted = manuallySubmitted || secondsLeft === 0;
 
   const startNewExam = () => {
-    clearActiveExamSession(conflictingSession?.sessionId);
+    const newExpiresAt =
+      initialExpiresAt ?? createExamExpiration(durationSeconds);
+    clearActiveExamSession(conflictingSession?.sessionId, sessionChannel);
     setSessionId(createExamSessionId());
     setQuestions(
       buildExamQuestions(
@@ -111,11 +155,13 @@ export default function MockTest({
         objectiveCount,
         essayCount,
         trueFalseCount,
+        questionSetHash,
       ),
     );
     setCurrentIndex(0);
     setAnswers({});
-    setSecondsLeft(durationSeconds);
+    setExpiresAt(newExpiresAt);
+    setSecondsLeft(getRemainingExamSeconds(newExpiresAt));
     setManuallySubmitted(false);
     setConflictingSession(null);
     setSessionReady(true);
@@ -126,7 +172,10 @@ export default function MockTest({
 
     const handleStorageChange = (event: StorageEvent) => {
       if (
-        event.key === STORAGE_KEYS.invalidatedExamSession &&
+        event.key ===
+          (sessionChannel === "group"
+            ? STORAGE_KEYS.invalidatedGroupExamSession
+            : STORAGE_KEYS.invalidatedExamSession) &&
         event.newValue === sessionId
       ) {
         setSessionInvalidated(true);
@@ -134,8 +183,12 @@ export default function MockTest({
         return;
       }
 
-      if (event.key === STORAGE_KEYS.activeExamSession && event.newValue) {
-        const activeSession = readActiveExamSession();
+      const activeSessionKey =
+        sessionChannel === "group"
+          ? STORAGE_KEYS.activeGroupExamSession
+          : STORAGE_KEYS.activeExamSession;
+      if (event.key === activeSessionKey && event.newValue) {
+        const activeSession = readActiveExamSession(sessionChannel);
         if (activeSession && activeSession.sessionId !== sessionId) {
           setSessionInvalidated(true);
           setSessionReady(false);
@@ -145,7 +198,7 @@ export default function MockTest({
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, [sessionId]);
+  }, [sessionChannel, sessionId]);
 
   useEffect(() => {
     if (!conflictingSession) return;
@@ -160,14 +213,15 @@ export default function MockTest({
     if (!sessionReady || !sessionId || !questions || sessionInvalidated) return;
 
     if (submitted) {
-      clearActiveExamSession(sessionId);
+      clearActiveExamSession(sessionId, sessionChannel);
       return;
     }
 
     saveActiveExamSession({
-      version: 2,
+      version: 3,
       sessionId,
       pathname,
+      scope: sessionScope,
       title,
       eyebrow,
       exitHref,
@@ -176,13 +230,15 @@ export default function MockTest({
       answers,
       secondsLeft,
       durationSeconds,
+      expiresAt,
       updatedAt: new Date().toISOString(),
-    });
+    }, sessionChannel);
   }, [
     answers,
     currentIndex,
     durationSeconds,
     eyebrow,
+    expiresAt,
     exitHref,
     pathname,
     questions,
@@ -190,6 +246,8 @@ export default function MockTest({
     sessionId,
     sessionInvalidated,
     sessionReady,
+    sessionChannel,
+    sessionScope,
     submitted,
     title,
   ]);
@@ -219,6 +277,20 @@ export default function MockTest({
 
   useEffect(() => {
     if (
+      !submitted ||
+      !questions ||
+      sessionInvalidated ||
+      submissionNotified.current
+    ) {
+      return;
+    }
+
+    onSubmitted?.(calculateScore(questions, answers));
+    submissionNotified.current = true;
+  }, [answers, onSubmitted, questions, sessionInvalidated, submitted]);
+
+  useEffect(() => {
+    if (
       !sessionReady ||
       conflictingSession ||
       sessionInvalidated ||
@@ -229,12 +301,13 @@ export default function MockTest({
     }
 
     const timerId = setInterval(() => {
-      setSecondsLeft((prev) => Math.max(prev - 1, 0));
+      setSecondsLeft(getRemainingExamSeconds(expiresAt));
     }, 1000);
 
     return () => clearInterval(timerId);
   }, [
     conflictingSession,
+    expiresAt,
     secondsLeft,
     sessionInvalidated,
     sessionReady,
@@ -574,10 +647,10 @@ export default function MockTest({
             </p>
             <div className="mt-3">
               <Link
-                href={exitHref}
+                href={resultHref ?? exitHref}
                 className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-on-primary font-headline font-bold text-sm hover:opacity-90 transition-all active:scale-95"
               >
-                Trở về
+                {resultHref ? "Xem bảng xếp hạng" : "Trở về"}
               </Link>
             </div>
           </section>
