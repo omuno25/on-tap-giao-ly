@@ -11,6 +11,7 @@ import {
 } from "@/lib/app-storage";
 import {
   clearActiveExamSession,
+  getRemainingExamSeconds,
   readActiveExamSession,
   saveActiveExamSession,
 } from "@/lib/learning-storage";
@@ -89,8 +90,9 @@ describe("app storage", () => {
   });
 
   test("lưu, đọc và xóa phiên thi đang hoạt động", () => {
+    const expiresAt = new Date(Date.now() + 120_000).toISOString();
     const session = {
-      version: 2 as const,
+      version: 3 as const,
       sessionId: "session-1",
       pathname: AppRoute.MockTest,
       title: "Thi thử",
@@ -108,6 +110,7 @@ describe("app storage", () => {
       answers: { q1: "Đang trả lời" },
       secondsLeft: 120,
       durationSeconds: 300,
+      expiresAt,
       updatedAt: "2026-08-17T00:00:00.000Z",
     };
 
@@ -130,5 +133,22 @@ describe("app storage", () => {
 
     expect(readActiveExamSession()).toBeNull();
     expect(readStorageValue(STORAGE_KEYS.activeExamSession)).toBeNull();
+  });
+
+  test("tính thời gian còn lại theo thời điểm hết hạn", () => {
+    const now = Date.now();
+    const originalDateNow = Date.now;
+    Date.now = () => now;
+
+    try {
+      expect(
+        getRemainingExamSeconds(new Date(now + 65_000).toISOString()),
+      ).toBe(65);
+      expect(
+        getRemainingExamSeconds(new Date(now - 1_000).toISOString()),
+      ).toBe(0);
+    } finally {
+      Date.now = originalDateNow;
+    }
   });
 });

@@ -9,7 +9,9 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import { STORAGE_KEYS } from "@/lib/app-storage";
 import {
   clearActiveExamSession,
+  createExamExpiration,
   createExamSessionId,
+  getRemainingExamSeconds,
   readActiveExamSession,
   saveActiveExamSession,
   saveExamResult,
@@ -61,6 +63,9 @@ export default function MockTest({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(durationSeconds);
+  const [expiresAt, setExpiresAt] = useState(() =>
+    createExamExpiration(durationSeconds),
+  );
   const [manuallySubmitted, setManuallySubmitted] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -79,12 +84,16 @@ export default function MockTest({
         setQuestions(savedSession.questions);
         setCurrentIndex(savedSession.currentIndex);
         setAnswers(savedSession.answers);
-        setSecondsLeft(savedSession.secondsLeft);
+        setExpiresAt(savedSession.expiresAt);
+        setSecondsLeft(getRemainingExamSeconds(savedSession.expiresAt));
         setSessionReady(true);
       } else if (savedSession) {
         setConflictingSession(savedSession);
       } else {
+        const newExpiresAt = createExamExpiration(durationSeconds);
         setSessionId(createExamSessionId());
+        setExpiresAt(newExpiresAt);
+        setSecondsLeft(getRemainingExamSeconds(newExpiresAt));
         setQuestions(
           buildExamQuestions(
             sourceQuestions,
@@ -98,11 +107,19 @@ export default function MockTest({
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [essayCount, objectiveCount, pathname, sourceQuestions, trueFalseCount]);
+  }, [
+    durationSeconds,
+    essayCount,
+    objectiveCount,
+    pathname,
+    sourceQuestions,
+    trueFalseCount,
+  ]);
 
   const submitted = manuallySubmitted || secondsLeft === 0;
 
   const startNewExam = () => {
+    const newExpiresAt = createExamExpiration(durationSeconds);
     clearActiveExamSession(conflictingSession?.sessionId);
     setSessionId(createExamSessionId());
     setQuestions(
@@ -115,7 +132,8 @@ export default function MockTest({
     );
     setCurrentIndex(0);
     setAnswers({});
-    setSecondsLeft(durationSeconds);
+    setExpiresAt(newExpiresAt);
+    setSecondsLeft(getRemainingExamSeconds(newExpiresAt));
     setManuallySubmitted(false);
     setConflictingSession(null);
     setSessionReady(true);
@@ -165,7 +183,7 @@ export default function MockTest({
     }
 
     saveActiveExamSession({
-      version: 2,
+      version: 3,
       sessionId,
       pathname,
       title,
@@ -176,6 +194,7 @@ export default function MockTest({
       answers,
       secondsLeft,
       durationSeconds,
+      expiresAt,
       updatedAt: new Date().toISOString(),
     });
   }, [
@@ -183,6 +202,7 @@ export default function MockTest({
     currentIndex,
     durationSeconds,
     eyebrow,
+    expiresAt,
     exitHref,
     pathname,
     questions,
@@ -229,12 +249,13 @@ export default function MockTest({
     }
 
     const timerId = setInterval(() => {
-      setSecondsLeft((prev) => Math.max(prev - 1, 0));
+      setSecondsLeft(getRemainingExamSeconds(expiresAt));
     }, 1000);
 
     return () => clearInterval(timerId);
   }, [
     conflictingSession,
+    expiresAt,
     secondsLeft,
     sessionInvalidated,
     sessionReady,
