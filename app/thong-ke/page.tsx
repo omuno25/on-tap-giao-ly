@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, BarChart3, BookOpen, Crown, Trophy, UsersRound } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, ChevronLeft, ChevronRight, Crown, Trophy, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { readGroupExamHistory, type GroupExamHistoryEntry } from "@/lib/group-exam";
@@ -9,10 +9,14 @@ import { QUESTION_BANK } from "@/lib/question-bank";
 import { AppRoute } from "@/lib/routes";
 import { readStudyPosition } from "@/lib/study-progress";
 
+const HISTORY_PAGE_SIZE = 5;
+
 export default function StatsPage() {
   const [studyPosition, setStudyPosition] = useState(0);
   const [personalResults, setPersonalResults] = useState<ExamResult[]>([]);
   const [groupHistory, setGroupHistory] = useState<GroupExamHistoryEntry[]>([]);
+  const [personalPage, setPersonalPage] = useState(1);
+  const [groupPage, setGroupPage] = useState(1);
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
@@ -41,6 +45,22 @@ export default function StatsPage() {
         : best,
     null,
   );
+  const personalPageCount = Math.max(
+    1,
+    Math.ceil(personalResults.length / HISTORY_PAGE_SIZE),
+  );
+  const groupPageCount = Math.max(
+    1,
+    Math.ceil(groupHistory.length / HISTORY_PAGE_SIZE),
+  );
+  const visiblePersonalResults = personalResults.slice(
+    (personalPage - 1) * HISTORY_PAGE_SIZE,
+    personalPage * HISTORY_PAGE_SIZE,
+  );
+  const visibleGroupHistory = groupHistory.slice(
+    (groupPage - 1) * HISTORY_PAGE_SIZE,
+    groupPage * HISTORY_PAGE_SIZE,
+  );
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl bg-surface px-4 pb-28 pt-8 sm:px-5 sm:pt-10">
@@ -56,7 +76,7 @@ export default function StatsPage() {
       <HistorySection title="Lịch sử thi cá nhân" icon={Trophy}>
         {personalResults.length === 0 ? (
           <EmptyHistory href={AppRoute.MockTest} label="Làm bài thi thử" />
-        ) : personalResults.map((result, index) => (
+        ) : visiblePersonalResults.map((result, index) => (
           <div key={`${result.completedAt}-${index}`} className="flex items-center justify-between gap-4 border-b border-surface-container py-3 last:border-b-0">
             <div>
               <p className="text-sm font-bold">Thi thử cá nhân</p>
@@ -65,12 +85,17 @@ export default function StatsPage() {
             <span className="font-headline font-bold text-primary">{result.correct}/{result.total}</span>
           </div>
         ))}
+        <Pagination
+          page={personalPage}
+          pageCount={personalPageCount}
+          onChange={setPersonalPage}
+        />
       </HistorySection>
 
       <HistorySection title="Lịch sử thi cùng phòng" icon={UsersRound}>
         {groupHistory.length === 0 ? (
           <EmptyHistory href={AppRoute.ExamRoom} label="Vào Phòng thi" />
-        ) : groupHistory.map((entry) => {
+        ) : visibleGroupHistory.map((entry) => {
           const rank = entry.leaderboard.find((item) => item.userId === entry.userId)?.rank;
           const target = entry.result
             ? `${AppRoute.GroupExamResults}?room=${entry.roomCode}&role=${entry.role}`
@@ -96,8 +121,54 @@ export default function StatsPage() {
             </Link>
           );
         })}
+        <Pagination
+          page={groupPage}
+          pageCount={groupPageCount}
+          onChange={setGroupPage}
+        />
       </HistorySection>
     </main>
+  );
+}
+
+function Pagination({
+  page,
+  pageCount,
+  onChange,
+}: {
+  page: number;
+  pageCount: number;
+  onChange: (page: number) => void;
+}) {
+  if (pageCount <= 1) return null;
+
+  return (
+    <nav
+      aria-label="Phân trang lịch sử"
+      className="mt-4 flex items-center justify-between gap-3 border-t border-surface-container pt-4"
+    >
+      <button
+        type="button"
+        aria-label="Trang trước"
+        disabled={page === 1}
+        onClick={() => onChange(page - 1)}
+        className="grid size-9 place-items-center rounded-full border border-outline-variant/40 text-primary disabled:cursor-not-allowed disabled:opacity-30"
+      >
+        <ChevronLeft className="size-[var(--icon-sm)]" />
+      </button>
+      <span className="text-xs font-bold text-on-surface-variant">
+        Trang {page}/{pageCount}
+      </span>
+      <button
+        type="button"
+        aria-label="Trang sau"
+        disabled={page === pageCount}
+        onClick={() => onChange(page + 1)}
+        className="grid size-9 place-items-center rounded-full border border-outline-variant/40 text-primary disabled:cursor-not-allowed disabled:opacity-30"
+      >
+        <ChevronRight className="size-[var(--icon-sm)]" />
+      </button>
+    </nav>
   );
 }
 
