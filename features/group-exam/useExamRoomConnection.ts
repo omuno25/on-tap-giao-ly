@@ -18,6 +18,7 @@ import type {
 
 const ROOM_CONFIG = { appId: "on-tap-giao-ly-group-exam-v1" } as const;
 const ROOM_REJOIN_DELAY_MS = 150;
+const ROOM_JOIN_ERROR_RETRY_DELAY_MS = 2_000;
 const ROOM_HANDSHAKE_TIMEOUT_MS = 20_000;
 const ROOM_HEARTBEAT_INTERVAL_MS = 15_000;
 const ROOM_HEARTBEAT_TIMEOUT_MS = 5_000;
@@ -381,6 +382,7 @@ export function useExamRoomConnection({
     let cancelled = false;
     let room: Room | null = null;
     let identityRetryIntervalId: number | null = null;
+    let joinErrorRetryTimeoutId: number | null = null;
 
     async function connect() {
       if (!roomCode || !userId) return;
@@ -409,17 +411,22 @@ export function useExamRoomConnection({
         room = joinRoom({ ...ROOM_CONFIG, turnConfig }, `exam-${roomCode}`, {
           handshakeTimeoutMs: ROOM_HANDSHAKE_TIMEOUT_MS,
           onJoinError(details) {
-            console.error("Không thể kết nối phòng P2P:", details);
+            console.warn("Không thể kết nối một peer P2P:", details);
             // Room của host vẫn mở nếu chỉ một peer kết nối thất bại. Với
-            // participant, chỉ host đã nhận diện rời/lỗi mới làm mất phòng;
-            // lỗi từ participant khác trong mesh không đổi trạng thái chung.
-            if (
-              !cancelled &&
-              role === "participant" &&
-              details.peerId === hostPeerIdRef.current
-            ) {
-              setTransportStatus("connecting");
-            }
+            // participant chưa nhận diện được host thì peer lỗi cũng có thể
+            // chính là host. Retry sau một nhịp; nếu host khác đã kết nối
+            // thành công trong lúc chờ thì không khởi tạo lại cả room.
+            if (cancelled || role !== "participant") return;
+            const knownHostPeerId = hostPeerIdRef.current;
+            if (knownHostPeerId && details.peerId !== knownHostPeerId) return;
+
+            setTransportStatus("connecting");
+            if (joinErrorRetryTimeoutId !== null) return;
+            joinErrorRetryTimeoutId = window.setTimeout(() => {
+              joinErrorRetryTimeoutId = null;
+              if (cancelled || hostPeerIdRef.current) return;
+              setAutomaticReconnectToken((current) => current + 1);
+            }, ROOM_JOIN_ERROR_RETRY_DELAY_MS);
           },
         });
         roomRef.current = room;
@@ -626,6 +633,9 @@ export function useExamRoomConnection({
       window.clearTimeout(connectTimer);
       if (identityRetryIntervalId !== null) {
         window.clearInterval(identityRetryIntervalId);
+      }
+      if (joinErrorRetryTimeoutId !== null) {
+        window.clearTimeout(joinErrorRetryTimeoutId);
       }
       identityActionRef.current = null;
       startActionRef.current = null;
