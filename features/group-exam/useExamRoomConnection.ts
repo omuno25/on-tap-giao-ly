@@ -382,6 +382,7 @@ export function useExamRoomConnection({
     installIntentionalCloseErrorFilter();
     let cancelled = false;
     let room: Room | null = null;
+    let identityRetryIntervalId: number | null = null;
 
     async function connect() {
       if (!roomCode || !userId) return;
@@ -457,6 +458,15 @@ export function useExamRoomConnection({
               lastSeenAt: now,
               rejoinRequested: data.rejoinRequested === true,
             });
+            // Phản hồi trực tiếp để participant vẫn nhận diện được host nếu
+            // identity gửi trong onPeerJoin bị signaling làm trễ hoặc thất lạc.
+            void identityAction
+              .send({ role, userId, name }, { target: peerId })
+              .catch((error) => {
+                if (!isIntentionalCloseError(error)) {
+                  console.error("Không thể phản hồi danh tính chủ phòng:", error);
+                }
+              });
           } else if (role === "participant" && data.role === "host") {
             hostPeerIdRef.current = peerId;
             setTransportStatus("connected");
@@ -577,6 +587,29 @@ export function useExamRoomConnection({
           }
         };
 
+        if (role === "participant") {
+          // Sau khi bị kick, room cũ đóng rồi được tạo lại khá nhanh. Gửi lại
+          // yêu cầu nhận diện tới khi host xác nhận thay vì phụ thuộc hoàn toàn
+          // vào một lần onPeerJoin.
+          identityRetryIntervalId = window.setInterval(() => {
+            if (cancelled || hostPeerIdRef.current) return;
+            void identityAction
+              .send({
+                role,
+                userId,
+                name,
+                ...(rejoinRequestedRef.current
+                  ? { rejoinRequested: true }
+                  : {}),
+              })
+              .catch((error) => {
+                if (!isIntentionalCloseError(error)) {
+                  console.error("Không thể gửi lại yêu cầu vào phòng:", error);
+                }
+              });
+          }, 2_000);
+        }
+
         if (role === "host") setTransportStatus("connected");
       } catch {
         if (!cancelled) {
@@ -594,6 +627,9 @@ export function useExamRoomConnection({
     return () => {
       cancelled = true;
       window.clearTimeout(connectTimer);
+      if (identityRetryIntervalId !== null) {
+        window.clearInterval(identityRetryIntervalId);
+      }
       identityActionRef.current = null;
       startActionRef.current = null;
       resultActionRef.current = null;

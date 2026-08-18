@@ -326,9 +326,17 @@ function JoinExamRoomContent() {
         <input
           id="join-room-code"
           value={roomCode}
-          onChange={(event) =>
-            setRoomCode(normalizeExamRoomCode(event.target.value))
-          }
+          onChange={(event) => {
+            setRoomCode(
+              event.nativeEvent instanceof InputEvent &&
+                event.nativeEvent.isComposing
+                ? event.currentTarget.value
+                : normalizeExamRoomCode(event.currentTarget.value),
+            );
+          }}
+          onCompositionEnd={(event) => {
+            setRoomCode(normalizeExamRoomCode(event.currentTarget.value));
+          }}
           maxLength={EXAM_ROOM_CODE_LENGTH}
           autoComplete="off"
           autoFocus

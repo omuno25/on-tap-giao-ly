@@ -15,6 +15,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ProgressBar from "@/components/ui/ProgressBar";
 import {
+  EXAM_ROOM_CODE_LENGTH,
+  normalizeExamRoomCode,
   readActiveJoinedExamRoom,
   readActiveGroupExamRoom,
   readActiveHostedExamRoom,
@@ -321,13 +323,18 @@ export default function ExamRoomPage() {
                     value={roomCode}
                     onChange={(event) => {
                       setRoomCode(
-                        event.target.value
-                          .toUpperCase()
-                          .replace(/[^A-Z0-9]/g, "")
-                          .slice(0, 6),
+                        event.nativeEvent instanceof InputEvent &&
+                          event.nativeEvent.isComposing
+                          ? event.currentTarget.value
+                          : normalizeExamRoomCode(event.currentTarget.value),
                       );
                     }}
-                    maxLength={6}
+                    onCompositionEnd={(event) => {
+                      setRoomCode(
+                        normalizeExamRoomCode(event.currentTarget.value),
+                      );
+                    }}
+                    maxLength={EXAM_ROOM_CODE_LENGTH}
                     inputMode="text"
                     autoComplete="off"
                     placeholder="ABC123"
@@ -336,7 +343,7 @@ export default function ExamRoomPage() {
                   <button
                     type="button"
                     aria-label="Tham gia phòng"
-                    disabled={roomCode.length !== 6}
+                    disabled={roomCode.length !== EXAM_ROOM_CODE_LENGTH}
                     onClick={() =>
                       router.push(`${AppRoute.JoinExamRoom}?code=${roomCode}`)
                     }
