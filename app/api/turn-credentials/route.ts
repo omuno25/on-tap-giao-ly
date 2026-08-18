@@ -26,7 +26,8 @@ function isTurnServer(server: IceServer) {
 }
 
 export async function GET() {
-  const apiUrl = process.env.METERED_TURN_API_URL;
+  const apiUrl =
+    process.env.METERED_TURN_ENDPOINT ?? process.env.METERED_TURN_API_URL;
   const apiKey = process.env.METERED_TURN_API_KEY;
 
   if (!apiUrl || !apiKey) {
