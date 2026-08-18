@@ -111,8 +111,7 @@ function installIntentionalCloseErrorFilter() {
   originalConsoleError = console.error;
   console.error = (...args: unknown[]) => {
     const isTrysteroPeerError = args.some(
-      (arg) =>
-        typeof arg === "string" && arg.includes("Trystero peer error"),
+      (arg) => typeof arg === "string" && arg.includes("Trystero peer error"),
     );
     if (isTrysteroPeerError && args.some(isIntentionalCloseError)) return;
     originalConsoleError?.(...args);
@@ -121,7 +120,8 @@ function installIntentionalCloseErrorFilter() {
 
 function scheduleIntentionalCloseErrorFilterRemoval() {
   closeErrorFilterUsers = Math.max(0, closeErrorFilterUsers - 1);
-  if (closeErrorFilterUsers > 0 || restoreCloseErrorFilterTimer !== null) return;
+  if (closeErrorFilterUsers > 0 || restoreCloseErrorFilterTimer !== null)
+    return;
 
   // Peer WebRTC có thể báo abort sau khi room.leave() đã resolve.
   restoreCloseErrorFilterTimer = window.setTimeout(() => {
@@ -321,12 +321,7 @@ export function useExamRoomConnection({
     let consecutiveFailures = 0;
 
     const heartbeat = async () => {
-      if (
-        cancelled ||
-        running ||
-        document.hidden ||
-        !isOnline
-      ) {
+      if (cancelled || running || document.hidden || !isOnline) {
         return;
       }
 
@@ -355,7 +350,10 @@ export function useExamRoomConnection({
           consecutiveFailures += 1;
           if (consecutiveFailures >= ROOM_HEARTBEAT_FAILURE_LIMIT) {
             consecutiveFailures = 0;
-            console.warn("Heartbeat tới chủ phòng thất bại, đang kết nối lại:", error);
+            console.warn(
+              "Heartbeat tới chủ phòng thất bại, đang kết nối lại:",
+              error,
+            );
             if (!cancelled) {
               setTransportStatus("connecting");
               setAutomaticReconnectToken((current) => current + 1);
@@ -408,26 +406,22 @@ export function useExamRoomConnection({
         ]);
         if (cancelled) return;
 
-        room = joinRoom(
-          { ...ROOM_CONFIG, turnConfig },
-          `exam-${roomCode}`,
-          {
-            handshakeTimeoutMs: ROOM_HANDSHAKE_TIMEOUT_MS,
-            onJoinError(details) {
-              console.error("Không thể kết nối phòng P2P:", details);
-              // Room của host vẫn mở nếu chỉ một peer kết nối thất bại. Với
-              // participant, chỉ host đã nhận diện rời/lỗi mới làm mất phòng;
-              // lỗi từ participant khác trong mesh không đổi trạng thái chung.
-              if (
-                !cancelled &&
-                role === "participant" &&
-                details.peerId === hostPeerIdRef.current
-              ) {
-                setTransportStatus("connecting");
-              }
-            },
+        room = joinRoom({ ...ROOM_CONFIG, turnConfig }, `exam-${roomCode}`, {
+          handshakeTimeoutMs: ROOM_HANDSHAKE_TIMEOUT_MS,
+          onJoinError(details) {
+            console.error("Không thể kết nối phòng P2P:", details);
+            // Room của host vẫn mở nếu chỉ một peer kết nối thất bại. Với
+            // participant, chỉ host đã nhận diện rời/lỗi mới làm mất phòng;
+            // lỗi từ participant khác trong mesh không đổi trạng thái chung.
+            if (
+              !cancelled &&
+              role === "participant" &&
+              details.peerId === hostPeerIdRef.current
+            ) {
+              setTransportStatus("connecting");
+            }
           },
-        );
+        });
         roomRef.current = room;
         const identityAction = room.makeAction<JsonValue>("identity");
         const startAction = room.makeAction<JsonValue>("exam-start");
@@ -464,7 +458,10 @@ export function useExamRoomConnection({
               .send({ role, userId, name }, { target: peerId })
               .catch((error) => {
                 if (!isIntentionalCloseError(error)) {
-                  console.error("Không thể phản hồi danh tính chủ phòng:", error);
+                  console.error(
+                    "Không thể phản hồi danh tính chủ phòng:",
+                    error,
+                  );
                 }
               });
           } else if (role === "participant" && data.role === "host") {
