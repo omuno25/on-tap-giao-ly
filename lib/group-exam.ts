@@ -225,7 +225,16 @@ export function normalizeExamRoomCode(value: string) {
     // Khôi phục phím Telex mà bộ gõ tiếng Việt đã chuyển thành Unicode.
     if (character === "\u0302") normalized += previousBase; // â/ê/ô → aa/ee/oo
     else if (character === "\u0306") normalized += "W"; // ă → aw
-    else if (character === "\u031B") normalized += "W"; // ơ/ư → ow/uw
+    else if (character === "\u031B") {
+      if (previousBase === "U") {
+        // Với Telex, nhấn W riêng có thể được bộ gõ biểu diễn thành "ư".
+        // Đổi U vừa thêm thành W để mã phòng không bị thành "UW".
+        normalized = `${normalized.slice(0, -1)}W`;
+        previousBase = "W";
+      } else {
+        normalized += "W"; // ơ → ow
+      }
+    }
     else if (character === "\u0301") normalized += "S"; // sắc
     else if (character === "\u0300") normalized += "F"; // huyền
     else if (character === "\u0309") normalized += "R"; // hỏi

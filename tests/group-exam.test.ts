@@ -12,6 +12,7 @@ describe("group exam helpers", () => {
     expect(normalizeExamRoomCode("À1")).toBe("AF1");
     expect(normalizeExamRoomCode("Ấ2")).toBe("AAS2");
     expect(normalizeExamRoomCode("Ơ3")).toBe("OW3");
+    expect(normalizeExamRoomCode("Ư5")).toBe("W5");
     expect(normalizeExamRoomCode("Đ4")).toBe("DD4");
   });
 
