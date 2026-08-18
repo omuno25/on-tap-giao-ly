@@ -9,6 +9,16 @@ import { AppRoute } from "@/lib/routes";
 export default function BottomNavBar() {
   const pathname = usePathname();
 
+  // Các màn hình con của phòng thi là một luồng tập trung và có thể đang giữ
+  // kết nối P2P. Không hiển thị điều hướng toàn cục để tránh rời phòng ngoài ý
+  // muốn; từng màn hình cung cấp hành động rời/đóng phòng riêng.
+  if (
+    pathname !== AppRoute.ExamRoom &&
+    pathname.startsWith(`${AppRoute.ExamRoom}/`)
+  ) {
+    return null;
+  }
+
   const navItems = [
     { label: "Học tập", icon: GraduationCap, href: AppRoute.Home },
     { label: "Phòng thi", icon: UsersRound, href: AppRoute.ExamRoom },
