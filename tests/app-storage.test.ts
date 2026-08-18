@@ -20,6 +20,7 @@ import {
   readActiveGroupExamRoom,
   readGroupExamHistory,
   readGroupExamHistoryEntry,
+  readHostedExamRoom,
   saveGroupExamHistoryEntry,
   saveHostedExamRoom,
   saveJoinedExamRoom,
@@ -221,9 +222,13 @@ describe("app storage", () => {
       createdAt: "2026-08-17T00:00:00.000Z",
       status: "started",
       participants: [],
+      kickedUserIds: ["user-kicked"],
       results: [{ userId: "user-a", correctCount: 10 }],
       start: null,
     });
+    expect(readHostedExamRoom("ROOMA1")?.kickedUserIds).toEqual([
+      "user-kicked",
+    ]);
     expect(readActiveGroupExamRoom()).toEqual({
       role: "host",
       roomCode: "ROOMA1",

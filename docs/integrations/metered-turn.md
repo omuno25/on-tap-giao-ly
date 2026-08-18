@@ -4,7 +4,7 @@ Dự án sử dụng [Metered TURN Dashboard](https://dashboard.metered.ca/turns
 
 ## Thiết lập Metered
 
-1. Trong Metered Dashboard, chọn region **Singapore Only** cho người dùng chủ yếu ở Việt Nam.
+1. Với tài khoản free, giữ **Default/Standard region** để API trả endpoint `standard.relay.metered.ca`. Không chọn **Singapore Only**: các endpoint theo region chỉ dành cho gói trả phí. Nếu đã nâng cấp gói, có thể chọn Singapore để giảm độ trễ cho người dùng ở Việt Nam.
 2. Tạo hoặc regenerate API key trong phần TURN Credentials.
 3. Không commit API key, username hoặc password vào repository.
 

@@ -44,12 +44,14 @@ function ConnectedRoom({
   const [hostLookupExpired, setHostLookupExpired] = useState(false);
   const [reconnectToken, setReconnectToken] = useState(0);
   const [wasKicked, setWasKicked] = useState(initiallyKicked);
+  const [rejoinRequested, setRejoinRequested] = useState(false);
   const hostRef = useRef<HostIdentity | null>(null);
 
   const handleHost = (nextHost: HostIdentity) => {
     hostRef.current = nextHost;
     setHostLookupExpired(false);
     setHost(nextHost);
+    setRejoinRequested(false);
   };
 
   useEffect(() => {
@@ -84,11 +86,13 @@ function ConnectedRoom({
   };
 
   const { status } = useExamRoomConnection({
+    enabled: !wasKicked,
     roomCode,
     role: "participant",
     userId: user.userId,
     name: user.name,
     reconnectToken,
+    rejoinRequested,
     onHost: handleHost,
     onStart: handleStart,
     onRoomState: (roomState) => {
@@ -113,6 +117,7 @@ function ConnectedRoom({
       hostRef.current = null;
       setHost(null);
       setWasKicked(true);
+      setRejoinRequested(false);
     },
   });
 
@@ -169,6 +174,7 @@ function ConnectedRoom({
               <button
                 type="button"
                 onClick={() => {
+                  setRejoinRequested(true);
                   setWasKicked(false);
                   setHostLookupExpired(false);
                   setReconnectToken((current) => current + 1);
