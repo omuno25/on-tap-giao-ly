@@ -28,6 +28,7 @@ import { AppRoute } from "@/lib/routes";
 
 type Identity = { userId: string; name: string };
 type HostIdentity = Identity & { peerId: string };
+const HOST_LOOKUP_TIMEOUT_MS = 15_000;
 
 function ConnectedRoom({
   roomCode,
@@ -43,19 +44,21 @@ function ConnectedRoom({
   const [hostLookupExpired, setHostLookupExpired] = useState(false);
   const [reconnectToken, setReconnectToken] = useState(0);
   const [wasKicked, setWasKicked] = useState(initiallyKicked);
+  const [rejoinRequested, setRejoinRequested] = useState(false);
   const hostRef = useRef<HostIdentity | null>(null);
 
   const handleHost = (nextHost: HostIdentity) => {
     hostRef.current = nextHost;
     setHostLookupExpired(false);
     setHost(nextHost);
+    setRejoinRequested(false);
   };
 
   useEffect(() => {
     if (host) return;
     const timeoutId = window.setTimeout(() => {
       setHostLookupExpired(true);
-    }, 6_000);
+    }, HOST_LOOKUP_TIMEOUT_MS);
     return () => window.clearTimeout(timeoutId);
   }, [host, reconnectToken]);
 
@@ -83,11 +86,13 @@ function ConnectedRoom({
   };
 
   const { status } = useExamRoomConnection({
+    enabled: !wasKicked,
     roomCode,
     role: "participant",
     userId: user.userId,
     name: user.name,
     reconnectToken,
+    rejoinRequested,
     onHost: handleHost,
     onStart: handleStart,
     onRoomState: (roomState) => {
@@ -112,6 +117,7 @@ function ConnectedRoom({
       hostRef.current = null;
       setHost(null);
       setWasKicked(true);
+      setRejoinRequested(false);
     },
   });
 
@@ -168,6 +174,7 @@ function ConnectedRoom({
               <button
                 type="button"
                 onClick={() => {
+                  setRejoinRequested(true);
                   setWasKicked(false);
                   setHostLookupExpired(false);
                   setReconnectToken((current) => current + 1);
@@ -319,9 +326,17 @@ function JoinExamRoomContent() {
         <input
           id="join-room-code"
           value={roomCode}
-          onChange={(event) =>
-            setRoomCode(normalizeExamRoomCode(event.target.value))
-          }
+          onChange={(event) => {
+            setRoomCode(
+              event.nativeEvent instanceof InputEvent &&
+                event.nativeEvent.isComposing
+                ? event.currentTarget.value
+                : normalizeExamRoomCode(event.currentTarget.value),
+            );
+          }}
+          onCompositionEnd={(event) => {
+            setRoomCode(normalizeExamRoomCode(event.currentTarget.value));
+          }}
           maxLength={EXAM_ROOM_CODE_LENGTH}
           autoComplete="off"
           autoFocus

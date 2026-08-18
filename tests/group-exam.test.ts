@@ -9,6 +9,10 @@ import {
 describe("group exam helpers", () => {
   test("chuẩn hóa mã phòng thành 6 ký tự chữ và số", () => {
     expect(normalizeExamRoomCode(" ab-c12!3xyz ")).toBe("ABC123");
+    expect(normalizeExamRoomCode("À1")).toBe("AF1");
+    expect(normalizeExamRoomCode("Ấ2")).toBe("AAS2");
+    expect(normalizeExamRoomCode("Ơ3")).toBe("OW3");
+    expect(normalizeExamRoomCode("Đ4")).toBe("DD4");
   });
 
   test("tạo mã phòng dễ chia sẻ", () => {

@@ -29,13 +29,17 @@ bun run dev
 
 Mở [http://localhost:3000](http://localhost:3000).
 
-Ứng dụng không cần cấu hình API key hay máy chủ dữ liệu riêng để chạy. Tính năng phòng thi sử dụng các kênh signaling do Trystero hỗ trợ để thiết lập kết nối P2P như mô tả bên dưới.
+Ứng dụng không cần máy chủ dữ liệu riêng để chạy. Tính năng phòng thi có thể hoạt động chỉ với STUN mặc định của Trystero, nhưng nên cấu hình Metered TURN để các thiết bị sau NAT hoặc firewall hạn chế vẫn kết nối được như mô tả bên dưới.
 
 ## Phòng thi P2P
 
 Phòng thi nhóm sử dụng [Trystero](https://github.com/dmotz/trystero) để thiết lập kết nối WebRTC trực tiếp giữa các trình duyệt. Dự án không có máy chủ ứng dụng trung gian để lưu phòng, người tham gia hoặc kết quả thi.
 
 Trystero vẫn cần một kênh signaling phi tập trung để các trình duyệt tìm thấy nhau và trao đổi thông tin thiết lập WebRTC. Sau khi kết nối, dữ liệu phòng thi được gửi trực tiếp, mã hóa đầu cuối giữa các peer và không đi qua Next.js API của dự án.
+
+### Dịch vụ bên thứ ba
+
+Phòng thi dùng Trystero và các Nostr relay để signaling. Dự án tích hợp Metered TURN làm đường relay dự phòng khi hai peer không thể kết nối trực tiếp; xem [hướng dẫn cấu hình Metered TURN](docs/integrations/metered-turn.md) để thiết lập local, Vercel và xử lý sự cố.
 
 ### Luồng hoạt động
 
