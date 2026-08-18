@@ -23,6 +23,7 @@ const ROOM_HANDSHAKE_TIMEOUT_MS = 20_000;
 const ROOM_HEARTBEAT_INTERVAL_MS = 15_000;
 const ROOM_HEARTBEAT_TIMEOUT_MS = 5_000;
 const ROOM_HEARTBEAT_FAILURE_LIMIT = 2;
+const NETWORK_CHANGE_RECONNECT_DELAY_MS = 750;
 let previousRoomLeave: Promise<void> = Promise.resolve();
 let closeErrorFilterUsers = 0;
 let restoreCloseErrorFilterTimer: number | null = null;
@@ -35,6 +36,21 @@ type TurnServerConfig = {
   username?: string;
   credential?: string;
 };
+
+type NavigatorWithConnection = Navigator & {
+  connection?: EventTarget;
+  mozConnection?: EventTarget;
+  webkitConnection?: EventTarget;
+};
+
+function getNetworkConnection() {
+  const browserNavigator = navigator as NavigatorWithConnection;
+  return (
+    browserNavigator.connection ??
+    browserNavigator.mozConnection ??
+    browserNavigator.webkitConnection
+  );
+}
 
 type IdentityPayload = {
   role: "host" | "participant";
@@ -287,6 +303,32 @@ export function useExamRoomConnection({
   }, [rejoinRequested]);
 
   useEffect(() => {
+    if (!enabled) return;
+    const connection = getNetworkConnection();
+    if (!connection) return;
+
+    let reconnectTimeoutId: number | null = null;
+    const handleNetworkChange = () => {
+      if (reconnectTimeoutId !== null) {
+        window.clearTimeout(reconnectTimeoutId);
+      }
+      setTransportStatus("connecting");
+      reconnectTimeoutId = window.setTimeout(() => {
+        reconnectTimeoutId = null;
+        setAutomaticReconnectToken((current) => current + 1);
+      }, NETWORK_CHANGE_RECONNECT_DELAY_MS);
+    };
+
+    connection.addEventListener("change", handleNetworkChange);
+    return () => {
+      connection.removeEventListener("change", handleNetworkChange);
+      if (reconnectTimeoutId !== null) {
+        window.clearTimeout(reconnectTimeoutId);
+      }
+    };
+  }, [enabled]);
+
+  useEffect(() => {
     callbacksRef.current = {
       onParticipant,
       onParticipantLeave,
@@ -320,6 +362,7 @@ export function useExamRoomConnection({
     let cancelled = false;
     let running = false;
     let consecutiveFailures = 0;
+    const peerFailureCounts = new Map<string, number>();
 
     const heartbeat = async () => {
       if (cancelled || running || document.hidden || !isOnline) {
@@ -339,27 +382,66 @@ export function useExamRoomConnection({
 
       running = true;
       try {
-        await Promise.all(
+        const results = await Promise.allSettled(
           peerIds.map((peerId) => pingWithTimeout(room, peerId)),
         );
-        consecutiveFailures = 0;
-      } catch (error) {
         if (roomRef.current !== room) return;
-        // Heartbeat chạy âm thầm. Host không reconnect cả phòng chỉ vì một
-        // participant lỗi; participant chỉ reconnect sau nhiều lần mất host.
+
         if (role === "participant") {
+          const failure = results.find(
+            (result): result is PromiseRejectedResult =>
+              result.status === "rejected",
+          );
+          if (!failure) {
+            consecutiveFailures = 0;
+            return;
+          }
+
           consecutiveFailures += 1;
           if (consecutiveFailures >= ROOM_HEARTBEAT_FAILURE_LIMIT) {
             consecutiveFailures = 0;
             console.warn(
               "Heartbeat tới chủ phòng thất bại, đang kết nối lại:",
-              error,
+              failure.reason,
             );
             if (!cancelled) {
               setTransportStatus("connecting");
               setAutomaticReconnectToken((current) => current + 1);
             }
           }
+          return;
+        }
+
+        const activePeerIds = new Set(peerIds);
+        for (const peerId of peerFailureCounts.keys()) {
+          if (!activePeerIds.has(peerId)) peerFailureCounts.delete(peerId);
+        }
+
+        let stalePeerId: string | null = null;
+        results.forEach((result, index) => {
+          const peerId = peerIds[index];
+          if (result.status === "fulfilled") {
+            peerFailureCounts.delete(peerId);
+            return;
+          }
+
+          const failures = (peerFailureCounts.get(peerId) ?? 0) + 1;
+          peerFailureCounts.set(peerId, failures);
+          if (failures >= ROOM_HEARTBEAT_FAILURE_LIMIT) stalePeerId = peerId;
+        });
+
+        if (stalePeerId && !cancelled) {
+          // F5 liên tục có thể khiến beforeunload chưa kịp gửi leave, làm host
+          // giữ peer cũ trong room. Trystero không có API xoá riêng một peer,
+          // nên tạo lại transport của host để dọn các peer ma; state phòng vẫn
+          // được giữ nguyên và participant còn sống sẽ tự kết nối lại.
+          console.warn(
+            "Phát hiện participant mất kết nối, đang làm mới phòng P2P:",
+            stalePeerId,
+          );
+          peerFailureCounts.clear();
+          setTransportStatus("connecting");
+          setAutomaticReconnectToken((current) => current + 1);
         }
       } finally {
         running = false;
