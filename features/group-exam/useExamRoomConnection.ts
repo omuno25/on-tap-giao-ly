@@ -409,25 +409,25 @@ export function useExamRoomConnection({
         if (cancelled) return;
 
         room = joinRoom({ ...ROOM_CONFIG, turnConfig }, `exam-${roomCode}`, {
-            handshakeTimeoutMs: ROOM_HANDSHAKE_TIMEOUT_MS,
-            onJoinError(details) {
-              console.warn("Không thể kết nối một peer P2P:", details);
-              // Room của host vẫn mở nếu chỉ một peer kết nối thất bại. Với
-              // participant chưa nhận diện được host thì peer lỗi cũng có thể
-              // chính là host. Retry sau một nhịp; nếu host khác đã kết nối
-              // thành công trong lúc chờ thì không khởi tạo lại cả room.
-              if (cancelled || role !== "participant") return;
-              const knownHostPeerId = hostPeerIdRef.current;
-              if (knownHostPeerId && details.peerId !== knownHostPeerId) return;
+          handshakeTimeoutMs: ROOM_HANDSHAKE_TIMEOUT_MS,
+          onJoinError(details) {
+            console.warn("Không thể kết nối một peer P2P:", details);
+            // Room của host vẫn mở nếu chỉ một peer kết nối thất bại. Với
+            // participant chưa nhận diện được host thì peer lỗi cũng có thể
+            // chính là host. Retry sau một nhịp; nếu host khác đã kết nối
+            // thành công trong lúc chờ thì không khởi tạo lại cả room.
+            if (cancelled || role !== "participant") return;
+            const knownHostPeerId = hostPeerIdRef.current;
+            if (knownHostPeerId && details.peerId !== knownHostPeerId) return;
 
-              setTransportStatus("connecting");
-              if (joinErrorRetryTimeoutId !== null) return;
-              joinErrorRetryTimeoutId = window.setTimeout(() => {
-                joinErrorRetryTimeoutId = null;
-                if (cancelled || hostPeerIdRef.current) return;
-                setAutomaticReconnectToken((current) => current + 1);
-              }, ROOM_JOIN_ERROR_RETRY_DELAY_MS);
-            },
+            setTransportStatus("connecting");
+            if (joinErrorRetryTimeoutId !== null) return;
+            joinErrorRetryTimeoutId = window.setTimeout(() => {
+              joinErrorRetryTimeoutId = null;
+              if (cancelled || hostPeerIdRef.current) return;
+              setAutomaticReconnectToken((current) => current + 1);
+            }, ROOM_JOIN_ERROR_RETRY_DELAY_MS);
+          },
         });
         roomRef.current = room;
         const identityAction = room.makeAction<JsonValue>("identity");

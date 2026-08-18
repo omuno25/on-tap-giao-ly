@@ -38,11 +38,13 @@ describe("group exam helpers", () => {
       ],
     );
 
-    expect(leaderboard.map(({ userId, rank, submitted }) => ({
-      userId,
-      rank,
-      submitted,
-    }))).toEqual([
+    expect(
+      leaderboard.map(({ userId, rank, submitted }) => ({
+        userId,
+        rank,
+        submitted,
+      })),
+    ).toEqual([
       { userId: "user-1", rank: 1, submitted: true },
       { userId: "user-2", rank: 1, submitted: true },
       { userId: "host", rank: 3, submitted: true },
