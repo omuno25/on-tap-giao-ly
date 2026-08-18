@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { JsonValue, MessageAction, Room } from "trystero";
 import type {
   ExamRoomParticipant,
@@ -12,6 +18,10 @@ import type {
 
 const ROOM_CONFIG = { appId: "on-tap-giao-ly-group-exam-v1" } as const;
 const ROOM_REJOIN_DELAY_MS = 150;
+const ROOM_HANDSHAKE_TIMEOUT_MS = 20_000;
+const ROOM_HEARTBEAT_INTERVAL_MS = 15_000;
+const ROOM_HEARTBEAT_TIMEOUT_MS = 5_000;
+const ROOM_HEARTBEAT_FAILURE_LIMIT = 2;
 let previousRoomLeave: Promise<void> = Promise.resolve();
 let closeErrorFilterUsers = 0;
 let restoreCloseErrorFilterTimer: number | null = null;
@@ -29,7 +39,25 @@ type IdentityPayload = {
   role: "host" | "participant";
   userId: string;
   name: string;
+  rejoinRequested?: boolean;
 };
+
+function subscribeToOnlineStatus(onStoreChange: () => void) {
+  window.addEventListener("online", onStoreChange);
+  window.addEventListener("offline", onStoreChange);
+  return () => {
+    window.removeEventListener("online", onStoreChange);
+    window.removeEventListener("offline", onStoreChange);
+  };
+}
+
+function getOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function getServerOnlineSnapshot() {
+  return true;
+}
 
 function isIntentionalCloseError(error: unknown) {
   const message =
@@ -54,6 +82,22 @@ async function fetchTurnConfig(): Promise<TurnServerConfig[]> {
     throw new Error("Cấu hình TURN không hợp lệ");
   }
   return payload.turnConfig;
+}
+
+async function pingWithTimeout(room: Room, peerId: string) {
+  let timeoutId: number | undefined;
+  try {
+    await Promise.race([
+      room.ping(peerId),
+      new Promise<never>((_, reject) => {
+        timeoutId = window.setTimeout(() => {
+          reject(new Error("Heartbeat timeout"));
+        }, ROOM_HEARTBEAT_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+  }
 }
 
 function installIntentionalCloseErrorFilter() {
@@ -90,11 +134,13 @@ function scheduleIntentionalCloseErrorFilterRemoval() {
 }
 
 type UseExamRoomConnectionOptions = {
+  enabled?: boolean;
   roomCode: string;
   role: IdentityPayload["role"];
   userId: string;
   name: string;
   reconnectToken?: number;
+  rejoinRequested?: boolean;
   onParticipant?: (participant: ExamRoomParticipant) => void;
   onParticipantLeave?: (peerId: string) => void;
   onHost?: (host: { userId: string; name: string; peerId: string }) => void;
@@ -116,7 +162,9 @@ function isIdentityPayload(value: unknown): value is IdentityPayload {
     typeof payload.userId === "string" &&
     payload.userId.length > 0 &&
     typeof payload.name === "string" &&
-    payload.name.length > 0
+    payload.name.length > 0 &&
+    (payload.rejoinRequested === undefined ||
+      typeof payload.rejoinRequested === "boolean")
   );
 }
 
@@ -174,11 +222,13 @@ function isLeaderboard(value: unknown): value is GroupExamLeaderboardEntry[] {
 }
 
 export function useExamRoomConnection({
+  enabled = true,
   roomCode,
   role,
   userId,
   name,
   reconnectToken,
+  rejoinRequested = false,
   onParticipant,
   onParticipantLeave,
   onHost,
@@ -191,8 +241,16 @@ export function useExamRoomConnection({
   onRoomClosed,
   onKicked,
 }: UseExamRoomConnectionOptions) {
-  const [status, setStatus] = useState<ConnectionStatus>("connecting");
+  const isOnline = useSyncExternalStore(
+    subscribeToOnlineStatus,
+    getOnlineSnapshot,
+    getServerOnlineSnapshot,
+  );
+  const [transportStatus, setTransportStatus] =
+    useState<Exclude<ConnectionStatus, "disconnected">>("connecting");
+  const [automaticReconnectToken, setAutomaticReconnectToken] = useState(0);
   const roomRef = useRef<Room | null>(null);
+  const rejoinRequestedRef = useRef(rejoinRequested);
   const identityActionRef = useRef<MessageAction<JsonValue> | null>(null);
   const startActionRef = useRef<MessageAction<JsonValue> | null>(null);
   const resultActionRef = useRef<MessageAction<JsonValue> | null>(null);
@@ -224,6 +282,10 @@ export function useExamRoomConnection({
   });
 
   useEffect(() => {
+    rejoinRequestedRef.current = rejoinRequested;
+  }, [rejoinRequested]);
+
+  useEffect(() => {
     callbacksRef.current = {
       onParticipant,
       onParticipantLeave,
@@ -252,12 +314,79 @@ export function useExamRoomConnection({
   ]);
 
   useEffect(() => {
+    if (!enabled) return;
+
+    let cancelled = false;
+    let running = false;
+    let consecutiveFailures = 0;
+
+    const heartbeat = async () => {
+      if (
+        cancelled ||
+        running ||
+        document.hidden ||
+        !isOnline
+      ) {
+        return;
+      }
+
+      const room = roomRef.current;
+      if (!room) return;
+
+      const peerIds =
+        role === "participant"
+          ? hostPeerIdRef.current
+            ? [hostPeerIdRef.current]
+            : []
+          : Object.keys(room.getPeers());
+      if (peerIds.length === 0) return;
+
+      running = true;
+      try {
+        await Promise.all(
+          peerIds.map((peerId) => pingWithTimeout(room, peerId)),
+        );
+        consecutiveFailures = 0;
+      } catch (error) {
+        if (roomRef.current !== room) return;
+        // Heartbeat chạy âm thầm. Host không reconnect cả phòng chỉ vì một
+        // participant lỗi; participant chỉ reconnect sau nhiều lần mất host.
+        if (role === "participant") {
+          consecutiveFailures += 1;
+          if (consecutiveFailures >= ROOM_HEARTBEAT_FAILURE_LIMIT) {
+            consecutiveFailures = 0;
+            console.warn("Heartbeat tới chủ phòng thất bại, đang kết nối lại:", error);
+            if (!cancelled) {
+              setTransportStatus("connecting");
+              setAutomaticReconnectToken((current) => current + 1);
+            }
+          }
+        }
+      } finally {
+        running = false;
+      }
+    };
+
+    const intervalId = window.setInterval(
+      () => void heartbeat(),
+      ROOM_HEARTBEAT_INTERVAL_MS,
+    );
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [enabled, isOnline, role]);
+
+  useEffect(() => {
+    if (!enabled) return;
     installIntentionalCloseErrorFilter();
     let cancelled = false;
     let room: Room | null = null;
 
     async function connect() {
       if (!roomCode || !userId) return;
+      if (!isOnline) return;
+      setTransportStatus("connecting");
 
       try {
         await previousRoomLeave;
@@ -282,9 +411,19 @@ export function useExamRoomConnection({
           { ...ROOM_CONFIG, turnConfig },
           `exam-${roomCode}`,
           {
+            handshakeTimeoutMs: ROOM_HANDSHAKE_TIMEOUT_MS,
             onJoinError(details) {
               console.error("Không thể kết nối phòng P2P:", details);
-              if (!cancelled) setStatus("disconnected");
+              // Room của host vẫn mở nếu chỉ một peer kết nối thất bại. Với
+              // participant, chỉ host đã nhận diện rời/lỗi mới làm mất phòng;
+              // lỗi từ participant khác trong mesh không đổi trạng thái chung.
+              if (
+                !cancelled &&
+                role === "participant" &&
+                details.peerId === hostPeerIdRef.current
+              ) {
+                setTransportStatus("connecting");
+              }
             },
           },
         );
@@ -316,10 +455,11 @@ export function useExamRoomConnection({
               connected: true,
               joinedAt: now,
               lastSeenAt: now,
+              rejoinRequested: data.rejoinRequested === true,
             });
           } else if (role === "participant" && data.role === "host") {
             hostPeerIdRef.current = peerId;
-            setStatus("connected");
+            setTransportStatus("connected");
             callbacksRef.current.onHost?.({
               userId: data.userId,
               name: data.name,
@@ -386,7 +526,17 @@ export function useExamRoomConnection({
 
         room.onPeerJoin = (peerId) => {
           void identityAction
-            .send({ role, userId, name }, { target: peerId })
+            .send(
+              {
+                role,
+                userId,
+                name,
+                ...(role === "participant" && rejoinRequestedRef.current
+                  ? { rejoinRequested: true }
+                  : {}),
+              },
+              { target: peerId },
+            )
             .catch((error) => {
               if (!isIntentionalCloseError(error)) {
                 console.error("Không thể gửi danh tính vào phòng:", error);
@@ -422,13 +572,16 @@ export function useExamRoomConnection({
             callbacksRef.current.onParticipantLeave?.(peerId);
           } else if (peerId === hostPeerIdRef.current) {
             hostPeerIdRef.current = null;
-            setStatus("connecting");
+            setTransportStatus("connecting");
+            setAutomaticReconnectToken((current) => current + 1);
           }
         };
 
-        if (role === "host") setStatus("connected");
+        if (role === "host") setTransportStatus("connected");
       } catch {
-        if (!cancelled) setStatus("disconnected");
+        if (!cancelled) {
+          setTransportStatus("connecting");
+        }
       }
     }
 
@@ -460,7 +613,16 @@ export function useExamRoomConnection({
       }
       scheduleIntentionalCloseErrorFilterRemoval();
     };
-  }, [name, reconnectToken, role, roomCode, userId]);
+  }, [
+    enabled,
+    isOnline,
+    name,
+    reconnectToken,
+    role,
+    roomCode,
+    userId,
+    automaticReconnectToken,
+  ]);
 
   useEffect(() => {
     if (role !== "host" || !activeRoomState) return;
@@ -517,6 +679,9 @@ export function useExamRoomConnection({
       if (!isIntentionalCloseError(error)) throw error;
     }
   }, []);
+
+  const status: ConnectionStatus =
+    enabled && isOnline ? transportStatus : "disconnected";
 
   return {
     status,

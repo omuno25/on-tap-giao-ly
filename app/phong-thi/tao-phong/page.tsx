@@ -44,6 +44,7 @@ export default function CreateExamRoomPage() {
   const [host, setHost] = useState<HostIdentity | null>(null);
   const [participants, setParticipants] = useState<ExamRoomParticipant[]>([]);
   const participantsRef = useRef<ExamRoomParticipant[]>([]);
+  const kickedUserIdsRef = useRef<string[]>([]);
   const [roomToast, setRoomToast] = useState<RoomToast | null>(null);
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
@@ -91,6 +92,7 @@ export default function CreateExamRoomPage() {
         setHost(nextHost);
         setRoomCode(activeRoom.roomCode);
         participantsRef.current = [];
+        kickedUserIdsRef.current = activeRoom.kickedUserIds;
         saveHostedExamRoom(resumedRoom);
         return;
       }
@@ -98,6 +100,7 @@ export default function CreateExamRoomPage() {
       const nextRoomCode = createExamRoomCode();
       setHost(nextHost);
       setRoomCode(nextRoomCode);
+      kickedUserIdsRef.current = [];
       saveHostedExamRoom({
         version: 1,
         roomCode: nextRoomCode,
@@ -106,6 +109,7 @@ export default function CreateExamRoomPage() {
         createdAt: new Date().toISOString(),
         status: "lobby",
         participants: [],
+        kickedUserIds: [],
         results: [],
         start: null,
       });
@@ -133,6 +137,7 @@ export default function CreateExamRoomPage() {
       createdAt: new Date().toISOString(),
       status: "lobby",
       participants: nextParticipants,
+      kickedUserIds: kickedUserIdsRef.current,
       results: [],
       start: null,
     };
@@ -140,6 +145,19 @@ export default function CreateExamRoomPage() {
   };
 
   const handleParticipant = (participant: ExamRoomParticipant) => {
+    const wasKicked = kickedUserIdsRef.current.includes(participant.userId);
+    if (wasKicked && !participant.rejoinRequested) {
+      void sendKick(participant.peerId).catch((error) => {
+        console.error("Không thể chặn người đã bị mời khỏi phòng:", error);
+      });
+      return;
+    }
+    if (wasKicked) {
+      kickedUserIdsRef.current = kickedUserIdsRef.current.filter(
+        (userId) => userId !== participant.userId,
+      );
+    }
+
     const current = participantsRef.current;
     const existing = current.find(
       (item) => item.userId === participant.userId,
@@ -201,6 +219,13 @@ export default function CreateExamRoomPage() {
     if (!confirmed) return;
 
     setKickingUserId(participant.userId);
+    if (!kickedUserIdsRef.current.includes(participant.userId)) {
+      kickedUserIdsRef.current = [
+        ...kickedUserIdsRef.current,
+        participant.userId,
+      ];
+      persistRoom(participantsRef.current);
+    }
     try {
       await sendKick(participant.peerId);
       handleParticipantLeave(participant.peerId);
@@ -246,6 +271,7 @@ export default function CreateExamRoomPage() {
       createdAt: new Date().toISOString(),
       status: "started",
       participants,
+      kickedUserIds: kickedUserIdsRef.current,
       results: [],
       start,
     });
@@ -362,9 +388,27 @@ export default function CreateExamRoomPage() {
               {connectedParticipants.length} người đang kết nối
             </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
-            <span className={`size-2 rounded-full ${status === "connected" ? "bg-primary" : "bg-error"}`} />
-            {status === "connected" ? "Phòng đang mở" : "Mất kết nối"}
+          <span
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ${
+              status === "disconnected"
+                ? "bg-error/10 text-error"
+                : "bg-primary/10 text-primary"
+            }`}
+          >
+            <span
+              className={`size-2 rounded-full ${
+                status === "connected"
+                  ? "bg-primary"
+                  : status === "connecting"
+                    ? "animate-pulse bg-outline"
+                    : "bg-error"
+              }`}
+            />
+            {status === "connected"
+              ? "Phòng đang mở"
+              : status === "connecting"
+                ? "Đang kết nối lại…"
+                : "Mất kết nối"}
           </span>
         </div>
 

@@ -18,6 +18,7 @@ export type ExamRoomParticipant = {
   connected: boolean;
   joinedAt: string;
   lastSeenAt: string;
+  rejoinRequested?: boolean;
 };
 
 export type GroupExamStart = {
@@ -52,6 +53,7 @@ export type HostedExamRoom = {
   createdAt: string;
   status: "lobby" | "started" | "completed";
   participants: ExamRoomParticipant[];
+  kickedUserIds: string[];
   results: GroupExamResult[];
   start: GroupExamStart | null;
 };
@@ -221,10 +223,18 @@ export function createExamRoomCode() {
 }
 
 export function readHostedExamRoom(roomCode: string) {
-  return readStorageJson<HostedExamRoom | null>(
+  const room = readStorageJson<HostedExamRoom | null>(
     STORAGE_KEYS.examRoom(normalizeExamRoomCode(roomCode)),
     null,
   );
+  if (!room) return null;
+  return {
+    ...room,
+    // Migration cho phòng được lưu trước khi có danh sách chặn.
+    kickedUserIds: Array.isArray(room.kickedUserIds)
+      ? room.kickedUserIds.filter((userId) => typeof userId === "string")
+      : [],
+  };
 }
 
 export function readActiveHostedExamRoom() {
