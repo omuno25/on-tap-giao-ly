@@ -28,6 +28,7 @@ import { AppRoute } from "@/lib/routes";
 
 type Identity = { userId: string; name: string };
 type HostIdentity = Identity & { peerId: string };
+const HOST_LOOKUP_TIMEOUT_MS = 15_000;
 
 function ConnectedRoom({
   roomCode,
@@ -55,7 +56,7 @@ function ConnectedRoom({
     if (host) return;
     const timeoutId = window.setTimeout(() => {
       setHostLookupExpired(true);
-    }, 6_000);
+    }, HOST_LOOKUP_TIMEOUT_MS);
     return () => window.clearTimeout(timeoutId);
   }, [host, reconnectToken]);
 
