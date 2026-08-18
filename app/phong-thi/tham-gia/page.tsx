@@ -28,23 +28,27 @@ import { AppRoute } from "@/lib/routes";
 
 type Identity = { userId: string; name: string };
 type HostIdentity = Identity & { peerId: string };
-const HOST_LOOKUP_TIMEOUT_MS = 15_000;
+const HOST_LOOKUP_TIMEOUT_MS = 20_000;
 
 function ConnectedRoom({
   roomCode,
   user,
   initiallyKicked = false,
+  initiallyRejoining = false,
 }: {
   roomCode: string;
   user: Identity;
   initiallyKicked?: boolean;
+  initiallyRejoining?: boolean;
 }) {
   const router = useRouter();
   const [host, setHost] = useState<HostIdentity | null>(null);
   const [hostLookupExpired, setHostLookupExpired] = useState(false);
   const [reconnectToken, setReconnectToken] = useState(0);
-  const [wasKicked, setWasKicked] = useState(initiallyKicked);
-  const [rejoinRequested, setRejoinRequested] = useState(false);
+  const [wasKicked, setWasKicked] = useState(
+    initiallyKicked && !initiallyRejoining,
+  );
+  const [rejoinRequested, setRejoinRequested] = useState(initiallyRejoining);
   const hostRef = useRef<HostIdentity | null>(null);
 
   const handleHost = (nextHost: HostIdentity) => {
@@ -52,6 +56,7 @@ function ConnectedRoom({
     setHostLookupExpired(false);
     setHost(nextHost);
     setRejoinRequested(false);
+    router.replace(`${AppRoute.JoinExamRoom}?code=${roomCode}&resume=1`);
   };
 
   useEffect(() => {
@@ -118,6 +123,9 @@ function ConnectedRoom({
       setHost(null);
       setWasKicked(true);
       setRejoinRequested(false);
+      router.replace(
+        `${AppRoute.JoinExamRoom}?code=${roomCode}&resume=1&kicked=1`,
+      );
     },
   });
 
@@ -177,6 +185,9 @@ function ConnectedRoom({
                   setRejoinRequested(true);
                   setWasKicked(false);
                   setHostLookupExpired(false);
+                  router.replace(
+                    `${AppRoute.JoinExamRoom}?code=${roomCode}&resume=1&rejoin=1`,
+                  );
                   setReconnectToken((current) => current + 1);
                 }}
                 className="rounded-full bg-primary px-4 py-3 text-sm font-bold text-on-primary"
@@ -267,6 +278,7 @@ function ConnectedRoom({
 }
 
 function JoinExamRoomContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialCode = normalizeExamRoomCode(searchParams.get("code") ?? "");
   const [roomCode, setRoomCode] = useState(initialCode);
@@ -287,6 +299,7 @@ function JoinExamRoomContent() {
 
   const joinRoom = () => {
     setActiveRoomCode(roomCode);
+    router.replace(`${AppRoute.JoinExamRoom}?code=${roomCode}&resume=1`);
   };
 
   if (activeRoomCode && user) {
@@ -295,6 +308,7 @@ function JoinExamRoomContent() {
         roomCode={activeRoomCode}
         user={user}
         initiallyKicked={searchParams.get("kicked") === "1"}
+        initiallyRejoining={searchParams.get("rejoin") === "1"}
       />
     );
   }
