@@ -31,7 +31,7 @@
     "lint": "eslint .",
     "test": "bun test",
     "precommit:check": "bun run check",
-    "prepare": "simple-git-hooks",
+    "prepare": "node scripts/setup-git-hooks.mjs",
     "check": "bun run lint && bun run test && bun run build"
   },
   "simple-git-hooks": {
