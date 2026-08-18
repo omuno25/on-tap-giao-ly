@@ -19,6 +19,12 @@ let originalConsoleError: typeof console.error | null = null;
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
+type TurnServerConfig = {
+  urls: string | string[];
+  username?: string;
+  credential?: string;
+};
+
 type IdentityPayload = {
   role: "host" | "participant";
   userId: string;
@@ -33,6 +39,21 @@ function isIntentionalCloseError(error: unknown) {
         ? error
         : "";
   return message.includes("Close called") || message.includes("room left");
+}
+
+async function fetchTurnConfig(): Promise<TurnServerConfig[]> {
+  const response = await fetch("/api/turn-credentials", {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Không thể lấy TURN credential");
+
+  const payload = (await response.json()) as {
+    turnConfig?: TurnServerConfig[];
+  };
+  if (!Array.isArray(payload.turnConfig)) {
+    throw new Error("Cấu hình TURN không hợp lệ");
+  }
+  return payload.turnConfig;
 }
 
 function installIntentionalCloseErrorFilter() {
@@ -247,10 +268,26 @@ export function useExamRoomConnection({
           window.setTimeout(resolve, ROOM_REJOIN_DELAY_MS);
         });
         if (cancelled) return;
-        const { joinRoom } = await import("trystero");
+        const [{ joinRoom }, turnConfig] = await Promise.all([
+          import("trystero"),
+          fetchTurnConfig().catch((error) => {
+            // Giữ STUN mặc định để local/dev vẫn có thể kết nối trực tiếp.
+            console.warn("TURN không khả dụng, đang dùng STUN:", error);
+            return [];
+          }),
+        ]);
         if (cancelled) return;
 
-        room = joinRoom(ROOM_CONFIG, `exam-${roomCode}`);
+        room = joinRoom(
+          { ...ROOM_CONFIG, turnConfig },
+          `exam-${roomCode}`,
+          {
+            onJoinError(details) {
+              console.error("Không thể kết nối phòng P2P:", details);
+              if (!cancelled) setStatus("disconnected");
+            },
+          },
+        );
         roomRef.current = room;
         const identityAction = room.makeAction<JsonValue>("identity");
         const startAction = room.makeAction<JsonValue>("exam-start");
