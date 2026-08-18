@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { JsonValue, MessageAction, Room } from "trystero";
 import type {
   ExamRoomParticipant,
@@ -35,6 +41,23 @@ type IdentityPayload = {
   name: string;
   rejoinRequested?: boolean;
 };
+
+function subscribeToOnlineStatus(onStoreChange: () => void) {
+  window.addEventListener("online", onStoreChange);
+  window.addEventListener("offline", onStoreChange);
+  return () => {
+    window.removeEventListener("online", onStoreChange);
+    window.removeEventListener("offline", onStoreChange);
+  };
+}
+
+function getOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function getServerOnlineSnapshot() {
+  return true;
+}
 
 function isIntentionalCloseError(error: unknown) {
   const message =
@@ -218,7 +241,13 @@ export function useExamRoomConnection({
   onRoomClosed,
   onKicked,
 }: UseExamRoomConnectionOptions) {
-  const [status, setStatus] = useState<ConnectionStatus>("connecting");
+  const isOnline = useSyncExternalStore(
+    subscribeToOnlineStatus,
+    getOnlineSnapshot,
+    getServerOnlineSnapshot,
+  );
+  const [transportStatus, setTransportStatus] =
+    useState<Exclude<ConnectionStatus, "disconnected">>("connecting");
   const [automaticReconnectToken, setAutomaticReconnectToken] = useState(0);
   const roomRef = useRef<Room | null>(null);
   const rejoinRequestedRef = useRef(rejoinRequested);
@@ -287,28 +316,6 @@ export function useExamRoomConnection({
   useEffect(() => {
     if (!enabled) return;
 
-    if (!navigator.onLine) setStatus("disconnected");
-
-    const handleOffline = () => {
-      setStatus("disconnected");
-    };
-
-    const handleOnline = () => {
-      setStatus("connecting");
-      setAutomaticReconnectToken((current) => current + 1);
-    };
-
-    window.addEventListener("offline", handleOffline);
-    window.addEventListener("online", handleOnline);
-    return () => {
-      window.removeEventListener("offline", handleOffline);
-      window.removeEventListener("online", handleOnline);
-    };
-  }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled) return;
-
     let cancelled = false;
     let running = false;
     let consecutiveFailures = 0;
@@ -318,7 +325,7 @@ export function useExamRoomConnection({
         cancelled ||
         running ||
         document.hidden ||
-        !navigator.onLine
+        !isOnline
       ) {
         return;
       }
@@ -350,7 +357,7 @@ export function useExamRoomConnection({
             consecutiveFailures = 0;
             console.warn("Heartbeat tới chủ phòng thất bại, đang kết nối lại:", error);
             if (!cancelled) {
-              setStatus("connecting");
+              setTransportStatus("connecting");
               setAutomaticReconnectToken((current) => current + 1);
             }
           }
@@ -368,23 +375,18 @@ export function useExamRoomConnection({
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [enabled, role]);
+  }, [enabled, isOnline, role]);
 
   useEffect(() => {
-    if (!enabled) {
-      setStatus("disconnected");
-      return;
-    }
+    if (!enabled) return;
     installIntentionalCloseErrorFilter();
     let cancelled = false;
     let room: Room | null = null;
 
     async function connect() {
       if (!roomCode || !userId) return;
-      if (!navigator.onLine) {
-        setStatus("disconnected");
-        return;
-      }
+      if (!isOnline) return;
+      setTransportStatus("connecting");
 
       try {
         await previousRoomLeave;
@@ -420,7 +422,7 @@ export function useExamRoomConnection({
                 role === "participant" &&
                 details.peerId === hostPeerIdRef.current
               ) {
-                setStatus(navigator.onLine ? "connecting" : "disconnected");
+                setTransportStatus("connecting");
               }
             },
           },
@@ -457,7 +459,7 @@ export function useExamRoomConnection({
             });
           } else if (role === "participant" && data.role === "host") {
             hostPeerIdRef.current = peerId;
-            setStatus("connected");
+            setTransportStatus("connected");
             callbacksRef.current.onHost?.({
               userId: data.userId,
               name: data.name,
@@ -570,15 +572,15 @@ export function useExamRoomConnection({
             callbacksRef.current.onParticipantLeave?.(peerId);
           } else if (peerId === hostPeerIdRef.current) {
             hostPeerIdRef.current = null;
-            setStatus("connecting");
+            setTransportStatus("connecting");
             setAutomaticReconnectToken((current) => current + 1);
           }
         };
 
-        if (role === "host") setStatus("connected");
+        if (role === "host") setTransportStatus("connected");
       } catch {
         if (!cancelled) {
-          setStatus(navigator.onLine ? "connecting" : "disconnected");
+          setTransportStatus("connecting");
         }
       }
     }
@@ -613,6 +615,7 @@ export function useExamRoomConnection({
     };
   }, [
     enabled,
+    isOnline,
     name,
     reconnectToken,
     role,
@@ -676,6 +679,9 @@ export function useExamRoomConnection({
       if (!isIntentionalCloseError(error)) throw error;
     }
   }, []);
+
+  const status: ConnectionStatus =
+    enabled && isOnline ? transportStatus : "disconnected";
 
   return {
     status,
