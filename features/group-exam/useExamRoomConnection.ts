@@ -43,6 +43,27 @@ type NavigatorWithConnection = Navigator & {
   webkitConnection?: EventTarget;
 };
 
+type UseExamRoomConnectionOptions = {
+  enabled?: boolean;
+  roomCode: string;
+  role: IdentityPayload["role"];
+  userId: string;
+  name: string;
+  reconnectToken?: number;
+  rejoinRequested?: boolean;
+  onParticipant?: (participant: ExamRoomParticipant) => void;
+  onParticipantLeave?: (peerId: string) => void;
+  onHost?: (host: { userId: string; name: string; peerId: string }) => void;
+  onStart?: (start: GroupExamStart) => void;
+  activeStart?: GroupExamStart | null;
+  activeRoomState?: GroupExamRoomState | null;
+  onRoomState?: (state: GroupExamRoomState) => void;
+  onResult?: (result: GroupExamResult, peerId: string) => void;
+  onLeaderboard?: (leaderboard: GroupExamLeaderboardEntry[]) => void;
+  onRoomClosed?: () => void;
+  onKicked?: () => void;
+};
+
 function getNetworkConnection() {
   const browserNavigator = navigator as NavigatorWithConnection;
   return (
@@ -149,27 +170,6 @@ function scheduleIntentionalCloseErrorFilterRemoval() {
     restoreCloseErrorFilterTimer = null;
   }, 2_000);
 }
-
-type UseExamRoomConnectionOptions = {
-  enabled?: boolean;
-  roomCode: string;
-  role: IdentityPayload["role"];
-  userId: string;
-  name: string;
-  reconnectToken?: number;
-  rejoinRequested?: boolean;
-  onParticipant?: (participant: ExamRoomParticipant) => void;
-  onParticipantLeave?: (peerId: string) => void;
-  onHost?: (host: { userId: string; name: string; peerId: string }) => void;
-  onStart?: (start: GroupExamStart) => void;
-  activeStart?: GroupExamStart | null;
-  activeRoomState?: GroupExamRoomState | null;
-  onRoomState?: (state: GroupExamRoomState) => void;
-  onResult?: (result: GroupExamResult, peerId: string) => void;
-  onLeaderboard?: (leaderboard: GroupExamLeaderboardEntry[]) => void;
-  onRoomClosed?: () => void;
-  onKicked?: () => void;
-};
 
 function isIdentityPayload(value: unknown): value is IdentityPayload {
   if (typeof value !== "object" || value === null) return false;

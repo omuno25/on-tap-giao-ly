@@ -1,9 +1,9 @@
 import Markdown from "react-markdown";
 import SettingsPageHeader from "@/components/settings/SettingsPageHeader";
-import { readContentTextFile } from "@/lib/utils/server";
+import { readContent } from "@/shared/server/file-manager";
 
 export default function PrivacyPage() {
-  const content = readContentTextFile("privacy-policy.md");
+  const content = readContent("privacy-policy.md");
 
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6">
