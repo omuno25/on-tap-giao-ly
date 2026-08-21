@@ -3,7 +3,7 @@ import {
   isRejectedFeedbackUpstreamResponse,
   validateFeedbackPayload,
 } from "@/lib/feedback";
-import { parseJson } from "@/lib/utils/parse";
+import { parseJson } from "@/shared/utils/parse";
 
 const MAX_REQUEST_BYTES = 4_096;
 const UPSTREAM_TIMEOUT_MS = 10_000;
