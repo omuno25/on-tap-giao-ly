@@ -20,8 +20,7 @@ export const STORAGE_KEYS = {
   catechumenCardIndex: (slug: string) =>
     `catechumen.${slug}.current_card_index`,
   examRoom: (roomCode: string) => `learning.exam_room.${roomCode}`,
-  joinedExamRoom: (roomCode: string) =>
-    `learning.exam_room_joined.${roomCode}`,
+  joinedExamRoom: (roomCode: string) => `learning.exam_room_joined.${roomCode}`,
 } as const;
 
 const APP_STORAGE_PREFIXES = ["learning.", "study.", "catechumen."] as const;

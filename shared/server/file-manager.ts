@@ -3,9 +3,12 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-export function readContentTextFile(...pathSegments: string[]) {
+export function readContent(...pathSegments: string[]) {
   return readFileSync(
     path.join(process.cwd(), "content", ...pathSegments),
     "utf8",
   );
 }
+
+export const getRootPath = (...paths: string[]) =>
+  path.join(process.cwd(), ...paths);

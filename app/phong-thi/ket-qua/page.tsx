@@ -1,21 +1,9 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Crown,
-  Medal,
-  Trophy,
-  UserRound,
-} from "lucide-react";
+import { ArrowLeft, Crown, Medal, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useExamRoomConnection } from "@/features/group-exam/useExamRoomConnection";
 import {
   buildGroupExamLeaderboard,
@@ -44,9 +32,7 @@ function completeRoomWhenAllSubmitted(room: HostedExamRoom) {
     room.hostUserId,
     ...room.participants.map((participant) => participant.userId),
   ]);
-  const submittedUserIds = new Set(
-    room.results.map((result) => result.userId),
-  );
+  const submittedUserIds = new Set(room.results.map((result) => result.userId));
   return expectedUserIds.size > 0 &&
     [...expectedUserIds].every((userId) => submittedUserIds.has(userId))
     ? { ...room, status: "completed" as const }
@@ -82,7 +68,9 @@ function StoredResultsBoard({ history }: { history: GroupExamHistoryEntry }) {
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-primary">
           Phòng {history.roomCode}
         </p>
-        <h1 className="mt-2 font-headline text-3xl font-bold">Kết quả đã lưu</h1>
+        <h1 className="mt-2 font-headline text-3xl font-bold">
+          Kết quả đã lưu
+        </h1>
         <p className="mt-2 text-sm text-on-surface-variant">
           Bản xếp hạng được lưu trên thiết bị này
         </p>
@@ -122,7 +110,8 @@ function StoredResultsBoard({ history }: { history: GroupExamHistoryEntry }) {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-bold">
-                  {entry.name}{entry.userId === history.userId ? " (Bạn)" : ""}
+                  {entry.name}
+                  {entry.userId === history.userId ? " (Bạn)" : ""}
                 </p>
                 <p className="text-xs text-on-surface-variant">
                   {entry.submitted ? `Hạng ${entry.rank}` : "Chưa nộp bài"}
@@ -144,9 +133,7 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
   const { role } = initial;
   const roomCode = initial.room.roomCode;
   const userId =
-    role === "host"
-      ? initial.room.hostUserId
-      : initial.room.participantUserId;
+    role === "host" ? initial.room.hostUserId : initial.room.participantUserId;
   const name =
     role === "host" ? initial.room.hostName : initial.room.participantName;
   const [hostedRoom, setHostedRoom] = useState<HostedExamRoom | null>(
@@ -157,10 +144,9 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
         })
       : null,
   );
-  const [participantRoom, setParticipantRoom] =
-    useState<JoinedExamRoom | null>(
-      role === "participant" ? initial.room : null,
-    );
+  const [participantRoom, setParticipantRoom] = useState<JoinedExamRoom | null>(
+    role === "participant" ? initial.room : null,
+  );
 
   const leaderboard = useMemo(
     () =>
@@ -186,8 +172,7 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     [],
   );
 
-  const { status, sendResult, sendLeaderboard } =
-    useExamRoomConnection({
+  const { status, sendResult, sendLeaderboard } = useExamRoomConnection({
     roomCode,
     role,
     userId,
@@ -299,7 +284,10 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
       userId,
       name,
       hostName: role === "host" ? name : initial.room.hostName,
-      status: role === "host" ? (hostedRoom?.status ?? "completed") : participantRoom?.status ?? "completed",
+      status:
+        role === "host"
+          ? (hostedRoom?.status ?? "completed")
+          : (participantRoom?.status ?? "completed"),
       questionSetHash: start.questionSetHash,
       startedAt: start.startedAt,
       expiresAt: start.expiresAt,
@@ -341,9 +329,7 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-primary">
           Phòng {roomCode}
         </p>
-        <h1 className="mt-2 font-headline text-3xl font-bold">
-          Bảng xếp hạng
-        </h1>
+        <h1 className="mt-2 font-headline text-3xl font-bold">Bảng xếp hạng</h1>
         <p className="mt-2 text-sm text-on-surface-variant">
           {allResultsSubmitted
             ? "Phòng đã hoàn tất · Đã nhận đủ kết quả"

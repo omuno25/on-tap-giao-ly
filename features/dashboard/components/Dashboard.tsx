@@ -23,7 +23,7 @@ import {
 import { readStudyPosition } from "@/lib/study-progress";
 import { readCatechumenPosition } from "@/lib/catechumen-progress";
 import BlogSection from "@/features/blog/components/BlogSection";
-import type { BlogPostSummary } from "@/lib/blog";
+import type { BlogPostSummary } from "@/shared/server/blog";
 import { AppRoute, appRoute } from "@/lib/routes";
 
 type DeckCardProps = {

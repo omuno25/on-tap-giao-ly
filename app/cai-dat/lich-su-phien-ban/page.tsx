@@ -1,9 +1,9 @@
 import Markdown from "react-markdown";
 import SettingsPageHeader from "@/components/settings/SettingsPageHeader";
-import { readContentTextFile } from "@/lib/utils/server";
+import { readContent } from "@/shared/server/file-manager";
 
 export default function ReleasesPage() {
-  const content = readContentTextFile("release-notes.md");
+  const content = readContent("release-notes.md");
 
   return (
     <main className="min-h-screen bg-surface px-4 pb-28 pt-6">
