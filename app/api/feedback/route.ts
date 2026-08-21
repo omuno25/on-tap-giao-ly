@@ -3,6 +3,7 @@ import {
   isRejectedFeedbackUpstreamResponse,
   validateFeedbackPayload,
 } from "@/lib/feedback";
+import { parseJson } from "@/lib/utils/parse";
 
 const MAX_REQUEST_BYTES = 4_096;
 const UPSTREAM_TIMEOUT_MS = 10_000;
@@ -82,16 +83,6 @@ export async function POST(request: Request) {
       { ok: false, message: "Không thể gửi góp ý lúc này. Vui lòng thử lại." },
       { status: 502 },
     );
-  }
-}
-
-function parseJson(value: string): unknown {
-  if (!value.trim()) return null;
-
-  try {
-    return JSON.parse(value) as unknown;
-  } catch {
-    return null;
   }
 }
 
