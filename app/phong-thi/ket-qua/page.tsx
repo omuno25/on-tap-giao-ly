@@ -47,6 +47,51 @@ type LoadedResults =
       history: GroupExamHistoryEntry;
     };
 
+function ResultsLoading() {
+  return (
+    <main className="grid min-h-screen place-items-center bg-surface px-4">
+      <p className="text-sm text-on-surface-variant">Đang tải kết quả…</p>
+    </main>
+  );
+}
+
+function loadResults(
+  roomCode: string,
+  role: string | null,
+): LoadedResults | null {
+  if (role !== "host" && role !== "participant") return null;
+
+  const history = readGroupExamHistoryEntry(
+    roomCode,
+    role,
+    getOrCreateUserId(),
+  );
+
+  if (role === "host") {
+    const room = readHostedExamRoom(roomCode);
+    return room
+      ? { role, room }
+      : history
+        ? { role: "stored", roomRole: role, history }
+        : null;
+  }
+
+  const room = readJoinedExamRoom(roomCode);
+  const restoredRoom =
+    room && room.leaderboard.length === 0 && history?.leaderboard.length
+      ? {
+          ...room,
+          status: history.status,
+          leaderboard: history.leaderboard,
+        }
+      : room;
+  return restoredRoom
+    ? { role, room: restoredRoom }
+    : history
+      ? { role: "stored", roomRole: role, history }
+      : null;
+}
+
 function StoredResultsBoard({ history }: { history: GroupExamHistoryEntry }) {
   const currentUser = history.leaderboard.find(
     (entry) => entry.userId === history.userId,
@@ -172,7 +217,11 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     [],
   );
 
+  const connectionEnabled =
+    role !== "host" || hostedRoom?.status !== "completed";
+
   const { status, sendResult, sendLeaderboard } = useExamRoomConnection({
+    enabled: connectionEnabled,
     roomCode,
     role,
     userId,
@@ -248,10 +297,10 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
   });
 
   useEffect(() => {
-    if (role === "host" && leaderboard.length > 0) {
+    if (connectionEnabled && role === "host" && leaderboard.length > 0) {
       void sendLeaderboard(leaderboard);
     }
-  }, [leaderboard, role, sendLeaderboard]);
+  }, [connectionEnabled, leaderboard, role, sendLeaderboard]);
 
   const allResultsSubmitted =
     leaderboard.length > 0 && leaderboard.every((entry) => entry.submitted);
@@ -311,6 +360,16 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     roomCode,
     userId,
   ]);
+
+  useEffect(() => {
+    if (
+      role === "host" &&
+      hostedRoom?.status === "completed" &&
+      initial.room.status !== "completed"
+    ) {
+      saveHostedExamRoom(hostedRoom);
+    }
+  }, [hostedRoom, initial.room.status, role]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl bg-surface px-4 pb-28 pt-8 sm:px-5">
@@ -409,42 +468,12 @@ function ResultsContent() {
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
-      if (role === "host") {
-        const room = readHostedExamRoom(roomCode);
-        const history = readGroupExamHistoryEntry(
-          roomCode,
-          role,
-          getOrCreateUserId(),
-        );
-        setInitial(
-          room
-            ? { role, room }
-            : history
-              ? { role: "stored", roomRole: role, history }
-              : null,
-        );
-      } else if (role === "participant") {
-        const room = readJoinedExamRoom(roomCode);
-        const history = readGroupExamHistoryEntry(
-          roomCode,
-          role,
-          getOrCreateUserId(),
-        );
-        setInitial(
-          room
-            ? { role, room }
-            : history
-              ? { role: "stored", roomRole: role, history }
-              : null,
-        );
-      } else {
-        setInitial(null);
-      }
+      setInitial(loadResults(roomCode, role));
     });
     return () => cancelAnimationFrame(frameId);
   }, [role, roomCode]);
 
-  if (initial === undefined) return null;
+  if (initial === undefined) return <ResultsLoading />;
   if (!initial) {
     return (
       <main className="grid min-h-screen place-items-center bg-surface px-4">
@@ -464,7 +493,7 @@ function ResultsContent() {
 
 export default function GroupExamResultsPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<ResultsLoading />}>
       <ResultsContent />
     </Suspense>
   );
