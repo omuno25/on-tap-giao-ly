@@ -1,18 +1,18 @@
-# Phiên bản 1.0.1
+# Version 1.0.1
 
-Bản cập nhật cải thiện độ ổn định của phòng thi nhóm và tối ưu cấu trúc mã nguồn.
+This update improves group exam stability and streamlines the codebase.
 
-## Cải tiến
+## Improvements
 
-- Thêm trạng thái tải khi mở kết quả thi nhóm, giúp giao diện phản hồi rõ ràng hơn trong lúc khôi phục dữ liệu.
-- Cải thiện việc xử lý thay đổi mạng và quản lý kết nối trong phòng thi nhóm.
-- Tối ưu luồng tải kết quả và tổ chức lại các tiện ích dùng chung để việc bảo trì ứng dụng thuận tiện hơn.
-- Cập nhật các thư viện của dự án lên phiên bản mới hơn.
+- Added a loading state when opening group exam results, providing clearer feedback while saved data is being restored.
+- Improved network change handling and connection management in group exam rooms.
+- Optimized the result-loading flow and reorganized shared utilities for easier maintenance.
+- Updated project dependencies to newer versions.
 
-## Sửa lỗi
+## Fixes
 
-- Cải thiện độ ổn định khi đọc và phân tích dữ liệu JSON đã lưu.
-- Điều chỉnh API phản hồi và các đường dẫn import sau khi tái cấu trúc mã nguồn.
+- Improved reliability when reading and parsing stored JSON data.
+- Updated the feedback API and import paths following the codebase restructuring.
 
 ---
 
