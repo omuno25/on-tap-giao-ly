@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { AppRoute } from "@/lib/routes";
 import { ArrowLeft, Clock3 } from "lucide-react";
 import MarkdownContent from "@/components/content/MarkdownContent";
-import { getBlogPost, getBlogPosts } from "@/lib/blog";
+import { getBlogPost, getBlogPosts } from "@/shared/server/blog";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;

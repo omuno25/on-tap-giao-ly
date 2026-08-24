@@ -1,21 +1,9 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Crown,
-  Medal,
-  Trophy,
-  UserRound,
-} from "lucide-react";
+import { ArrowLeft, Crown, Medal, Trophy, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useExamRoomConnection } from "@/features/group-exam/useExamRoomConnection";
 import {
   buildGroupExamLeaderboard,
@@ -44,9 +32,7 @@ function completeRoomWhenAllSubmitted(room: HostedExamRoom) {
     room.hostUserId,
     ...room.participants.map((participant) => participant.userId),
   ]);
-  const submittedUserIds = new Set(
-    room.results.map((result) => result.userId),
-  );
+  const submittedUserIds = new Set(room.results.map((result) => result.userId));
   return expectedUserIds.size > 0 &&
     [...expectedUserIds].every((userId) => submittedUserIds.has(userId))
     ? { ...room, status: "completed" as const }
@@ -60,6 +46,51 @@ type LoadedResults =
       roomRole: "host" | "participant";
       history: GroupExamHistoryEntry;
     };
+
+function ResultsLoading() {
+  return (
+    <main className="grid min-h-screen place-items-center bg-surface px-4">
+      <p className="text-sm text-on-surface-variant">Đang tải kết quả…</p>
+    </main>
+  );
+}
+
+function loadResults(
+  roomCode: string,
+  role: string | null,
+): LoadedResults | null {
+  if (role !== "host" && role !== "participant") return null;
+
+  const history = readGroupExamHistoryEntry(
+    roomCode,
+    role,
+    getOrCreateUserId(),
+  );
+
+  if (role === "host") {
+    const room = readHostedExamRoom(roomCode);
+    return room
+      ? { role, room }
+      : history
+        ? { role: "stored", roomRole: role, history }
+        : null;
+  }
+
+  const room = readJoinedExamRoom(roomCode);
+  const restoredRoom =
+    room && room.leaderboard.length === 0 && history?.leaderboard.length
+      ? {
+          ...room,
+          status: history.status,
+          leaderboard: history.leaderboard,
+        }
+      : room;
+  return restoredRoom
+    ? { role, room: restoredRoom }
+    : history
+      ? { role: "stored", roomRole: role, history }
+      : null;
+}
 
 function StoredResultsBoard({ history }: { history: GroupExamHistoryEntry }) {
   const currentUser = history.leaderboard.find(
@@ -82,7 +113,9 @@ function StoredResultsBoard({ history }: { history: GroupExamHistoryEntry }) {
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-primary">
           Phòng {history.roomCode}
         </p>
-        <h1 className="mt-2 font-headline text-3xl font-bold">Kết quả đã lưu</h1>
+        <h1 className="mt-2 font-headline text-3xl font-bold">
+          Kết quả đã lưu
+        </h1>
         <p className="mt-2 text-sm text-on-surface-variant">
           Bản xếp hạng được lưu trên thiết bị này
         </p>
@@ -122,7 +155,8 @@ function StoredResultsBoard({ history }: { history: GroupExamHistoryEntry }) {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-bold">
-                  {entry.name}{entry.userId === history.userId ? " (Bạn)" : ""}
+                  {entry.name}
+                  {entry.userId === history.userId ? " (Bạn)" : ""}
                 </p>
                 <p className="text-xs text-on-surface-variant">
                   {entry.submitted ? `Hạng ${entry.rank}` : "Chưa nộp bài"}
@@ -144,9 +178,7 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
   const { role } = initial;
   const roomCode = initial.room.roomCode;
   const userId =
-    role === "host"
-      ? initial.room.hostUserId
-      : initial.room.participantUserId;
+    role === "host" ? initial.room.hostUserId : initial.room.participantUserId;
   const name =
     role === "host" ? initial.room.hostName : initial.room.participantName;
   const [hostedRoom, setHostedRoom] = useState<HostedExamRoom | null>(
@@ -157,10 +189,9 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
         })
       : null,
   );
-  const [participantRoom, setParticipantRoom] =
-    useState<JoinedExamRoom | null>(
-      role === "participant" ? initial.room : null,
-    );
+  const [participantRoom, setParticipantRoom] = useState<JoinedExamRoom | null>(
+    role === "participant" ? initial.room : null,
+  );
 
   const leaderboard = useMemo(
     () =>
@@ -186,8 +217,11 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     [],
   );
 
-  const { status, sendResult, sendLeaderboard } =
-    useExamRoomConnection({
+  const connectionEnabled =
+    role !== "host" || hostedRoom?.status !== "completed";
+
+  const { status, sendResult, sendLeaderboard } = useExamRoomConnection({
+    enabled: connectionEnabled,
     roomCode,
     role,
     userId,
@@ -263,10 +297,10 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
   });
 
   useEffect(() => {
-    if (role === "host" && leaderboard.length > 0) {
+    if (connectionEnabled && role === "host" && leaderboard.length > 0) {
       void sendLeaderboard(leaderboard);
     }
-  }, [leaderboard, role, sendLeaderboard]);
+  }, [connectionEnabled, leaderboard, role, sendLeaderboard]);
 
   const allResultsSubmitted =
     leaderboard.length > 0 && leaderboard.every((entry) => entry.submitted);
@@ -299,7 +333,10 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
       userId,
       name,
       hostName: role === "host" ? name : initial.room.hostName,
-      status: role === "host" ? (hostedRoom?.status ?? "completed") : participantRoom?.status ?? "completed",
+      status:
+        role === "host"
+          ? (hostedRoom?.status ?? "completed")
+          : (participantRoom?.status ?? "completed"),
       questionSetHash: start.questionSetHash,
       startedAt: start.startedAt,
       expiresAt: start.expiresAt,
@@ -324,6 +361,16 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
     userId,
   ]);
 
+  useEffect(() => {
+    if (
+      role === "host" &&
+      hostedRoom?.status === "completed" &&
+      initial.room.status !== "completed"
+    ) {
+      saveHostedExamRoom(hostedRoom);
+    }
+  }, [hostedRoom, initial.room.status, role]);
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl bg-surface px-4 pb-28 pt-8 sm:px-5">
       <Link
@@ -341,9 +388,7 @@ function ResultsBoard({ initial }: { initial: ResultRoom }) {
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-primary">
           Phòng {roomCode}
         </p>
-        <h1 className="mt-2 font-headline text-3xl font-bold">
-          Bảng xếp hạng
-        </h1>
+        <h1 className="mt-2 font-headline text-3xl font-bold">Bảng xếp hạng</h1>
         <p className="mt-2 text-sm text-on-surface-variant">
           {allResultsSubmitted
             ? "Phòng đã hoàn tất · Đã nhận đủ kết quả"
@@ -423,42 +468,12 @@ function ResultsContent() {
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
-      if (role === "host") {
-        const room = readHostedExamRoom(roomCode);
-        const history = readGroupExamHistoryEntry(
-          roomCode,
-          role,
-          getOrCreateUserId(),
-        );
-        setInitial(
-          room
-            ? { role, room }
-            : history
-              ? { role: "stored", roomRole: role, history }
-              : null,
-        );
-      } else if (role === "participant") {
-        const room = readJoinedExamRoom(roomCode);
-        const history = readGroupExamHistoryEntry(
-          roomCode,
-          role,
-          getOrCreateUserId(),
-        );
-        setInitial(
-          room
-            ? { role, room }
-            : history
-              ? { role: "stored", roomRole: role, history }
-              : null,
-        );
-      } else {
-        setInitial(null);
-      }
+      setInitial(loadResults(roomCode, role));
     });
     return () => cancelAnimationFrame(frameId);
   }, [role, roomCode]);
 
-  if (initial === undefined) return null;
+  if (initial === undefined) return <ResultsLoading />;
   if (!initial) {
     return (
       <main className="grid min-h-screen place-items-center bg-surface px-4">
@@ -478,7 +493,7 @@ function ResultsContent() {
 
 export default function GroupExamResultsPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<ResultsLoading />}>
       <ResultsContent />
     </Suspense>
   );

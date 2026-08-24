@@ -29,10 +29,7 @@ import {
   type ExamRoomParticipant,
   type HostedExamRoom,
 } from "@/lib/group-exam";
-import {
-  getOrCreateUserId,
-  readLearnerProfile,
-} from "@/lib/learning-storage";
+import { getOrCreateUserId, readLearnerProfile } from "@/lib/learning-storage";
 import { AppRoute } from "@/lib/routes";
 
 type HostIdentity = { userId: string; name: string };
@@ -159,9 +156,7 @@ export default function CreateExamRoomPage() {
     }
 
     const current = participantsRef.current;
-    const existing = current.find(
-      (item) => item.userId === participant.userId,
-    );
+    const existing = current.find((item) => item.userId === participant.userId);
     const next = existing
       ? current.map((item) =>
           item.userId === participant.userId
@@ -196,16 +191,17 @@ export default function CreateExamRoomPage() {
     setRoomToast({ type: "left", name: leavingParticipant.name });
   };
 
-  const { status, sendStart, sendRoomClosed, sendKick } =
-    useExamRoomConnection({
-    roomCode,
-    role: "host",
-    userId: host?.userId ?? "",
-    name: host?.name ?? "Chủ phòng",
-    activeRoomState: { status: "lobby", start: null },
-    onParticipant: handleParticipant,
-    onParticipantLeave: handleParticipantLeave,
-  });
+  const { status, sendStart, sendRoomClosed, sendKick } = useExamRoomConnection(
+    {
+      roomCode,
+      role: "host",
+      userId: host?.userId ?? "",
+      name: host?.name ?? "Chủ phòng",
+      activeRoomState: { status: "lobby", start: null },
+      onParticipant: handleParticipant,
+      onParticipantLeave: handleParticipantLeave,
+    },
+  );
 
   const connectedParticipants = useMemo(
     () => participants.filter((participant) => participant.connected),
@@ -213,9 +209,7 @@ export default function CreateExamRoomPage() {
   );
 
   const kickParticipant = async (participant: ExamRoomParticipant) => {
-    const confirmed = window.confirm(
-      `Mời ${participant.name} ra khỏi phòng?`,
-    );
+    const confirmed = window.confirm(`Mời ${participant.name} ra khỏi phòng?`);
     if (!confirmed) return;
 
     setKickingUserId(participant.userId);
@@ -331,7 +325,9 @@ export default function CreateExamRoomPage() {
               <button
                 type="button"
                 onClick={copyRoomCode}
-                aria-label={codeCopied ? "Đã sao chép mã phòng" : "Sao chép mã phòng"}
+                aria-label={
+                  codeCopied ? "Đã sao chép mã phòng" : "Sao chép mã phòng"
+                }
                 title={codeCopied ? "Đã sao chép" : "Sao chép mã phòng"}
                 className="grid size-9 shrink-0 place-items-center rounded-full bg-on-primary/15 text-on-primary transition-colors hover:bg-on-primary/25 active:scale-95"
               >
@@ -381,7 +377,10 @@ export default function CreateExamRoomPage() {
       <section className="mt-6" aria-labelledby="participants-title">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 id="participants-title" className="font-headline text-xl font-bold">
+            <h2
+              id="participants-title"
+              className="font-headline text-xl font-bold"
+            >
               Người tham gia
             </h2>
             <p className="mt-1 text-sm text-on-surface-variant">
@@ -442,9 +441,7 @@ export default function CreateExamRoomPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold">{participant.name}</p>
-                  <p className="text-xs text-on-surface-variant">
-                    Đã sẵn sàng
-                  </p>
+                  <p className="text-xs text-on-surface-variant">Đã sẵn sàng</p>
                 </div>
                 <button
                   type="button"

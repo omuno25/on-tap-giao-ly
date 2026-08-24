@@ -3,9 +3,9 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { readContentTextFile } from "@/lib/utils/server";
+import { getRootPath, readContent } from "@/shared/server/file-manager";
 
-const BLOG_DIRECTORY = path.join(process.cwd(), "content", "blog");
+const BLOG_DIRECTORY = getRootPath("content", "blog");
 
 export const BLOG_META = {
   eyebrow: "Góc học tập",
@@ -45,7 +45,7 @@ export function getBlogPost(slug: string): BlogPost | undefined {
 
 function readBlogPost(fileName: string): BlogPost {
   const slug = fileName.replace(/\.md$/, "");
-  const source = readContentTextFile("blog", fileName);
+  const source = readContent("blog", fileName);
   const { data, content } = matter(source);
   const requiredFields = [
     "title",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { BlogPostSummary } from "@/lib/blog";
+import type { BlogPostSummary } from "@/shared/server/blog";
 import { appRoute } from "@/lib/routes";
 
 type BlogSectionProps = {
